@@ -4,10 +4,16 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -16,13 +22,24 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
 
-
+  private final CommandXboxController m_driverController = new CommandXboxController(0);
+  private final CommandSwerveDrivetrain m_drivebaseS = new CommandSwerveDrivetrain(
+    TunerConstants.DrivetrainConstants, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight);
+  private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   public Robot() {
-   
+    m_drivebaseS.setDefaultCommand(
+      // Drivetrain will execute this command periodically
+      m_drivebaseS.applyRequest(() ->
+          m_driveRequest.withVelocityX(-m_driverController.getLeftY() * 4) // Drive forward with negative Y (forward)
+              .withVelocityY(-m_driverController.getLeftX() * 4) // Drive left with negative X (left)
+              .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
+      )
+    );
+  }
 
   
 
