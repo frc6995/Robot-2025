@@ -9,6 +9,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -16,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.util.AlertsUtil;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -29,12 +32,14 @@ public class Robot extends TimedRobot {
   private final CommandSwerveDrivetrain m_drivebaseS = new CommandSwerveDrivetrain(
     TunerConstants.DrivetrainConstants, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight);
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
+  
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   public Robot() {
     Epilogue.bind(this);
+    AlertsUtil.bind(new Alert("Driver Xbox Disconnect", AlertType.kError), ()->!m_driverController.isConnected());
     m_drivebaseS.setDefaultCommand(
       // Drivetrain will execute this command periodically
       m_drivebaseS.applyRequest(() ->
