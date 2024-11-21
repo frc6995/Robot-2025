@@ -163,14 +163,4 @@ public class TunerConstants {
             kBackLeftSteerMotorId, kBackLeftDriveMotorId, kBackLeftEncoderId, kBackLeftEncoderOffset, kBackLeftXPos, kBackLeftYPos, kInvertLeftSide, kBackLeftSteerMotorInverted);
     public static final SwerveModuleConstants BackRight = ConstantCreator.createModuleConstants(
             kBackRightSteerMotorId, kBackRightDriveMotorId, kBackRightEncoderId, kBackRightEncoderOffset, kBackRightXPos, kBackRightYPos, kInvertRightSide, kBackRightSteerMotorInverted);
-
-    /**
-     * Creates a CommandSwerveDrivetrain instance.
-     * This should only be called once in your robot program,.
-     */
-    public static CommandSwerveDrivetrain createDrivetrain() {
-        return new CommandSwerveDrivetrain(
-            DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight
-        );
-    }
 }
