@@ -7,6 +7,8 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
+import edu.wpi.first.epilogue.Epilogue;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,6 +22,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  * the TimedRobot documentation. If you change the name of this class or the package after creating
  * this project, you must also update the Main.java file in the project.
  */
+@Logged
 public class Robot extends TimedRobot {
 
   private final CommandXboxController m_driverController = new CommandXboxController(0);
@@ -31,6 +34,7 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+    Epilogue.bind(this);
     m_drivebaseS.setDefaultCommand(
       // Drivetrain will execute this command periodically
       m_drivebaseS.applyRequest(() ->
