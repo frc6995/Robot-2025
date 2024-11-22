@@ -29,8 +29,7 @@ import frc.robot.util.AlertsUtil;
 public class Robot extends TimedRobot {
 
   private final CommandXboxController m_driverController = new CommandXboxController(0);
-  private final CommandSwerveDrivetrain m_drivebaseS = new CommandSwerveDrivetrain(
-    TunerConstants.DrivetrainConstants, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight);
+  private final CommandSwerveDrivetrain m_drivebaseS = new CommandSwerveDrivetrain();
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   
   /**
