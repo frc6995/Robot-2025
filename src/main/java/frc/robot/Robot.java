@@ -9,6 +9,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -47,6 +49,9 @@ public class Robot extends TimedRobot {
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
       )
     );
+    m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(2, 2, Rotation2d.kZero)));
+    m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(8, 2, Rotation2d.kZero)));
+    m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(2, 8, Rotation2d.kZero)));
   }
 
   
