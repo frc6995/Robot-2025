@@ -48,7 +48,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private final PIDController m_pathYController = new PIDController(10, 0, 0);
     private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
 
-    private RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
+    public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
 
     /** Re-expose the state as a method of the subclass so Epilogue finds it. */
     public SwerveDriveState state() {

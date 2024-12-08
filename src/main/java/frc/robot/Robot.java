@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
@@ -11,6 +13,7 @@ import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -34,6 +37,7 @@ public class Robot extends TimedRobot {
   private final CommandSwerveDrivetrain m_drivebaseS = new CommandSwerveDrivetrain();
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   
+  public ArrayList<Translation2d> toAmp = new ArrayList<>();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -54,7 +58,7 @@ public class Robot extends TimedRobot {
     m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(2, 8, Rotation2d.kZero)));
   }
 
-  
+  private static Translation2d amp = new Translation2d(2, 8);
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
@@ -65,6 +69,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    toAmp.clear();
+    toAmp.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), amp, 3*0.02));
     CommandScheduler.getInstance().run();
   }
 
