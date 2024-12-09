@@ -75,7 +75,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     public Command repulsorCommand(Supplier<Pose2d> target) {
         return run(()->{
             m_repulsor.setGoal(target.get().getTranslation());
-            followPath(state().Pose, m_repulsor.getCmd(()->state().Pose, 0.1));
+            followPath(state().Pose, m_repulsor.getCmd(state().Pose, state().Speeds, 4));
         });
     }
     /**

@@ -54,8 +54,9 @@ public class Robot extends TimedRobot {
       )
     );
     m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(2, 2, Rotation2d.kZero)));
-    m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(8, 2, Rotation2d.kZero)));
+    m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(2, 5, Rotation2d.kZero)));
     m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(2, 8, Rotation2d.kZero)));
+    m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(15, 1, Rotation2d.kZero)));
   }
 
   private static Translation2d amp = new Translation2d(2, 8);
