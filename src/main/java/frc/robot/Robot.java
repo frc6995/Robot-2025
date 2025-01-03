@@ -47,7 +47,7 @@ public class Robot extends TimedRobot {
     AlertsUtil.bind(new Alert("Driver Xbox Disconnect", AlertType.kError), ()->!m_driverController.isConnected());
     m_drivebaseS.setDefaultCommand(
       // Drivetrain will execute this command periodically
-      m_drivebaseS.applyRequest(() ->
+      m_drivebaseS.applyRequest(() -> 
           m_driveRequest.withVelocityX(-m_driverController.getLeftY() * 4) // Drive forward with negative Y (forward)
               .withVelocityY(-m_driverController.getLeftX() * 4) // Drive left with negative X (left)
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)

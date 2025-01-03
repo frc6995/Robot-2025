@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableListener;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 @Logged
@@ -34,6 +35,12 @@ public class RepulsorFieldPlanner {
             var forceMag = strength / (0.00001 + Math.abs(dist*dist));
             forceMag *= positive ? 1 : -1;
             return forceMag;
+        }
+
+        protected double distToForceMag(double dist, double falloff) {
+            var original = strength / (0.00001 + Math.abs(dist*dist));
+            var falloffMag = strength / (0.00001 + Math.abs(falloff*falloff));
+            return Math.max(original - falloffMag, 0) * (positive ? 1 : -1);
         }
 
     }
@@ -78,8 +85,7 @@ public class RepulsorFieldPlanner {
             var sidewaysCircle = new Translation2d(1, targetToLoc.getAngle()).plus(loc);
             var dist = loc.getDistance(position);
             var sidewaysDist = sidewaysCircle.getDistance(position);
-            if (dist > 2 && sidewaysDist > 2) {return new Force();}
-            var sidewaysMag = distToForceMag(sidewaysCircle.getDistance(position)) / 2;
+            var sidewaysMag = distToForceMag(sidewaysCircle.getDistance(position));
             var outwardsMag = distToForceMag(loc.getDistance(position));
             var initial = new Force(
                 outwardsMag,
@@ -102,11 +108,9 @@ public class RepulsorFieldPlanner {
             this.y = y;
         }
         public Force getForceAtPosition(Translation2d position, Translation2d target) {
-            var dist = Math.abs(position.getY() -y);
-            if (dist > 1) {return Force.kZero;}
             return new Force(
                 0,
-                distToForceMag(y-position.getY())                
+                distToForceMag(y-position.getY(), 1)            
                 );
         }
     }
@@ -117,17 +121,15 @@ public class RepulsorFieldPlanner {
             this.x = x;
         }
         public Force getForceAtPosition(Translation2d position, Translation2d target) {
-            var dist = Math.abs(position.getX() -x);
-            if (dist > 1) {return Force.kZero;}
             return new Force(
                 
-                distToForceMag( x-position.getX())
+                distToForceMag( x-position.getX(), 1)
                 , 0
                 );
         }
     }
-
-    public static final double GOAL_STRENGTH = 1;
+    public final AStarFieldPlanner astar = new AStarFieldPlanner();
+    public static final double GOAL_STRENGTH = 0.65;
 
     public static final List<Obstacle> FIELD_OBSTACLES = List.of(
     new SnowmanObstacle(new Translation2d(5.56, 2.74),  0.4, true),
@@ -168,6 +170,7 @@ public class RepulsorFieldPlanner {
             updateArrows();
         });
         topic.subscribe(useGoalInArrows);
+        NetworkTableInstance.getDefault().startEntryDataLog(DataLogManager.getLog(), "SmartDashboard/Alerts", "SmartDashboard/Alerts");
     }
     private boolean useGoalInArrows = false;
     private Pose2d arrowBackstage = new Pose2d(-10, -10, Rotation2d.kZero);
@@ -196,7 +199,7 @@ public class RepulsorFieldPlanner {
                 return new Force();
             }
             var direction = displacement.getAngle();
-            var mag = GOAL_STRENGTH * (1 + 1.0/(0.0001 + displacement.getNorm()));
+            var mag = GOAL_STRENGTH * (1 + 1.0/(0.0001 + displacement.getNorm()*displacement.getNorm()));
             return new Force(mag, direction);
     }
     Force getObstacleForce(Translation2d curLocation, Translation2d target) {
@@ -226,10 +229,7 @@ public class RepulsorFieldPlanner {
         this.goalOpt = Optional.of(goal);
         updateArrows();
     }
-    public void clearGoal() {
-        this.goalOpt = Optional.empty();
-    }
-    public SwerveSample getCmd(Pose2d pose, ChassisSpeeds currentSpeeds, double maxSpeed) {
+    public SwerveSample getCmd(Pose2d pose, ChassisSpeeds currentSpeeds, double maxSpeed, boolean useGoal) {
         Translation2d speedPerSec = new Translation2d(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
         double currentSpeed = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
         double stepSize_m = maxSpeed * 0.02; // TODO 
@@ -243,17 +243,19 @@ public class RepulsorFieldPlanner {
             var goal = goalOpt.get();
             var curTrans = pose.getTranslation();
             var err = curTrans.minus(goal);
-            if (err.getNorm() < stepSize_m * 1.5) {
+            if (useGoal&& err.getNorm() < stepSize_m * 1.5) {
                 return sample(goal, pose.getRotation(), 0,0,0);
             } else {
                 var obstacleForce = getObstacleForce(curTrans, goal);
-
-                var netForce = getGoalForce(curTrans, goal).plus(obstacleForce);
+                var netForce = obstacleForce;
+                if (useGoal) {
+                netForce = getGoalForce(curTrans, goal).plus(netForce);
                 SmartDashboard.putNumber("forceLog", netForce.getNorm());
                 // Calculate how quickly to move in this direction
                 var closeToGoalMax = maxSpeed * Math.min(err.getNorm() / 2, 1);
                 
                 stepSize_m = Math.min(maxSpeed, closeToGoalMax) * 0.02;
+                }
                 var step = new Translation2d(stepSize_m, netForce.getAngle());
                 var intermediateGoal = curTrans.plus(step);
                 var endTime = System.nanoTime();
@@ -264,8 +266,9 @@ public class RepulsorFieldPlanner {
         }
         
     }
-
+    public double pathLength = 0;
     public ArrayList<Translation2d> getTrajectory(Translation2d current, Translation2d goalTranslation, double stepSize_m) {
+        pathLength = 0;
         goalTranslation = goalOpt.orElse(goalTranslation);
         ArrayList<Translation2d> traj = new ArrayList<>();
         Translation2d robot = current;
@@ -282,6 +285,7 @@ public class RepulsorFieldPlanner {
                 var step = new Translation2d(stepSize_m, netForce.getAngle());
                 var intermediateGoal = robot.plus(step);
                 traj.add(intermediateGoal);
+                pathLength += stepSize_m;
                 robot = intermediateGoal;
             }
         }
