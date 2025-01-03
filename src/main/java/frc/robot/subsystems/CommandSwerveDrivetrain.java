@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
@@ -75,8 +76,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     public Command repulsorCommand(Supplier<Pose2d> target) {
         return run(()->{
             m_repulsor.setGoal(target.get().getTranslation());
-            followPath(state().Pose, m_repulsor.getCmd(state().Pose, state().Speeds, 4));
-        });
+            followPath(state().Pose, m_repulsor.getCmd(state().Pose, state().Speeds, 4, true));
+        }).alongWith(new ScheduleCommand(
+            m_repulsor.astar.getCmd(()->state().Pose.getTranslation(), ()->target.get().getTranslation())));
     }
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
