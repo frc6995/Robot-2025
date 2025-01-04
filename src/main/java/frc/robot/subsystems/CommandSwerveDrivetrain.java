@@ -6,10 +6,11 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import choreo.trajectory.SwerveSample;
+// import choreo.trajectory.SwerveSample;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -22,13 +23,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
+import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.logging.Module;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
  */
 @Logged
-public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsystem {
+public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -46,6 +49,15 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private final PIDController m_pathYController = new PIDController(10, 0, 0);
     private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
 
+    // For logging
+    public Module fl, fr, bl, br;
+    private Module makeModule(int idx) {return new Module(this.getModule(0).getSteerMotor(), this.getModule(0).getDriveMotor());}
+    private void setupModuleLoggers() {
+        fl  = makeModule(0);
+        fr  = makeModule(1);
+        bl = makeModule(2);
+        br = makeModule(3);
+    }
     /** Re-expose the state as a method of the subclass so Epilogue finds it. */
     public SwerveDriveState state() {
         return getState();
@@ -60,6 +72,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
      */
     public CommandSwerveDrivetrain() {
         super(TunerConstants.DrivetrainConstants, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight);
+        setupModuleLoggers();
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -101,26 +114,26 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
      * @param pose Current pose of the robot
      * @param sample Sample along the path to follow
      */
-    public void followPath(Pose2d pose, SwerveSample sample) {
-        m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+    // public void followPath(Pose2d pose, SwerveSample sample) {
+    //     m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-        var targetSpeeds = sample.getChassisSpeeds();
-        targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
-            pose.getX(), sample.x
-        );
-        targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
-            pose.getY(), sample.y
-        );
-        targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
-            pose.getRotation().getRadians(), sample.heading
-        );
+    //     var targetSpeeds = sample.getChassisSpeeds();
+    //     targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
+    //         pose.getX(), sample.x
+    //     );
+    //     targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
+    //         pose.getY(), sample.y
+    //     );
+    //     targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
+    //         pose.getRotation().getRadians(), sample.heading
+    //     );
 
-        setControl(
-            m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
-                .withWheelForceFeedforwardsX(sample.moduleForcesX())
-                .withWheelForceFeedforwardsY(sample.moduleForcesY())
-        );
-    }
+    //     setControl(
+    //         m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
+    //             .withWheelForceFeedforwardsX(sample.moduleForcesX())
+    //             .withWheelForceFeedforwardsY(sample.moduleForcesY())
+    //     );
+    // }
 
     @Override
     public void periodic() {
