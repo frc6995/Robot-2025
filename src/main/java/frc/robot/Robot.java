@@ -37,7 +37,15 @@ public class Robot extends TimedRobot {
   private final CommandSwerveDrivetrain m_drivebaseS = new CommandSwerveDrivetrain();
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   
-  public ArrayList<Translation2d> toAmp = new ArrayList<>();
+  final Pose2d proc = new Pose2d(6.28, 0.48, Rotation2d.kCW_90deg);
+  public ArrayList<Translation2d> toProc = new ArrayList<>();
+  final Pose2d a_left = new Pose2d(5, 5.24, new Rotation2d(4*Math.PI/3));
+  public ArrayList<Translation2d> to_a_left = new ArrayList<>();
+  final Pose2d b_left = new Pose2d(5.86, 3.86, Rotation2d.kPi);
+  public ArrayList<Translation2d> to_b_left = new ArrayList<>();
+  final Pose2d proc_stat = new Pose2d(1.15, 7.13, new Rotation2d(2.23));
+  public ArrayList<Translation2d> to_proc_stat = new ArrayList<>();
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -53,10 +61,10 @@ public class Robot extends TimedRobot {
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
       )
     );
-    m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(2, 2, Rotation2d.kZero)));
-    m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(2, 5, Rotation2d.kZero)));
-    m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(2, 8, Rotation2d.kZero)));
-    m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->new Pose2d(15, 1, Rotation2d.kZero)));
+    m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
+    m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
+    m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
+    m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
   }
 
   private static Translation2d amp = new Translation2d(2, 8);
@@ -70,8 +78,14 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    toAmp.clear();
-    toAmp.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), amp, 3*0.02));
+    toProc.clear();
+    to_a_left.clear();
+    to_b_left.clear();
+    to_proc_stat.clear();
+    toProc.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc.getTranslation(), 3*0.02));
+    to_a_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), a_left.getTranslation(), 3*0.02));
+    to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), b_left.getTranslation(), 3*0.02));
+    to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc_stat.getTranslation(), 3*0.02));
     CommandScheduler.getInstance().run();
   }
 
