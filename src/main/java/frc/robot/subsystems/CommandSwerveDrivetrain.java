@@ -10,7 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-// import choreo.trajectory.SwerveSample;
+import choreo.trajectory.SwerveSample;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -90,9 +90,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public Command repulsorCommand(Supplier<Pose2d> target) {
         return run(()->{
             m_repulsor.setGoal(target.get().getTranslation());
-            followPath(state().Pose, m_repulsor.getCmd(state().Pose, state().Speeds, 4, true));
-        }).alongWith(new ScheduleCommand(
-            m_repulsor.astar.getCmd(()->state().Pose.getTranslation(), ()->target.get().getTranslation())));
+            followPath(state().Pose, m_repulsor.getCmd(state().Pose, state().Speeds, 4, true, target.get().getRotation()));
+        });
     }
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -130,26 +129,26 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param pose Current pose of the robot
      * @param sample Sample along the path to follow
      */
-    // public void followPath(Pose2d pose, SwerveSample sample) {
-    //     m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+    public void followPath(Pose2d pose, SwerveSample sample) {
+        m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    //     var targetSpeeds = sample.getChassisSpeeds();
-    //     targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
-    //         pose.getX(), sample.x
-    //     );
-    //     targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
-    //         pose.getY(), sample.y
-    //     );
-    //     targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
-    //         pose.getRotation().getRadians(), sample.heading
-    //     );
+        var targetSpeeds = sample.getChassisSpeeds();
+        targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
+            pose.getX(), sample.x
+        );
+        targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(
+            pose.getY(), sample.y
+        );
+        targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(
+            pose.getRotation().getRadians(), sample.heading
+        );
 
-    //     setControl(
-    //         m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
-    //             .withWheelForceFeedforwardsX(sample.moduleForcesX())
-    //             .withWheelForceFeedforwardsY(sample.moduleForcesY())
-    //     );
-    // }
+        setControl(
+            m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
+                .withWheelForceFeedforwardsX(sample.moduleForcesX())
+                .withWheelForceFeedforwardsY(sample.moduleForcesY())
+        );
+    }
 
     @Override
     public void periodic() {
