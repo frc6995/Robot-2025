@@ -34,7 +34,7 @@ import frc.robot.util.AlertsUtil;
 public class Robot extends TimedRobot {
 
   private final CommandXboxController m_driverController = new CommandXboxController(0);
-  private final CommandSwerveDrivetrain m_drivebaseS = new CommandSwerveDrivetrain();
+  private final CommandSwerveDrivetrain m_drivebaseS = TunerConstants.createDrivetrain();
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   
   final Pose2d proc = new Pose2d(6.28, 0.48, Rotation2d.kCW_90deg);
