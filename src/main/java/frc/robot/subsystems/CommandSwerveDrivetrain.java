@@ -21,6 +21,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
@@ -31,6 +32,8 @@ import frc.robot.util.RepulsorFieldPlanner;
 
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.logging.Module;
+import frc.robot.logging.TalonFXPDHChannel;
+import static frc.robot.logging.PowerDistributionSim.Channel.*;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -57,13 +60,26 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
     // For logging
-    public Module fl, fr, bl, br;
-    private Module makeModule(int idx) {return new Module(this.getModule(0).getSteerMotor(), this.getModule(0).getDriveMotor());}
+    public Module fl;
+    public Module fr;
+    public Module bl;
+    public Module br;
+    private Module makeModule(int idx) {return new Module(this.getModule(idx).getSteerMotor(), this.getModule(idx).getDriveMotor());}
     private void setupModuleLoggers() {
         fl  = makeModule(0);
         fr  = makeModule(1);
         bl = makeModule(2);
         br = makeModule(3);
+        if (RobotBase.isSimulation()) {
+            TalonFXPDHChannel.registerFD(c04_FL_Drive, fl.drive());
+            TalonFXPDHChannel.registerFD(c05_FL_Steer, fl.steer());
+            TalonFXPDHChannel.registerFD(c09_FR_Drive, fr.drive());
+            TalonFXPDHChannel.registerFD(c08_FR_Steer, fr.steer());
+            TalonFXPDHChannel.registerFD(c15_BL_Drive, bl.drive());
+            TalonFXPDHChannel.registerFD(c12_BR_Steer, bl.steer());
+            TalonFXPDHChannel.registerFD(c11_BR_Drive, br.drive());
+            TalonFXPDHChannel.registerFD(c10_BR_Steer, br.steer());
+        }
     }
 
     /** Re-expose the state as a method of the subclass so Epilogue finds it. */
@@ -176,6 +192,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+    private void updateSimCurrents() {
+
+    }
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
 

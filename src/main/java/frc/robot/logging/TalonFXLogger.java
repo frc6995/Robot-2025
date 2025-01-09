@@ -18,10 +18,11 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 @CustomLoggerFor(TalonFX.class)
 public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
-    record Signals(
-        StatusSignal<Current> supplyCurrent,
+    public record Signals(
+        StatusSignal<Current> torqueCurrent,
+        StatusSignal<Current> statorCurrent,
         StatusSignal<Angle> position){};
-    public static HashMap<Integer, Signals> talons = new HashMap<>();
+    public HashMap<Integer, Signals> talons = new HashMap<>();
 
     public TalonFXLogger() {
         super(TalonFX.class);
@@ -31,15 +32,13 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
         var signals = talons.get(object.getDeviceID());
         if (signals == null) {
             signals = new Signals(
-                object.getSupplyCurrent(),
+                object.getTorqueCurrent(),
+                object.getStatorCurrent(),
                 object.getPosition());
             talons.put(object.getDeviceID(), signals);
         }
-        BaseStatusSignal.refreshAll(
-            signals.supplyCurrent,
-            signals.position
-        );
-        dataLogger.log("current", signals.supplyCurrent.getValue().baseUnitMagnitude());
+        dataLogger.log("statorCurrent", signals.statorCurrent.getValue().baseUnitMagnitude());
+        dataLogger.log("torqueCurrent", signals.torqueCurrent.getValue().baseUnitMagnitude());
         dataLogger.log("position", signals.position.getValue().in(Rotation));
     }
 }
