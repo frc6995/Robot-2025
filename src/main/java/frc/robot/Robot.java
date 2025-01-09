@@ -6,6 +6,8 @@ package frc.robot;
 
 import java.util.ArrayList;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
@@ -14,14 +16,23 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
+import frc.robot.logging.PDData;
+import frc.robot.logging.PowerDistributionSim;
+import frc.robot.logging.PowerDistributionSim.Channel;
+// import frc.robot.logging.TalonFXLogger;
+import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.util.AlertsUtil;
 
@@ -32,7 +43,7 @@ import frc.robot.util.AlertsUtil;
  */
 @Logged
 public class Robot extends TimedRobot {
-
+  public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final CommandSwerveDrivetrain m_drivebaseS = TunerConstants.createDrivetrain();
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
@@ -78,6 +89,16 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    if (RobotBase.isSimulation()) {
+      // This needs to be just before pdh.update() so it can't be in simulationPeriodic, which is after 
+      TalonFXPDHChannel.refresh();
+      TalonFXPDHChannel.currentSignalsRio.forEach((channel, signal)->{
+        PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
+        );
+      TalonFXPDHChannel.currentSignalsCanivore.forEach((channel, signal)->{
+        PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
+        );
+    }
     // toProc.clear();
     // to_a_left.clear();
     // to_b_left.clear();
@@ -86,6 +107,13 @@ public class Robot extends TimedRobot {
     // to_a_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), a_left.getTranslation(), 3*0.02));
     // to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), b_left.getTranslation(), 3*0.02));
     // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc_stat.getTranslation(), 3*0.02));
+
+    // for (Integer i : Epilogue.talonFXLogger.talons.keySet()){
+    //   var object = Epilogue.talonFXLogger.talons.get(i);
+    //   BaseStatusSignal.refreshAll(object.supplyCurrent(), object.position());
+    //   PowerDistributionSim.instance.setChannelCurrent(TalonFXPDHChannel.channels.getOrDefault(i, Channel.c00), object.supplyCurrent().getValueAsDouble());
+    // }
+    pdh.update();
     CommandScheduler.getInstance().run();
   }
 
@@ -144,5 +172,7 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically whilst in simulation. */
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+
+  }
 }
