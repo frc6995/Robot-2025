@@ -47,7 +47,7 @@ public class Robot extends TimedRobot {
   public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
-  private final Autos m_Autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
+  private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   
   final Pose2d proc = new Pose2d(6.28, 0.48, Rotation2d.kCW_90deg);
@@ -74,12 +74,15 @@ public class Robot extends TimedRobot {
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
       )
     );
+
+    SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
+
     m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
     m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
     m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
     m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
 
-    RobotModeTriggers.autonomous().whileTrue(m_Autos.testPath());
+    RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
   private static Translation2d amp = new Translation2d(2, 8);
