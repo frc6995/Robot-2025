@@ -10,7 +10,7 @@ import choreo.trajectory.SwerveSample;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.DriveBaseS;
-import frc.robot.subsystems.DriveBaseS;
+import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 public class Autos {
     private DriveBaseS m_drivebase;
@@ -32,6 +32,8 @@ public class Autos {
         // add autos to the chooser
         m_autoChooser.addCmd("testPath", this::testPath);
         m_autoChooser.addRoutine("testPathRoutine", this::testPathRoutine);
+        m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
+        
     }
 
     public Command testPath(){ return m_autoFactory.trajectoryCmd("test_path");}
@@ -51,4 +53,24 @@ public class Autos {
 
         return routine;
     }
+
+    public AutoRoutine splitPathAutoRoutine() {
+        AutoRoutine routine = m_autoFactory.newRoutine("splitPathRoutine");
+
+        AutoTrajectory start = routine.trajectory("split_path", 0);
+        AutoTrajectory secondHalf = routine.trajectory("split_path", 1);
+
+        // When the routine begins, reset odometry and start the first trajectory 
+        routine.active().onTrue(
+            sequence(
+                start.resetOdometry(),
+                start.cmd()
+            )
+        );
+
+        start.done().onTrue(secondHalf.cmd().until(routine.active().negate()));
+
+        return routine;
+    }
+
 }
