@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -13,6 +14,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -170,7 +172,11 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                 .withWheelForceFeedforwardsY(sample.moduleForcesY())
         );
     }
-
+    private final SwerveSample[] emptyTrajectory = new SwerveSample[0];
+    public SwerveSample[] currentTrajectory = emptyTrajectory;
+    public void logTrajectory(Trajectory<SwerveSample> traj, boolean isStarting) {
+        currentTrajectory = isStarting ? traj.samples().toArray(SwerveSample[]::new) : emptyTrajectory;
+    }
     @Override
     public void periodic() {
         /*

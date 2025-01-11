@@ -9,6 +9,7 @@ import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import frc.robot.subsystems.DriveBaseS;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
@@ -27,7 +28,7 @@ public class Autos {
             m_drivebase::followPath, 
             true, 
             m_drivebase, 
-            trajlogger);
+            m_drivebase::logTrajectory);
 
         // add autos to the chooser
         m_autoChooser.addCmd("testPath", this::testPath);
@@ -68,7 +69,7 @@ public class Autos {
             )
         );
 
-        start.done().onTrue(secondHalf.cmd().until(routine.active().negate()));
+        start.done().onTrue(waitSeconds(2.54).andThen(new ScheduleCommand(secondHalf.cmd())));
 
         return routine;
     }
