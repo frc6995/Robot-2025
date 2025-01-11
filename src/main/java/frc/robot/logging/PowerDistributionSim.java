@@ -2,6 +2,7 @@ package frc.robot.logging;
 
 import java.util.Arrays;
 
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.simulation.PDPSim;
 
@@ -37,12 +38,14 @@ public class PowerDistributionSim {
         }
     }
     public static String[] CHANNEL_LOG_NAMES = Arrays.stream(Channel.values()).map((c)->c.toString()).toArray(String[]::new);
-    public PDPSim m_sim = new PDPSim(new edu.wpi.first.wpilibj.PowerDistribution(1, ModuleType.kRev));
+    public PDPSim m_sim;
     public void setChannelCurrent(Channel channel, double current) {
         setChannelCurrent(channel.channel(), current);
     }
     public void setChannelCurrent(int channel, double current) {
         m_sim.setCurrent(channel, current);
     }
-    public static PowerDistributionSim instance = new PowerDistributionSim();
+    public PowerDistributionSim(int canId) {
+        m_sim = new PDPSim(canId);
+    }
 }

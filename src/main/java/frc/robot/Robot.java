@@ -7,19 +7,26 @@ package frc.robot;
 import java.util.ArrayList;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.PS4Controller.Button;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -27,6 +34,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.generated.TunerConstants;
 import frc.robot.logging.PDData;
 import frc.robot.logging.PowerDistributionSim;
@@ -34,6 +43,7 @@ import frc.robot.logging.PowerDistributionSim.Channel;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.DrivetrainSysId;
 import frc.robot.util.AlertsUtil;
 
 /**
@@ -44,8 +54,11 @@ import frc.robot.util.AlertsUtil;
 @Logged
 public class Robot extends TimedRobot {
   public PDData pdh = PDData.create(1, ModuleType.kRev);
+  public PowerDistributionSim pd_sim = new PowerDistributionSim(1);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
+  private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   private final CommandSwerveDrivetrain m_drivebaseS = TunerConstants.createDrivetrain();
+  private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   
   final Pose2d proc = new Pose2d(6.28, 0.48, Rotation2d.kCW_90deg);
@@ -72,14 +85,37 @@ public class Robot extends TimedRobot {
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
       )
     );
-    m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
-    m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
-    m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
-    m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
+    // m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
+    // m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
+    // m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
+    // m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
+    boolean doingSysId = false;
+    if (doingSysId) {
+    SignalLogger.start();
+    m_keypad.key(CommandOperatorKeypad.Button.kHighLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kMidLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kReverse));
+    m_keypad.key( CommandOperatorKeypad.Button.kLowLeft).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kLeftGrid).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kReverse));
+    // Rotation
+    m_keypad.key(CommandOperatorKeypad.Button.kHighCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kMidCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kReverse));
+    m_keypad.key( CommandOperatorKeypad.Button.kLowCenter).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kCenterGrid).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kReverse));
+
+    m_keypad.key(CommandOperatorKeypad.Button.kHighRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kMidRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kReverse));
+    m_keypad.key( CommandOperatorKeypad.Button.kLowRight).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kRightGrid).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kReverse));
+    }
+
   }
 
-  private static Translation2d amp = new Translation2d(2, 8);
-
+  public Pose3d getCameraOverride() {
+    return new Pose3d(m_drivebaseS.state().Pose).transformBy(
+      new Transform3d(Units.inchesToMeters(10), -Units.inchesToMeters(10), Units.inchesToMeters(12),
+        new Rotation3d(0,Units.degreesToRadians(-12),Units.degreesToRadians(10)))
+    );
+  }
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -93,10 +129,10 @@ public class Robot extends TimedRobot {
       // This needs to be just before pdh.update() so it can't be in simulationPeriodic, which is after 
       TalonFXPDHChannel.refresh();
       TalonFXPDHChannel.currentSignalsRio.forEach((channel, signal)->{
-        PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
+        pd_sim.setChannelCurrent(channel, signal.getValueAsDouble());}
         );
       TalonFXPDHChannel.currentSignalsCanivore.forEach((channel, signal)->{
-        PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
+        pd_sim.setChannelCurrent(channel, signal.getValueAsDouble());}
         );
     }
     // toProc.clear();
@@ -108,11 +144,6 @@ public class Robot extends TimedRobot {
     // to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), b_left.getTranslation(), 3*0.02));
     // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc_stat.getTranslation(), 3*0.02));
 
-    // for (Integer i : Epilogue.talonFXLogger.talons.keySet()){
-    //   var object = Epilogue.talonFXLogger.talons.get(i);
-    //   BaseStatusSignal.refreshAll(object.supplyCurrent(), object.position());
-    //   PowerDistributionSim.instance.setChannelCurrent(TalonFXPDHChannel.channels.getOrDefault(i, Channel.c00), object.supplyCurrent().getValueAsDouble());
-    // }
     pdh.update();
     CommandScheduler.getInstance().run();
   }
