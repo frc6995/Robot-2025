@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -69,6 +70,8 @@ public class Robot extends TimedRobot {
     m_drivebaseS.setDefaultCommand(
       // Drivetrain will execute this command periodically
       m_drivebaseS.applyRequest(() -> 
+          DriverStation.isAutonomous() ? 
+          m_driveRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0) :
           m_driveRequest.withVelocityX(-m_driverController.getLeftY() * 4) // Drive forward with negative Y (forward)
               .withVelocityY(-m_driverController.getLeftX() * 4) // Drive left with negative X (left)
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
