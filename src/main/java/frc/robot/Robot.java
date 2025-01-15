@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -27,13 +28,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.generated.TunerConstants;
 import frc.robot.logging.PDData;
 import frc.robot.logging.PowerDistributionSim;
 import frc.robot.logging.PowerDistributionSim.Channel;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.logging.TalonFXPDHChannel;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.DriveBaseS;
 import frc.robot.util.AlertsUtil;
 
 /**
@@ -45,7 +47,8 @@ import frc.robot.util.AlertsUtil;
 public class Robot extends TimedRobot {
   public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
-  private final CommandSwerveDrivetrain m_drivebaseS = TunerConstants.createDrivetrain();
+  private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
+  private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   
   final Pose2d proc = new Pose2d(6.28, 0.48, Rotation2d.kCW_90deg);
@@ -67,15 +70,22 @@ public class Robot extends TimedRobot {
     m_drivebaseS.setDefaultCommand(
       // Drivetrain will execute this command periodically
       m_drivebaseS.applyRequest(() -> 
+          DriverStation.isAutonomous() ? 
+          m_driveRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0) :
           m_driveRequest.withVelocityX(-m_driverController.getLeftY() * 4) // Drive forward with negative Y (forward)
               .withVelocityY(-m_driverController.getLeftX() * 4) // Drive left with negative X (left)
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
       )
     );
+
+    SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
+
     m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
     m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
     m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
     m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
+
+    RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
   private static Translation2d amp = new Translation2d(2, 8);
@@ -91,13 +101,13 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     if (RobotBase.isSimulation()) {
       // This needs to be just before pdh.update() so it can't be in simulationPeriodic, which is after 
-      TalonFXPDHChannel.refresh();
-      TalonFXPDHChannel.currentSignalsRio.forEach((channel, signal)->{
-        PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
-        );
-      TalonFXPDHChannel.currentSignalsCanivore.forEach((channel, signal)->{
-        PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
-        );
+      // TalonFXPDHChannel.refresh();
+      // TalonFXPDHChannel.currentSignalsRio.forEach((channel, signal)->{
+      //   PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
+      //   );
+      // TalonFXPDHChannel.currentSignalsCanivore.forEach((channel, signal)->{
+      //   PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
+      //   );
     }
     // toProc.clear();
     // to_a_left.clear();

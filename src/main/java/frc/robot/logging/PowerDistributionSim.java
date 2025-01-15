@@ -44,5 +44,5 @@ public class PowerDistributionSim {
     public void setChannelCurrent(int channel, double current) {
         m_sim.setCurrent(channel, current);
     }
-    public static PowerDistributionSim instance = new PowerDistributionSim();
+    // public static PowerDistributionSim instance = new PowerDistributionSim();
 }
