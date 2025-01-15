@@ -84,12 +84,23 @@ public class AlgaePivotS extends SubsystemBase {
   TalonFX motor = new TalonFX(AlgaePivotConstants.MOTOR_ID);
 
   public final MechanismLigament2d ALGAE_PIVOT = new MechanismLigament2d(
-      "algae-pivot-1", 8, 0, 4, new Color8Bit(235, 137, 52));
-
+      "algae-pivot-1", Units.inchesToMeters(5), 0, 4, new Color8Bit(235, 137, 52));
+  private final MechanismLigament2d ALGAE_PIVOT_2 = new MechanismLigament2d(
+    "algae-pivot-2", Units.inchesToMeters(5), 60, 4, new Color8Bit(235, 137, 52));
+    private final MechanismLigament2d ALGAE_PIVOT_3 = new MechanismLigament2d(
+    "algae-pivot-3", Units.inchesToMeters(5), -60, 4, new Color8Bit(235, 137, 52));
+    private final MechanismLigament2d ALGAE_PIVOT_4 = new MechanismLigament2d(
+    "algae-pivot-4", Units.inchesToMeters(5), -60, 4, new Color8Bit(235, 137, 52));
+  private void setupVisualizer() {
+    ALGAE_PIVOT.append(
+    ALGAE_PIVOT_2).append(ALGAE_PIVOT_3).append(ALGAE_PIVOT_4)
+    ;
+  }
   public final VoltageOut voltageReq = new VoltageOut(0);
   public final StatusSignal<Angle> position = motor.getPosition();
   /** Creates a new AlgaePivotS. */
   public AlgaePivotS() {
+  setupVisualizer();
     var config = new TalonFXConfiguration();
     motor.getConfigurator().refresh(config);
     motor.getConfigurator().apply(
@@ -101,7 +112,6 @@ public class AlgaePivotS extends SubsystemBase {
   public void periodic() {
     BaseStatusSignal.refreshAll(position);
     ALGAE_PIVOT.setAngle(Units.rotationsToDegrees(position.getValueAsDouble()));
-    // This method will be called once per scheduler run
   }
 
   public void simulationPeriodic() {
