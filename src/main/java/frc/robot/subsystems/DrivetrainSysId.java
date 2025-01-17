@@ -15,9 +15,9 @@ import edu.wpi.first.units.PerUnit;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.units.measure.Per;
 public class DrivetrainSysId {
-    private CommandSwerveDrivetrain m_drivetrain;
+    private DriveBaseS m_drivetrain;
     
-    public DrivetrainSysId(CommandSwerveDrivetrain drive) {
+    public DrivetrainSysId(DriveBaseS drive) {
         m_drivetrain = drive;
 
         m_sysIdRoutineTranslation = new SysIdRoutine(

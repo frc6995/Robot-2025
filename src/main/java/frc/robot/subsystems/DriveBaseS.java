@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -13,6 +14,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -40,7 +42,7 @@ import static frc.robot.logging.PowerDistributionSim.Channel.*;
  * Subsystem so it can easily be used in command-based projects.
  */
 @Logged
-public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
+public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -94,7 +96,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * the devices themselves. If they need the devices, they can access them
      * through getters in the classes.
      */
-    public CommandSwerveDrivetrain(
+    public DriveBaseS(
         SwerveDrivetrainConstants drivetrainConstants,
             SwerveModuleConstants<?, ?, ?>... modules
     ) {
@@ -111,7 +113,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public Command repulsorCommand(Supplier<Pose2d> target) {
         return run(()->{
             m_repulsor.setGoal(target.get().getTranslation());
-            followPath(state().Pose, m_repulsor.getCmd(state().Pose, state().Speeds, 4, true, target.get().getRotation()));
+            followPath(m_repulsor.getCmd(state().Pose, state().Speeds, 4, true, target.get().getRotation()));
         });
     }
     /**
@@ -127,7 +129,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      *                                   CAN FD, and 100 Hz on CAN 2.0.
      * @param modules                    Constants for each specific module
      */
-    public CommandSwerveDrivetrain(double OdometryUpdateFrequency) {
+    public DriveBaseS(double OdometryUpdateFrequency) {
         super(TunerConstants.DrivetrainConstants, OdometryUpdateFrequency, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight);
         if (Utils.isSimulation()) {
             startSimThread();
@@ -150,9 +152,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param pose Current pose of the robot
      * @param sample Sample along the path to follow
      */
-    public void followPath(Pose2d pose, SwerveSample sample) {
+    public void followPath(SwerveSample sample) {
         m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
-
+        var pose = state().Pose;
         var targetSpeeds = sample.getChassisSpeeds();
         targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
             pose.getX(), sample.x
@@ -170,7 +172,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 .withWheelForceFeedforwardsY(sample.moduleForcesY())
         );
     }
-
+    private final SwerveSample[] emptyTrajectory = new SwerveSample[0];
+    public SwerveSample[] currentTrajectory = emptyTrajectory;
+    public void logTrajectory(Trajectory<SwerveSample> traj, boolean isStarting) {
+        currentTrajectory = isStarting ? traj.samples().toArray(SwerveSample[]::new) : emptyTrajectory;
+    }
     @Override
     public void periodic() {
         /*
