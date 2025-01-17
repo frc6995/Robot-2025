@@ -50,7 +50,7 @@ public class Robot extends TimedRobot {
   public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
-  private final AlgaePivotS m_algaePivotS = new AlgaePivotS();
+  //private final AlgaePivotS m_algaePivotS = new AlgaePivotS();
 
   private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
@@ -76,12 +76,12 @@ public class Robot extends TimedRobot {
       )
     );
     RobotVisualizer.setupVisualizer();
-    RobotVisualizer.addAlgaeIntake(m_algaePivotS.ALGAE_PIVOT);
+    //RobotVisualizer.addAlgaeIntake(m_algaePivotS.ALGAE_PIVOT);
     SmartDashboard.putData("visualizer", VISUALIZER);
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
-    m_driverController.a().onTrue(m_algaePivotS.deploy());
-    m_driverController.b().onTrue(m_algaePivotS.retract());
+    // m_driverController.a().onTrue(m_algaePivotS.deploy());
+    // m_driverController.b().onTrue(m_algaePivotS.retract());
     // m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
     // m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
     // m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
