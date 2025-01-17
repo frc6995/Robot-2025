@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -36,6 +37,7 @@ import frc.robot.logging.PowerDistributionSim.Channel;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.DriveBaseS;
+import frc.robot.subsystems.AlgaePivotS;
 import frc.robot.util.AlertsUtil;
 
 /**
@@ -48,23 +50,19 @@ public class Robot extends TimedRobot {
   public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
+  private final AlgaePivotS m_algaePivotS = new AlgaePivotS();
+
   private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   
-  final Pose2d proc = new Pose2d(6.28, 0.48, Rotation2d.kCW_90deg);
-  public ArrayList<Translation2d> toProc = new ArrayList<>();
-  final Pose2d a_left = new Pose2d(5, 5.24, new Rotation2d(4*Math.PI/3));
-  public ArrayList<Translation2d> to_a_left = new ArrayList<>();
-  final Pose2d b_left = new Pose2d(5.86, 3.86, Rotation2d.kPi);
-  public ArrayList<Translation2d> to_b_left = new ArrayList<>();
-  final Pose2d proc_stat = new Pose2d(1.15, 7.13, new Rotation2d(2.23));
-  public ArrayList<Translation2d> to_proc_stat = new ArrayList<>();
 
+  private Mechanism2d VISUALIZER;
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   public Robot() {
+    VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
     Epilogue.bind(this);
     AlertsUtil.bind(new Alert("Driver Xbox Disconnect", AlertType.kError), ()->!m_driverController.isConnected());
     m_drivebaseS.setDefaultCommand(
@@ -77,13 +75,17 @@ public class Robot extends TimedRobot {
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
       )
     );
+    RobotVisualizer.setupVisualizer();
+    RobotVisualizer.addAlgaeIntake(m_algaePivotS.ALGAE_PIVOT);
+    SmartDashboard.putData("visualizer", VISUALIZER);
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
-
-    m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
-    m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
-    m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
-    m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
+    m_driverController.a().onTrue(m_algaePivotS.deploy());
+    m_driverController.b().onTrue(m_algaePivotS.retract());
+    // m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
+    // m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
+    // m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
+    // m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
 
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
@@ -118,11 +120,11 @@ public class Robot extends TimedRobot {
     // to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), b_left.getTranslation(), 3*0.02));
     // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc_stat.getTranslation(), 3*0.02));
 
-    // for (Integer i : Epilogue.talonFXLogger.talons.keySet()){
-    //   var object = Epilogue.talonFXLogger.talons.get(i);
-    //   BaseStatusSignal.refreshAll(object.supplyCurrent(), object.position());
-    //   PowerDistributionSim.instance.setChannelCurrent(TalonFXPDHChannel.channels.getOrDefault(i, Channel.c00), object.supplyCurrent().getValueAsDouble());
-    // }
+    for (Integer i : Epilogue.talonFXLogger.talons.keySet()){
+      var object = Epilogue.talonFXLogger.talons.get(i);
+      BaseStatusSignal.refreshAll(object.statorCurrent(), object.torqueCurrent(), object.position());
+      //PowerDistributionSim.instance.setChannelCurrent(TalonFXPDHChannel.channels.getOrDefault(i, Channel.c00), object.supplyCurrent().getValueAsDouble());
+    }
     pdh.update();
     CommandScheduler.getInstance().run();
   }
