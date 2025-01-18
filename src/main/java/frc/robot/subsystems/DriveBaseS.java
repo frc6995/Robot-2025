@@ -30,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
+
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.RepulsorFieldPlanner;
 
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -59,6 +61,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     private final PIDController m_pathXController = new PIDController(10, 0, 0);
     private final PIDController m_pathYController = new PIDController(10, 0, 0);
     private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
+
+    private final Vision m_vision = new Vision(this::addVisionMeasurement, ()->state().Pose);
 
     public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
     // For logging
@@ -136,6 +140,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
         }
     }
 
+    
     /**
      * Returns a command that applies the specified control request to this swerve drivetrain.
      *
@@ -179,6 +184,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     }
     @Override
     public void periodic() {
+        m_vision.update();
         /*
          * Periodically try to apply the operator perspective.
          * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
