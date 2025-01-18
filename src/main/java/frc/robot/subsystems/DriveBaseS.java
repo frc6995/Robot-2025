@@ -62,7 +62,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     private final PIDController m_pathYController = new PIDController(10, 0, 0);
     private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
 
-    private final Vision m_vision = new Vision((m)->{addVisionMeasurement(m.pose(),m.timestamp(), m.stddevs());}, ()->state().Pose);
+    private final Vision m_vision = new Vision(this::addVisionMeasurement, ()->state().Pose);
 
     public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
     // For logging

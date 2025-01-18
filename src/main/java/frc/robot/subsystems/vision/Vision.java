@@ -31,8 +31,9 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Robot;
+import frc.robot.util.TriConsumer;
 public class Vision {
-    public record VisionMeasurement (Pose2d pose, double timestamp, Vector<N3> stddevs){};
+    public interface VisionConsumer extends TriConsumer<Pose2d, Double, Vector<N3>>{}
     private class Camera {
         String name;
         PhotonCamera camera;
@@ -89,10 +90,10 @@ public class Vision {
     private List<Camera> m_cameras;
     private List<PhotonCamera> m_actualCameras;
     private List<PhotonCameraSim> m_simCameras;
-    private Consumer<VisionMeasurement> addVisionMeasurement;
+    private VisionConsumer addVisionMeasurement;
     private Supplier<Pose2d> getPose;
     public Vision(
-            Consumer<VisionMeasurement> addVisionMeasurement, Supplier<Pose2d> getPose) {
+        VisionConsumer addVisionMeasurement, Supplier<Pose2d> getPose) {
         if (RobotBase.isSimulation()) {
             visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
         }
@@ -132,9 +133,9 @@ public class Vision {
         }
         camera.setRawPose(robotPoseOpt.get().estimatedPose);
         var pose = robotPoseOpt.get();
-        this.addVisionMeasurement.accept(new VisionMeasurement(
+        this.addVisionMeasurement.accept(
             pose.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(pose.timestampSeconds),
-            VecBuilder.fill(0.05, 0.05, 0.05)));
+            VecBuilder.fill(0.05, 0.05, 0.05));
         
     }
 
