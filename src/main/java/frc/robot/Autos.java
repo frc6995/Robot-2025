@@ -7,6 +7,7 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
@@ -64,13 +65,16 @@ public class Autos {
         // When the routine begins, reset odometry and start the first trajectory 
         routine.active().onTrue(
             sequence(
+                runOnce(()->SmartDashboard.putNumber("running", 0)),
                 start.resetOdometry(),
-                start.cmd()
+                start.cmd(),
+                m_drivebase.stop().withTimeout(2.54),
+                (secondHalf.cmd())
             )
         );
 
-        start.done().onTrue(waitSeconds(2.54).andThen(new ScheduleCommand(secondHalf.cmd())));
-
+        // start.done().onTrue(waitSeconds(2.54).andThen(new ScheduleCommand(secondHalf.cmd())));
+        // start.done().onTrue(runOnce(()->SmartDashboard.putNumber("running", 1)));
         return routine;
     }
 

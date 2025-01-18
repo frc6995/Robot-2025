@@ -1,10 +1,12 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.subsystems.DrivetrainSysId.SysIdConstants;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -13,6 +15,7 @@ import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.PerUnit;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Per;
 public class DrivetrainSysId {
     private DriveBaseS m_drivetrain;
@@ -155,6 +158,7 @@ public class DrivetrainSysId {
     public Command sysIdSteerDynamic(SysIdRoutine.Direction direction) {
         return m_sysIdRoutineSteer.dynamic(direction);
     }
+
     public record SysIdConstants (
         Voltage ANGULAR_KS,
         Per<VoltageUnit, AngularVelocityUnit> ANGULAR_KV,
@@ -234,19 +238,19 @@ public class DrivetrainSysId {
      * 7. Copy below
      */
     //LINEAR_KS
-    Volts.of(0.1),
+    Volts.of(0.13342),
     //LINEAR_KV
-    VoltsPerRotationPerSecond.ofNative(0.12362),
+    VoltsPerRotationPerSecond.ofNative(0.12551*0.8/0.78),
     //LINEAR_KA
-    VoltsPerRotationPerSecondSquared.ofNative(0.002713),
+    VoltsPerRotationPerSecondSquared.ofNative(0.0054729),
     /*
      * 8. Load a test with SysIdSteer_State, TalonFX-11/Velocity, TalonFX-11/Position, TalonFX-11/MotorVoltage
      */
     //STEER_KS
-    Volts.of(0.1),
+    Volts.of(0.052455),
     //STEER_KV
-    VoltsPerRotationPerSecond.ofNative(2.66),
+    VoltsPerRotationPerSecond.ofNative(2.655),
     //STEER_KA
-    VoltsPerRotationPerSecondSquared.ofNative(0.0)
+    VoltsPerRotationPerSecondSquared.ofNative(0.11018)
     );
 }

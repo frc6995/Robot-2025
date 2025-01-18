@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
@@ -21,6 +22,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Alert;
@@ -94,28 +96,50 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("visualizer", VISUALIZER);
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
+
+    var slow = new SwerveRequest.RobotCentric()
+      .withDriveRequestType(DriveRequestType.Velocity)
+      .withVelocityX(0.2);
+    var mid = new SwerveRequest.RobotCentric()
+    .withDriveRequestType(DriveRequestType.Velocity)
+    .withVelocityX(0.4);
+    var fast = new SwerveRequest.RobotCentric()
+    .withDriveRequestType(DriveRequestType.Velocity)
+    .withVelocityX(0.6);
+    var xfast = new SwerveRequest.RobotCentric()
+    .withDriveRequestType(DriveRequestType.Velocity)
+    .withVelocityX(0.8);
+    m_driverController.a().whileTrue(m_drivebaseS.applyRequest(()->slow));
+    m_driverController.b().whileTrue(m_drivebaseS.applyRequest(()->mid));
+    m_driverController.x().whileTrue(m_drivebaseS.applyRequest(()->fast));
+    m_driverController.y().whileTrue(m_drivebaseS.applyRequest(()->xfast));
     // m_driverController.a().onTrue(m_algaePivotS.deploy());
     // m_driverController.b().onTrue(m_algaePivotS.retract());
     // m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
     // m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
     // m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
     // m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
-    boolean doingSysId = true;
+    CommandScheduler.getInstance().onCommandInterrupt(cmd -> {
+      if (cmd.getName().contains("Trajectory_")) {
+          SmartDashboard.putString("canceledAuto", cmd.getName());
+      }
+  });
+    boolean doingSysId = false;
     if (doingSysId) {
     SignalLogger.start();
-    m_keypad.key(CommandOperatorKeypad.Button.kHighLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kLowLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kForward));
     m_keypad.key( CommandOperatorKeypad.Button.kMidLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kReverse));
-    m_keypad.key( CommandOperatorKeypad.Button.kLowLeft).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kHighLeft).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kForward));
     m_keypad.key(CommandOperatorKeypad.Button.kLeftGrid).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kReverse));
     // Rotation
-    m_keypad.key(CommandOperatorKeypad.Button.kHighCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kLowCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kForward));
     m_keypad.key( CommandOperatorKeypad.Button.kMidCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kReverse));
-    m_keypad.key( CommandOperatorKeypad.Button.kLowCenter).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kHighCenter).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kForward));
     m_keypad.key(CommandOperatorKeypad.Button.kCenterGrid).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kReverse));
 
-    m_keypad.key(CommandOperatorKeypad.Button.kHighRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kLowRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kForward));
     m_keypad.key( CommandOperatorKeypad.Button.kMidRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kReverse));
-    m_keypad.key( CommandOperatorKeypad.Button.kLowRight).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kHighRight).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kForward));
     m_keypad.key(CommandOperatorKeypad.Button.kRightGrid).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kReverse));
     }
 
