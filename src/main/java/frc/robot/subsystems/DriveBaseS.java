@@ -10,6 +10,7 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
@@ -59,14 +60,14 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     private boolean m_hasAppliedOperatorPerspective = false;
 
     /** Swerve request to apply during field-centric path following */
-    private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds();
+    private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds().withDriveRequestType(DriveRequestType.Velocity);
     private final PIDController m_pathXController = new PIDController(10, 0, 0);
     private final PIDController m_pathYController = new PIDController(10, 0, 0);
     private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
 
     private final Vision m_vision = new Vision(this::addVisionMeasurement, ()->state().Pose);
 
-    public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
+    // public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
     // For logging
     public Module fl;
     public Module fr;
@@ -116,12 +117,12 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     public Pose2d targetPose() {
         return new Pose2d(m_pathXController.getSetpoint(), m_pathYController.getSetpoint(), Rotation2d.fromRadians(m_pathThetaController.getSetpoint()));
     }
-    public Command repulsorCommand(Supplier<Pose2d> target) {
-        return run(()->{
-            m_repulsor.setGoal(target.get().getTranslation());
-            followPath(m_repulsor.getCmd(state().Pose, state().Speeds, 4, true, target.get().getRotation()));
-        });
-    }
+    // public Command repulsorCommand(Supplier<Pose2d> target) {
+    //     return run(()->{
+    //         m_repulsor.setGoal(target.get().getTranslation());
+    //         followPath(m_repulsor.getCmd(state().Pose, state().Speeds, 4, true, target.get().getRotation()));
+    //     });
+    // }
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
      * <p>

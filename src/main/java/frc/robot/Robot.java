@@ -113,7 +113,6 @@ public class Robot extends TimedRobot {
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
-  private static Translation2d amp = new Translation2d(2, 8);
 
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
