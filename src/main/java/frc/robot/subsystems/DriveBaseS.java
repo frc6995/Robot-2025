@@ -2,34 +2,49 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
+
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.util.RepulsorFieldPlanner;
+
+import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.logging.Module;
+import frc.robot.logging.TalonFXPDHChannel;
+import static frc.robot.logging.PowerDistributionSim.Channel.*;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
  */
 @Logged
-public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsystem {
+public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
@@ -48,6 +63,31 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
 
     private final Vision m_vision = new Vision((m)->{addVisionMeasurement(m.pose(),m.timestamp(), m.stddevs());}, ()->state().Pose);
+
+    public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
+    // For logging
+    public Module fl;
+    public Module fr;
+    public Module bl;
+    public Module br;
+    private Module makeModule(int idx) {return new Module(this.getModule(idx).getSteerMotor(), this.getModule(idx).getDriveMotor());}
+    private void setupModuleLoggers() {
+        fl  = makeModule(0);
+        fr  = makeModule(1);
+        bl = makeModule(2);
+        br = makeModule(3);
+        if (RobotBase.isSimulation()) {
+            TalonFXPDHChannel.registerFD(c04_FL_Drive, fl.drive());
+            TalonFXPDHChannel.registerFD(c05_FL_Steer, fl.steer());
+            TalonFXPDHChannel.registerFD(c09_FR_Drive, fr.drive());
+            TalonFXPDHChannel.registerFD(c08_FR_Steer, fr.steer());
+            TalonFXPDHChannel.registerFD(c15_BL_Drive, bl.drive());
+            TalonFXPDHChannel.registerFD(c12_BR_Steer, bl.steer());
+            TalonFXPDHChannel.registerFD(c11_BR_Drive, br.drive());
+            TalonFXPDHChannel.registerFD(c10_BR_Steer, br.steer());
+        }
+    }
+
     /** Re-expose the state as a method of the subclass so Epilogue finds it. */
     public SwerveDriveState state() {
         return getState();
@@ -60,13 +100,26 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
      * the devices themselves. If they need the devices, they can access them
      * through getters in the classes.
      */
-    public CommandSwerveDrivetrain() {
-        super(TunerConstants.DrivetrainConstants, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight);
+    public DriveBaseS(
+        SwerveDrivetrainConstants drivetrainConstants,
+            SwerveModuleConstants<?, ?, ?>... modules
+    ) {
+        super(drivetrainConstants, modules);
+        setupModuleLoggers();
         if (Utils.isSimulation()) {
             startSimThread();
         }
     }
 
+    public Pose2d targetPose() {
+        return new Pose2d(m_pathXController.getSetpoint(), m_pathYController.getSetpoint(), Rotation2d.fromRadians(m_pathThetaController.getSetpoint()));
+    }
+    public Command repulsorCommand(Supplier<Pose2d> target) {
+        return run(()->{
+            m_repulsor.setGoal(target.get().getTranslation());
+            followPath(m_repulsor.getCmd(state().Pose, state().Speeds, 4, true, target.get().getRotation()));
+        });
+    }
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
      * <p>
@@ -80,7 +133,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
      *                                   CAN FD, and 100 Hz on CAN 2.0.
      * @param modules                    Constants for each specific module
      */
-    public CommandSwerveDrivetrain(double OdometryUpdateFrequency) {
+    public DriveBaseS(double OdometryUpdateFrequency) {
         super(TunerConstants.DrivetrainConstants, OdometryUpdateFrequency, TunerConstants.FrontLeft, TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight);
         if (Utils.isSimulation()) {
             startSimThread();
@@ -104,9 +157,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
      * @param pose Current pose of the robot
      * @param sample Sample along the path to follow
      */
-    public void followPath(Pose2d pose, SwerveSample sample) {
+    public void followPath(SwerveSample sample) {
         m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
-
+        var pose = state().Pose;
         var targetSpeeds = sample.getChassisSpeeds();
         targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(
             pose.getX(), sample.x
@@ -124,7 +177,11 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
                 .withWheelForceFeedforwardsY(sample.moduleForcesY())
         );
     }
-
+    private final SwerveSample[] emptyTrajectory = new SwerveSample[0];
+    public SwerveSample[] currentTrajectory = emptyTrajectory;
+    public void logTrajectory(Trajectory<SwerveSample> traj, boolean isStarting) {
+        currentTrajectory = isStarting ? traj.samples().toArray(SwerveSample[]::new) : emptyTrajectory;
+    }
     @Override
     public void periodic() {
         m_vision.update();
@@ -147,6 +204,9 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         }
     }
 
+    private void updateSimCurrents() {
+
+    }
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
 
