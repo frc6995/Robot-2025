@@ -35,6 +35,7 @@ public class Autos {
         m_autoChooser.addRoutine("testPathRoutine", this::testPathRoutine);
         m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
         m_autoChooser.addRoutine("JKL_SL3", this::JKL_SL3);
+        m_autoChooser.addRoutine("JKLA_SL3", this::JKLA_SL3);
         
     }
 
@@ -92,7 +93,28 @@ public class Autos {
             )
         );
         return routine;
+    }
 
+    public AutoRoutine JKLA_SL3() {
+        var routine = m_autoFactory.newRoutine("JKLA_SL3");
+        AutoTrajectory J_SL3 = routine.trajectory("SL3-J", 1);
+        AutoTrajectory SL3_K = routine.trajectory("SL3-K", 0);
+        AutoTrajectory K_SL3 = routine.trajectory("SL3-K", 1);
+        AutoTrajectory SL3_L = routine.trajectory("SL3-L", 0);
+        AutoTrajectory L_SL3 = routine.trajectory("SL3-L", 1);
+        AutoTrajectory A_SL3 = routine.trajectory("SL3-A", 0);
+        routine.active().onTrue(
+            sequence(
+                J_SL3.resetOdometry(),
+                J_SL3.cmd(),
+                SL3_K.cmd(),
+                K_SL3.cmd(),
+                SL3_L.cmd(),
+                L_SL3.cmd(),
+                A_SL3.cmd()
+            )
+        );
+        return routine;
     }
 
 }
