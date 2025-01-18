@@ -317,4 +317,9 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
         return m_sysIdRoutineToApply.dynamic(direction);
     }
+
+    public void resetOdometry(Pose2d pose) {
+        this.resetPose(pose);
+        m_vision.resetPose();
+    }
 }

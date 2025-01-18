@@ -24,7 +24,7 @@ public class Autos {
         m_autoChooser = new AutoChooser();
         m_autoFactory = new AutoFactory(
             ()->m_drivebase.state().Pose, 
-            m_drivebase::resetPose, 
+            m_drivebase::resetOdometry, 
             m_drivebase::followPath, 
             true, 
             m_drivebase, 
@@ -34,6 +34,7 @@ public class Autos {
         m_autoChooser.addCmd("testPath", this::testPath);
         m_autoChooser.addRoutine("testPathRoutine", this::testPathRoutine);
         m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
+        m_autoChooser.addRoutine("JKL_SL3", this::JKL_SL3);
         
     }
 
@@ -72,6 +73,26 @@ public class Autos {
         );
 
         return routine;
+    }
+
+    public AutoRoutine JKL_SL3() {
+        var routine = m_autoFactory.newRoutine("JKL_SL3");
+        AutoTrajectory J_SL3 = routine.trajectory("SL3-J", 1);
+        AutoTrajectory SL3_K = routine.trajectory("SL3-K", 0);
+        AutoTrajectory K_SL3 = routine.trajectory("SL3-K", 1);
+        AutoTrajectory SL3_L = routine.trajectory("SL3-L", 0);
+
+        routine.active().onTrue(
+            sequence(
+                J_SL3.resetOdometry(),
+                J_SL3.cmd(),
+                SL3_K.cmd(),
+                K_SL3.cmd(),
+                SL3_L.cmd()
+            )
+        );
+        return routine;
+
     }
 
 }

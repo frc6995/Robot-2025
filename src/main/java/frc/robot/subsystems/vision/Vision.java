@@ -30,6 +30,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Robot;
 import frc.robot.util.TriConsumer;
 public class Vision {
@@ -92,6 +93,10 @@ public class Vision {
     private List<PhotonCameraSim> m_simCameras;
     private VisionConsumer addVisionMeasurement;
     private Supplier<Pose2d> getPose;
+    private double lastPoseResetTimestamp = 0;
+    public void resetPose() {
+        lastPoseResetTimestamp = Timer.getFPGATimestamp();
+    }
     public Vision(
         VisionConsumer addVisionMeasurement, Supplier<Pose2d> getPose) {
         if (RobotBase.isSimulation()) {
@@ -133,6 +138,9 @@ public class Vision {
         }
         camera.setRawPose(robotPoseOpt.get().estimatedPose);
         var pose = robotPoseOpt.get();
+        if (pose.timestampSeconds < lastPoseResetTimestamp) {
+            return;
+        }
         this.addVisionMeasurement.accept(
             pose.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(pose.timestampSeconds),
             VecBuilder.fill(0.05, 0.05, 0.05));
