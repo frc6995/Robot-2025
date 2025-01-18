@@ -65,11 +65,11 @@ public class Autos {
         routine.active().onTrue(
             sequence(
                 start.resetOdometry(),
-                start.cmd()
+                start.cmd(),
+                m_drivebase.stop().withTimeout(2.54),
+                secondHalf.cmd()
             )
         );
-
-        start.done().onTrue(waitSeconds(2.54).andThen(new ScheduleCommand(secondHalf.cmd())));
 
         return routine;
     }

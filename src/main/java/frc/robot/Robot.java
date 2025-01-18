@@ -7,6 +7,7 @@ package frc.robot;
 import java.util.ArrayList;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
@@ -30,6 +31,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.generated.TunerConstants;
 import frc.robot.logging.PDData;
 import frc.robot.logging.PowerDistributionSim;
@@ -37,6 +40,7 @@ import frc.robot.logging.PowerDistributionSim.Channel;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.DriveBaseS;
+import frc.robot.subsystems.DrivetrainSysId;
 import frc.robot.subsystems.AlgaePivotS;
 import frc.robot.util.AlertsUtil;
 
@@ -54,7 +58,8 @@ public class Robot extends TimedRobot {
 
   private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
-  
+  private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
+    private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
 
   private Mechanism2d VISUALIZER;
   /**
@@ -87,6 +92,24 @@ public class Robot extends TimedRobot {
     // m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
     // m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
 
+    boolean doingSysId = false;
+    if (doingSysId) {
+    SignalLogger.start();
+    m_keypad.key(CommandOperatorKeypad.Button.kLowLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kMidLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kReverse));
+    m_keypad.key( CommandOperatorKeypad.Button.kHighLeft).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kLeftGrid).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kReverse));
+    // Rotation
+    m_keypad.key(CommandOperatorKeypad.Button.kLowCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kMidCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kReverse));
+    m_keypad.key( CommandOperatorKeypad.Button.kHighCenter).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kCenterGrid).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kReverse));
+
+    m_keypad.key(CommandOperatorKeypad.Button.kLowRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kMidRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kReverse));
+    m_keypad.key( CommandOperatorKeypad.Button.kHighRight).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kRightGrid).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kReverse));
+    }
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
