@@ -41,7 +41,7 @@ import frc.robot.logging.PowerDistributionSim.Channel;
 import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.DrivetrainSysId;
-import frc.robot.subsystems.AlgaePivotS;
+import frc.robot.subsystems.algae.AlgaePivotS;
 import frc.robot.util.AlertsUtil;
 
 /**
