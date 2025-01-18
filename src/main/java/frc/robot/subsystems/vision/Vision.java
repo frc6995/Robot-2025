@@ -14,13 +14,11 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+import com.ctre.phoenix6.Utils;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.epilogue.CustomLoggerFor;
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.epilogue.logging.ClassSpecificLogger;
-import edu.wpi.first.epilogue.logging.DataLogger;
-import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -78,14 +76,14 @@ public class Vision {
 
 
         public static final Map<String, Transform3d> CAMERAS = Map.of(
-            "Arducam_OV2311_USB_Camera", new Transform3d(
-                Units.inchesToMeters(-4.75),
+            "OV9281-FL", new Transform3d(
+                Units.inchesToMeters(4.875),
                 Units.inchesToMeters(0),
-                Units.inchesToMeters(25.25),
-                new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-35), Units.degreesToRadians(180))
+                Units.inchesToMeters(7.25)-0.02,
+                new Rotation3d(Units.degreesToRadians(180), Units.degreesToRadians(-34), Units.degreesToRadians(0))
             )
         );
-        public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
+        public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
     }
     VisionSystemSim visionSim = new VisionSystemSim("main");
     private List<Camera> m_cameras;
@@ -96,7 +94,7 @@ public class Vision {
     public Vision(
             Consumer<VisionMeasurement> addVisionMeasurement, Supplier<Pose2d> getPose) {
         if (RobotBase.isSimulation()) {
-            visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo));
+            visionSim.addAprilTags(AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
         }
 
         this.addVisionMeasurement = addVisionMeasurement;
@@ -133,6 +131,10 @@ public class Vision {
             return;
         }
         camera.setRawPose(robotPoseOpt.get().estimatedPose);
+        var pose = robotPoseOpt.get();
+        this.addVisionMeasurement.accept(new VisionMeasurement(
+            pose.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(pose.timestampSeconds),
+            VecBuilder.fill(0.05, 0.05, 0.05)));
         
     }
 
