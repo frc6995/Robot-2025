@@ -84,6 +84,12 @@ public class Vision {
                 Units.inchesToMeters(0),
                 Units.inchesToMeters(7.25)-0.02,
                 new Rotation3d(Units.degreesToRadians(180), Units.degreesToRadians(-34), Units.degreesToRadians(0))
+            ),
+            "OV9281-FR", new Transform3d(
+                Units.inchesToMeters(-(13-3.375)),
+                Units.inchesToMeters(-(13-2.625)),
+                Units.inchesToMeters(9.25),
+                new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-10), Units.degreesToRadians(180))
             )
         );
         public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
@@ -166,7 +172,7 @@ public class Vision {
                 }
                 if (ignore) {return;}
                 double distance = avgDistance / pose.targetsUsed.size();
-                SmartDashboard.putNumber(camera.name + "/distance", distance);
+                // SmartDashboard.putNumber(camera.name + "/distance", distance);
                 if (closeEnoughTgts ==0) {
                     return;
                 }
