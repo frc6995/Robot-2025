@@ -60,9 +60,11 @@ public class ElevatorS extends SubsystemBase {
   public class ElevatorConstants {
     public static final int LEADER_ID = 40;
     public static final int FOLLOWER_ID = 41;
-    public static final double MOTOR_ROTATIONS_PER_METER = 60;
-    public static final Per<AngleUnit, DistanceUnit> MOTOR_ROTATIONS_PER_METER_UNIT = Rotations.per(Meter)
-        .ofNative(MOTOR_ROTATIONS_PER_METER);
+    // Approved by CAD
+    public static final Per<AngleUnit, DistanceUnit> MOTOR_ROTATIONS_PER_METER_UNIT = 
+      Rotations.of(1).div(Inches.of(1.32278 * 2));
+    public static final double MOTOR_ROTATIONS_PER_METER = MOTOR_ROTATIONS_PER_METER_UNIT.in(Rotations.per(Meter));
+
     public static final Distance MIN_LENGTH = Inches.of(27.0);
     public static final Distance MAX_LENGTH = Inches.of(67.0);
 
@@ -100,8 +102,9 @@ public class ElevatorS extends SubsystemBase {
     public static final PerUnit<VoltageUnit, AngularAccelerationUnit> VoltsPerRotationPerSecondSquared = Volts
         .per(RotationsPerSecond.per(Second));
     public static final Per<VoltageUnit, AngularVelocityUnit> K_V = VoltsPerRotationPerSecond.ofNative(12.0/100.0);
-    public static final Per<VoltageUnit, AngularAccelerationUnit> K_A = VoltsPerRotationPerSecondSquared
-        .ofNative(0.12185);
+    
+    public static final Per<VoltageUnit, AngularAccelerationUnit> K_A = VoltsPerRotationPerSecondSquared.ofNative(
+      0.06 / MOTOR_ROTATIONS_PER_METER);
 
     public static final LinearSystem<N2, N1, N2> PLANT = LinearSystemId
         .identifyPositionSystem(
@@ -184,10 +187,10 @@ public class ElevatorS extends SubsystemBase {
   }
   VoltageOut voltage = new VoltageOut(0);
   public Command up() {
-    return this.run(()->leader.setControl(voltage.withOutput(1)));
+    return this.run(()->leader.setControl(voltage.withOutput(10)));
   }
   public Command down() {
-    return this.run(()->leader.setControl(voltage.withOutput(-1)));
+    return this.run(()->leader.setControl(voltage.withOutput(-10)));
   }
   public Command stop() {
     return this.run(()->leader.setControl(voltage.withOutput(0)));

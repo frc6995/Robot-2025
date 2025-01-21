@@ -29,6 +29,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -84,7 +86,8 @@ public class Robot extends TimedRobot {
       )
     );
     RobotVisualizer.setupVisualizer();
-    var pivot = new MechanismLigament2d("arm-pivot", 0, 90);
+    var pivot = new MechanismLigament2d("arm-pivot", 0.0001, 90, 0, new Color8Bit(Color.kBlack));
+    
     pivot.append(m_elevatorS.ELEVATOR);
     RobotVisualizer.addArmPivot(pivot);
     //RobotVisualizer.addAlgaeIntake(m_algaePivotS.ALGAE_PIVOT);

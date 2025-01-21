@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 public class RobotVisualizer {
     private static final double BASE_X = Units.feetToMeters(3);
     private static final Color8Bit ORANGE = new Color8Bit(235, 137, 52);
-    public static final Mechanism2d MECH_VISUALIZER = new Mechanism2d(BASE_X * 2, Units.feetToMeters(5));
+    public static final Mechanism2d MECH_VISUALIZER = new Mechanism2d(BASE_X * 2, Units.feetToMeters(7));
     private static final MechanismRoot2d MECH_VISUALIZER_ROOT = MECH_VISUALIZER.getRoot("root", BASE_X, Units.inchesToMeters(7.5));
     private static final MechanismRoot2d ARM_PIVOT_BASE = MECH_VISUALIZER.getRoot("arm-base", BASE_X - Units.inchesToMeters(11.5), Units.inchesToMeters(9.5));
     private static final MechanismRoot2d INTAKE_PIVOT_BASE = MECH_VISUALIZER.getRoot("algae-intake-pivot-base", BASE_X + Units.inchesToMeters(11.5), Units.inchesToMeters(9.5));
