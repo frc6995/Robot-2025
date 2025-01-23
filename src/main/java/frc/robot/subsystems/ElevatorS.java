@@ -19,6 +19,9 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -67,21 +70,28 @@ public class ElevatorS extends SubsystemBase {
 
     public static final Distance MIN_LENGTH = Inches.of(27.0);
     public static final Distance MAX_LENGTH = Inches.of(67.0);
-
+    public static final double MIN_LENGTH_ROTATIONS = MIN_LENGTH.in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
+    public static final double MAX_LENGTH_ROTATIONS = MAX_LENGTH.in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
     private static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.MotorOutput
           .withNeutralMode(NeutralModeValue.Coast)
           .withInverted(InvertedValue.CounterClockwise_Positive);
       config.SoftwareLimitSwitch
           .withForwardSoftLimitEnable(true)
-          .withForwardSoftLimitThreshold(MAX_LENGTH.in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER)
+          .withForwardSoftLimitThreshold(MAX_LENGTH_ROTATIONS)
           .withReverseSoftLimitEnable(true)
 
-          .withReverseSoftLimitThreshold(MIN_LENGTH.in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER);
+          .withReverseSoftLimitThreshold(MIN_LENGTH_ROTATIONS);
       config.CurrentLimits
           .withSupplyCurrentLimitEnable(true)
           .withSupplyCurrentLimit(Amps.of(50));
-
+      config.Slot0
+        .withKS(0).withKV(K_V.in(VoltsPerRotationPerSecond)).withKA(K_A.in(VoltsPerRotationPerSecondSquared))
+        .withKP(1).withKD(0);
+      config.MotionMagic
+        .withMotionMagicAcceleration(MOTOR_ROTATIONS_PER_METER * 1)
+        .withMotionMagicCruiseVelocity(MOTOR_ROTATIONS_PER_METER * 4)
+      ;
       return config;
     }
 
@@ -116,6 +126,8 @@ public class ElevatorS extends SubsystemBase {
 
   private TalonFX leader = new TalonFX(ElevatorConstants.LEADER_ID);
   private TalonFX follower = new TalonFX(ElevatorConstants.FOLLOWER_ID);
+  private PositionVoltage positionReq = new PositionVoltage(ElevatorConstants.MIN_LENGTH_ROTATIONS);
+  private MotionMagicVoltage profileReq = new MotionMagicVoltage(ElevatorConstants.MIN_LENGTH_ROTATIONS);
   private StatusSignal<Angle> positionSignal = leader.getPosition();
   private TiltedElevatorSim sim = new TiltedElevatorSim(
       ElevatorConstants.PLANT, DCMotor.getKrakenX60(2),
@@ -194,5 +206,15 @@ public class ElevatorS extends SubsystemBase {
   }
   public Command stop() {
     return this.run(()->leader.setControl(voltage.withOutput(0)));
+  }
+  private void goToRotations(double motorRotations) {
+    leader.setControl(profileReq
+      .withPosition(motorRotations)
+      .withFeedForward(ElevatorConstants.K_G * Math.sin(elevatorAngle))
+    );
+  }
+  public Command mid() {
+    return this.run(()-> goToRotations(
+      (ElevatorConstants.MAX_LENGTH_ROTATIONS + ElevatorConstants.MIN_LENGTH_ROTATIONS) / 2));
   }
 }
