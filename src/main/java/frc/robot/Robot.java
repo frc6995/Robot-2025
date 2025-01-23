@@ -26,8 +26,11 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -41,6 +44,7 @@ import frc.robot.logging.PowerDistributionSim.Channel;
 import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.DrivetrainSysId;
+import frc.robot.subsystems.ElevatorS;
 import frc.robot.subsystems.AlgaePivotS;
 import frc.robot.util.AlertsUtil;
 
@@ -55,6 +59,7 @@ public class Robot extends TimedRobot {
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   //private final AlgaePivotS m_algaePivotS = new AlgaePivotS();
+  private final ElevatorS m_elevatorS = new ElevatorS();
 
   private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
@@ -81,6 +86,10 @@ public class Robot extends TimedRobot {
       )
     );
     RobotVisualizer.setupVisualizer();
+    var pivot = new MechanismLigament2d("arm-pivot", 0.0001, 90, 0, new Color8Bit(Color.kBlack));
+    
+    pivot.append(m_elevatorS.ELEVATOR);
+    RobotVisualizer.addArmPivot(pivot);
     //RobotVisualizer.addAlgaeIntake(m_algaePivotS.ALGAE_PIVOT);
     SmartDashboard.putData("visualizer", VISUALIZER);
 
@@ -91,7 +100,8 @@ public class Robot extends TimedRobot {
     // m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
     // m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
     // m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
-
+    m_driverController.a().whileTrue(m_elevatorS.up());
+    m_driverController.b().whileTrue(m_elevatorS.down());
     boolean doingSysId = false;
     if (doingSysId) {
     SignalLogger.start();
