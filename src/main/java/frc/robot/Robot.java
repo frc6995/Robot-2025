@@ -7,6 +7,7 @@ package frc.robot;
 import java.util.ArrayList;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
@@ -24,11 +25,17 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.generated.TunerConstants;
 import frc.robot.logging.PDData;
 import frc.robot.logging.PowerDistributionSim;
@@ -36,7 +43,11 @@ import frc.robot.logging.PowerDistributionSim.Channel;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.DriveBaseS;
+
 import frc.robot.subsystems.MainPivotS;
+import frc.robot.subsystems.DrivetrainSysId;
+import frc.robot.subsystems.ElevatorS;
+import frc.robot.subsystems.AlgaePivotS;
 import frc.robot.util.AlertsUtil;
 
 /**
@@ -49,23 +60,23 @@ public class Robot extends TimedRobot {
   public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
+  //private final AlgaePivotS m_algaePivotS = new AlgaePivotS();
+  private final ElevatorS m_elevatorS = new ElevatorS();
+
   private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   private final MainPivotS m_mainPivotS = new MainPivotS(); 
-  final Pose2d proc = new Pose2d(6.28, 0.48, Rotation2d.kCW_90deg);
-  public ArrayList<Translation2d> toProc = new ArrayList<>();
-  final Pose2d a_left = new Pose2d(5, 5.24, new Rotation2d(4*Math.PI/3));
-  public ArrayList<Translation2d> to_a_left = new ArrayList<>();
-  final Pose2d b_left = new Pose2d(5.86, 3.86, Rotation2d.kPi);
-  public ArrayList<Translation2d> to_b_left = new ArrayList<>();
-  final Pose2d proc_stat = new Pose2d(1.15, 7.13, new Rotation2d(2.23));
-  public ArrayList<Translation2d> to_proc_stat = new ArrayList<>();
 
+  private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
+    private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
+
+  private Mechanism2d VISUALIZER;
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   public Robot() {
+    VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
     Epilogue.bind(this);
     AlertsUtil.bind(new Alert("Driver Xbox Disconnect", AlertType.kError), ()->!m_driverController.isConnected());
     m_drivebaseS.setDefaultCommand(
@@ -78,12 +89,38 @@ public class Robot extends TimedRobot {
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
       )
     );
+    RobotVisualizer.setupVisualizer();
+    var pivot = new MechanismLigament2d("arm-pivot", 0.0001, 90, 0, new Color8Bit(Color.kBlack));
+    
+    pivot.append(m_elevatorS.ELEVATOR);
+    RobotVisualizer.addArmPivot(pivot);
+    //RobotVisualizer.addAlgaeIntake(m_algaePivotS.ALGAE_PIVOT);
+    SmartDashboard.putData("visualizer", VISUALIZER);
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    m_driverController.a().whileTrue(m_mainPivotS.SCORE_ANGLE());
-    m_driverController.b().whileTrue(m_mainPivotS.HANDOFF_ANGLE());
+    m_driverController.x().whileTrue(m_mainPivotS.SCORE_ANGLE());
+    m_driverController.y().whileTrue(m_mainPivotS.HANDOFF_ANGLE());
+    m_driverController.a().whileTrue(m_elevatorS.up());
+    m_driverController.b().whileTrue(m_elevatorS.down());
+    boolean doingSysId = false;
+    if (doingSysId) {
+    SignalLogger.start();
+    m_keypad.key(CommandOperatorKeypad.Button.kLowLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kMidLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kReverse));
+    m_keypad.key( CommandOperatorKeypad.Button.kHighLeft).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kLeftGrid).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kReverse));
+    // Rotation
+    m_keypad.key(CommandOperatorKeypad.Button.kLowCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kMidCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kReverse));
+    m_keypad.key( CommandOperatorKeypad.Button.kHighCenter).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kCenterGrid).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kReverse));
 
+    m_keypad.key(CommandOperatorKeypad.Button.kLowRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kForward));
+    m_keypad.key( CommandOperatorKeypad.Button.kMidRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kReverse));
+    m_keypad.key( CommandOperatorKeypad.Button.kHighRight).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kForward));
+    m_keypad.key(CommandOperatorKeypad.Button.kRightGrid).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kReverse));
+    }
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
@@ -117,11 +154,11 @@ public class Robot extends TimedRobot {
     // to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), b_left.getTranslation(), 3*0.02));
     // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc_stat.getTranslation(), 3*0.02));
 
-    // for (Integer i : Epilogue.talonFXLogger.talons.keySet()){
-    //   var object = Epilogue.talonFXLogger.talons.get(i);
-    //   BaseStatusSignal.refreshAll(object.supplyCurrent(), object.position());
-    //   PowerDistributionSim.instance.setChannelCurrent(TalonFXPDHChannel.channels.getOrDefault(i, Channel.c00), object.supplyCurrent().getValueAsDouble());
-    // }
+    for (Integer i : Epilogue.talonFXLogger.talons.keySet()){
+      var object = Epilogue.talonFXLogger.talons.get(i);
+      BaseStatusSignal.refreshAll(object.statorCurrent(), object.torqueCurrent(), object.position());
+      //PowerDistributionSim.instance.setChannelCurrent(TalonFXPDHChannel.channels.getOrDefault(i, Channel.c00), object.supplyCurrent().getValueAsDouble());
+    }
     pdh.update();
     CommandScheduler.getInstance().run();
   }

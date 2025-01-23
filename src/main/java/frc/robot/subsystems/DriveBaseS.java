@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
 
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
@@ -19,6 +20,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -30,6 +32,8 @@ import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants;
+
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.RepulsorFieldPlanner;
 
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -59,6 +63,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     private final PIDController m_pathXController = new PIDController(10, 0, 0);
     private final PIDController m_pathYController = new PIDController(10, 0, 0);
     private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
+
+    private final Vision m_vision = new Vision(this::addVisionMeasurement, ()->state().Pose);
 
     public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
     // For logging
@@ -138,6 +144,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
         }
     }
 
+    
     /**
      * Returns a command that applies the specified control request to this swerve drivetrain.
      *
@@ -174,6 +181,10 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                 .withWheelForceFeedforwardsY(sample.moduleForcesY())
         );
     }
+    SwerveRequest.ApplyRobotSpeeds idle = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds());
+    public Command stop () {
+        return applyRequest(()->idle);
+    }
     private final SwerveSample[] emptyTrajectory = new SwerveSample[0];
     public SwerveSample[] currentTrajectory = emptyTrajectory;
     public void logTrajectory(Trajectory<SwerveSample> traj, boolean isStarting) {
@@ -181,6 +192,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     }
     @Override
     public void periodic() {
+        m_vision.update();
         /*
          * Periodically try to apply the operator perspective.
          * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
