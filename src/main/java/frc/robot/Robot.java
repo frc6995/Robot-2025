@@ -36,6 +36,7 @@ import frc.robot.logging.PowerDistributionSim.Channel;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.DriveBaseS;
+import frc.robot.subsystems.MainPivotS;
 import frc.robot.util.AlertsUtil;
 
 /**
@@ -50,7 +51,7 @@ public class Robot extends TimedRobot {
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
-  
+  private final MainPivotS m_mainPivotS = new MainPivotS(); 
   final Pose2d proc = new Pose2d(6.28, 0.48, Rotation2d.kCW_90deg);
   public ArrayList<Translation2d> toProc = new ArrayList<>();
   final Pose2d a_left = new Pose2d(5, 5.24, new Rotation2d(4*Math.PI/3));
@@ -80,10 +81,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    m_driverController.a().whileTrue(m_drivebaseS.repulsorCommand(()->proc));
-    m_driverController.b().whileTrue(m_drivebaseS.repulsorCommand(()->a_left));
-    m_driverController.x().whileTrue(m_drivebaseS.repulsorCommand(()->b_left));
-    m_driverController.y().whileTrue(m_drivebaseS.repulsorCommand(()->proc_stat));
+    m_driverController.a().whileTrue(m_mainPivotS.SCORE_ANGLE());
+    m_driverController.b().whileTrue(m_mainPivotS.HANDOFF_ANGLE());
 
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
