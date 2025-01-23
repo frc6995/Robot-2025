@@ -44,6 +44,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.util.NomadMathUtil;
 import frc.robot.Robot;
 
 public class MainPivotS extends SubsystemBase {
@@ -52,6 +53,8 @@ public class MainPivotS extends SubsystemBase {
 
     public static final double CCW_LIMIT = Units.degreesToRadians(100);
     public static final double CW_LIMIT = Units.degreesToRadians(40);
+
+    //Pose
     public static final double CORALLVL1IN = Units.degreesToRadians(0);
     public static final double CORALLVL2IN = Units.degreesToRadians(0);
     public static final double CORALLVL3IN = Units.degreesToRadians(0);
@@ -62,34 +65,116 @@ public class MainPivotS extends SubsystemBase {
     public static final double ALGAELVL2IN = Units.degreesToRadians(0);
     public static final double ALGAEOUT = Units.degreesToRadians(0);
     public static final double SCORE_ANGLE = 2* Math.PI / 3.0 - Units.degreesToRadians(5);
-    public static final int CAN_ID = 42;
     public static final double HANDOFF_ANGLE = MainPivotS.MainPivotConstants.CCW_LIMIT;
 
+    //CAN IDs
+    public static final int LEADER_CAN_ID = 0;
+    public static final int FOLLOWER_CAN_ID = 0;
+    public static final int OPPOSING1_CAN_ID = 0;
+    public static final int OPPOSING2_CAN_ID = 0;
+
+    public static final int CURRENT_LIMIT = 100;
+   
+    public static final double OUT_VOLTAGE = 0;
+    public static final double IN_VOLTAGE = 0;
+
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 70;
+
+    public static final double K_G = 0;
+    public static final double K_S = 0;
+    public static final double K_V = 0;
+    public static final double K_A = 0;
   }
 
   public final MechanismLigament2d MAIN_PIVOT = new MechanismLigament2d(
     "main_pivot", 8, 0, 4, new Color8Bit(235, 137, 52));
+    private TalonFX m_motor = new TalonFX(MainPivotConstants.LEADER_CAN_ID);
+    private MotionMagicVoltage m_profileReq = new MotionMagicVoltage(0);
+    private VoltageOut m_voltageReq = new VoltageOut(0);
+    private StatusSignal<Angle> m_angleSig = m_motor.getPosition();
+    private double m_setpointRotations;
+    public final Trigger onTarget = new Trigger(() -> Math.abs(error()) < Units.degreesToRotations(2));
   /** Creates a new MainPivotS. */
   public MainPivotS() {}
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-
+    MAIN_PIVOT.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
   }
 
   public void simulationPeriodic() {
-
+    for (int i = 0; i < 2; i++) {
+      var simState = m_motor.getSimState();
+      simState.setSupplyVoltage(12);
+      // simState.getMotorVoltage is counterclockwise negative
+      double volts = simState.getMotorVoltage();
+      log("simVolts", volts);
+      log("effectiveSimVolts", NomadMathUtil.subtractkS(volts, MainPivotConstants.K_S));
+      m_pivotSim.setInput(NomadMathUtil.subtractkS(volts, MainPivotConstants.K_S) - MainPivotConstants.K_G * Math.cos(getAngleRadians()));
+      m_pivotSim.update(0.01);
+      var rotorPos = m_pivotSim.getAngleRads() * MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION / (2 * Math.PI);
+      var rotorVel = m_pivotSim.getVelocityRadPerSec() * MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION / (2 * Math.PI);
+      log("simPos", rotorPos);
+      log("simVel", rotorVel);
+      simState.setRawRotorPosition(rotorPos);
+      simState.setRotorVelocity(rotorVel);
+    }
   }
 
   public Command goTo(double armRotations) {
-    return none();
+    return run(() -> setAngleRadians(angleSupplier.getAsDouble()));
   }
+
+  public Command CORALLVL1INAngle() {
+    return goTo(()->MainPivotConstants.CORALLVL1IN);
+  }
+
+  public Command CORALLVL2INAngle() {
+    return goTo(()->MainPivotConstants.CORALLVL2IN);
+  }
+
+  public Command CORALLVL3INAngle() {
+    return goTo(()->MainPivotConstants.CORALLVL3IN);
+  }
+
+  public Command CORALLVL4INAngle() {
+    return goTo(()->MainPivotConstants.CORALLVL4IN);
+  }
+
+  public Command CORALSTATIONIN1() {
+    return goTo(()->MainPivotConstants.CORALSTATIONIN1);
+  }
+
+  public Command CORALSTATIONIN2() {
+    return goTo(()->MainPivotConstants.CORALSTATIONIN2);
+  }
+
+  public Command ALGAELVL1IN() {
+    return goTo(()->MainPivotConstants.ALGAELVL1IN);
+  }
+
+  public Command ALGAELVL2IN() {
+    return goTo(()->MainPivotConstants.ALGAELVL2IN);
+  }
+
+  public Command ALGAEOUT() {
+    return goTo(()->MainPivotConstants.ALGAEOUT);
+  }
+
+  public Command SCORE_ANGLE() {
+    return goTo(()->MainPivotConstants.SCORE_ANGLE);
+  }
+
+  public Command HANDOFF_ANGLE() {
+    return goTo(()->MainPivotConstants.HANDOFF_ANGLE);
+  }
+
 
   public Command hold() {
-    return none();
+    return sequence(
+        runOnce(() -> setAngleRadians(getAngleRadians())),
+        Commands.idle());
   }
-
 
 }
