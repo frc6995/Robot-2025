@@ -47,12 +47,20 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.util.NomadMathUtil;
 import frc.robot.Robot;
 
+
 public class MainPivotS extends SubsystemBase {
   public class MainPivotConstants {
+
     //[Things related to hardware] such as motor hard limits, can ids, pid constants, motor rotations per arm rotation.
 
     public static final double CCW_LIMIT = Units.degreesToRadians(100);
     public static final double CW_LIMIT = Units.degreesToRadians(40);
+
+    public static final double K_V = 0;
+    public static final double K_A = 0;
+    public static final double CG_DIST = Units.inchesToMeters(6);
+    public static final LinearSystem<N2, N1, N2> PLANT = LinearSystemId
+        .identifyPositionSystem(Units.radiansToRotations(K_V), Units.radiansToRotations(K_A));
 
     //Pose
     public static final double CORALLVL1IN = Units.degreesToRadians(0);
@@ -82,9 +90,18 @@ public class MainPivotS extends SubsystemBase {
 
     public static final double K_G = 0;
     public static final double K_S = 0;
-    public static final double K_V = 0;
-    public static final double K_A = 0;
   }
+
+  private final SingleJointedArmSim m_pivotSim = new SingleJointedArmSim(
+      MainPivotConstants.PLANT,
+      DCMotor.getKrakenX60(1),
+      MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION,
+      MainPivotConstants.CG_DIST,
+      MainPivotConstants.CW_LIMIT,
+      MainPivotConstants.CCW_LIMIT,
+      false,
+      MainPivotConstants.CW_LIMIT);
+
 
   public final MechanismLigament2d MAIN_PIVOT = new MechanismLigament2d(
     "main_pivot", 8, 0, 4, new Color8Bit(235, 137, 52));
@@ -93,7 +110,6 @@ public class MainPivotS extends SubsystemBase {
     private VoltageOut m_voltageReq = new VoltageOut(0);
     private StatusSignal<Angle> m_angleSig = m_motor.getPosition();
     private double m_setpointRotations;
-    public final Trigger onTarget = new Trigger(() -> Math.abs(error()) < Units.degreesToRotations(2));
   /** Creates a new MainPivotS. */
   public MainPivotS() {}
 
@@ -109,20 +125,36 @@ public class MainPivotS extends SubsystemBase {
       simState.setSupplyVoltage(12);
       // simState.getMotorVoltage is counterclockwise negative
       double volts = simState.getMotorVoltage();
-      log("simVolts", volts);
-      log("effectiveSimVolts", NomadMathUtil.subtractkS(volts, MainPivotConstants.K_S));
+      
       m_pivotSim.setInput(NomadMathUtil.subtractkS(volts, MainPivotConstants.K_S) - MainPivotConstants.K_G * Math.cos(getAngleRadians()));
       m_pivotSim.update(0.01);
       var rotorPos = m_pivotSim.getAngleRads() * MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION / (2 * Math.PI);
       var rotorVel = m_pivotSim.getVelocityRadPerSec() * MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION / (2 * Math.PI);
-      log("simPos", rotorPos);
-      log("simVel", rotorVel);
+      
       simState.setRawRotorPosition(rotorPos);
       simState.setRotorVelocity(rotorVel);
     }
   }
 
-  public Command goTo(double armRotations) {
+  public double getAngleRotations() {
+    return m_angleSig.getValueAsDouble();
+  }
+
+  public double getAngleRadians() {
+    return Units.rotationsToRadians(m_angleSig.getValueAsDouble());
+  }
+
+  public void setAngleRadians(double angle) {
+    m_setpointRotations = Units.radiansToRotations(angle);
+    
+    if(m_setpointRotations < Units.degreesToRotations(2) && getAngleRotations() < Units.degreesToRotations(10)){
+      m_motor.setControl(m_voltageReq.withOutput(0));
+    } else {
+      m_motor.setControl(m_profileReq.withPosition(m_setpointRotations));
+    }
+  }
+
+  public Command goTo(DoubleSupplier angleSupplier) {
     return run(() -> setAngleRadians(angleSupplier.getAsDouble()));
   }
 
