@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+
 import java.util.ArrayList;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -45,6 +48,7 @@ import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.DriveBaseS;
 
 import frc.robot.subsystems.MainPivotS;
+import frc.robot.subsystems.MainPivotS.MainPivotConstants;
 import frc.robot.subsystems.DrivetrainSysId;
 import frc.robot.subsystems.ElevatorS;
 import frc.robot.subsystems.AlgaePivotS;
@@ -60,12 +64,10 @@ public class Robot extends TimedRobot {
   public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
-  //private final AlgaePivotS m_algaePivotS = new AlgaePivotS();
-  private final ElevatorS m_elevatorS = new ElevatorS();
+  private final Arm m_arm = new Arm();
 
-  private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
-  private final MainPivotS m_mainPivotS = new MainPivotS(); 
 
   private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
     private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
@@ -89,20 +91,19 @@ public class Robot extends TimedRobot {
               .withRotationalRate(-m_driverController.getRightX() * 2 * Math.PI) // Drive counterclockwise with negative X (left)
       )
     );
-    RobotVisualizer.setupVisualizer();
-    var pivot = new MechanismLigament2d("arm-pivot", 0.0001, 90, 0, new Color8Bit(Color.kBlack));
+
     
-    pivot.append(m_elevatorS.ELEVATOR);
-    RobotVisualizer.addArmPivot(pivot);
+
+    RobotVisualizer.setupVisualizer();
+  
+    RobotVisualizer.addArmPivot(m_arm.ARM);
     //RobotVisualizer.addAlgaeIntake(m_algaePivotS.ALGAE_PIVOT);
     SmartDashboard.putData("visualizer", VISUALIZER);
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    m_driverController.x().whileTrue(m_mainPivotS.SCORE_ANGLE());
-    m_driverController.y().whileTrue(m_mainPivotS.HANDOFF_ANGLE());
-    m_driverController.a().whileTrue(m_elevatorS.up());
-    m_driverController.b().whileTrue(m_elevatorS.down());
+    m_driverController.a().whileTrue(m_arm.goToPosition(Arm.Positions.L4));
+    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
     boolean doingSysId = false;
     if (doingSysId) {
     SignalLogger.start();
@@ -154,11 +155,7 @@ public class Robot extends TimedRobot {
     // to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), b_left.getTranslation(), 3*0.02));
     // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc_stat.getTranslation(), 3*0.02));
 
-    for (Integer i : Epilogue.talonFXLogger.talons.keySet()){
-      var object = Epilogue.talonFXLogger.talons.get(i);
-      BaseStatusSignal.refreshAll(object.statorCurrent(), object.torqueCurrent(), object.position());
-      //PowerDistributionSim.instance.setChannelCurrent(TalonFXPDHChannel.channels.getOrDefault(i, Channel.c00), object.supplyCurrent().getValueAsDouble());
-    }
+    Epilogue.talonFXLogger.refreshAll();
     pdh.update();
     CommandScheduler.getInstance().run();
   }
