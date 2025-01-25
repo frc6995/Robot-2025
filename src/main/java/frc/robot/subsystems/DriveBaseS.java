@@ -109,6 +109,25 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
         return getState();
     }
 
+    private final SwerveDrivetrainConstants constants;
+    private final SwerveModuleConstants<?,?,?>[] modules;
+    private double getOffset(int moduleIndex) {
+        return this.state().ModuleStates[0].angle.plus(Rotation2d.fromRotations(modules[0].EncoderOffset)).getRotations();
+    }
+    public double offsetFL() {
+        return getOffset(0);
+    }
+    public double offsetFR() {
+        return getOffset(1);
+    }
+    public double offsetBL() {
+        return getOffset(2);
+    }
+    public double offsetBR() {
+        return getOffset(3);
+    }
+
+
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
      * <p>
@@ -120,6 +139,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
             SwerveDrivetrainConstants drivetrainConstants,
             SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, modules);
+        this.constants = drivetrainConstants;
+        this.modules = modules;
         setupModuleLoggers();
         if (Utils.isSimulation()) {
             startSimThread();
@@ -136,27 +157,6 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
             m_repulsor.setGoal(target.get().getTranslation());
             followPath(m_repulsor.getCmd(state().Pose, state().Speeds, 2, true, target.get().getRotation()));
         });
-    }
-
-    /**
-     * Constructs a CTRE SwerveDrivetrain using the specified constants.
-     * <p>
-     * This constructs the underlying hardware devices, so user should not construct
-     * the devices themselves. If they need the devices, they can access them
-     * through getters in the classes.
-     *
-     * @param drivetrainConstants     Drivetrain-wide constants for the swerve drive
-     * @param odometryUpdateFrequency The frequency to run the odometry loop. If
-     *                                unspecified or set to 0 Hz, this is 250 Hz on
-     *                                CAN FD, and 100 Hz on CAN 2.0.
-     * @param modules                 Constants for each specific module
-     */
-    public DriveBaseS(double OdometryUpdateFrequency) {
-        super(TunerConstants.DrivetrainConstants, OdometryUpdateFrequency, TunerConstants.FrontLeft,
-                TunerConstants.FrontRight, TunerConstants.BackLeft, TunerConstants.BackRight);
-        if (Utils.isSimulation()) {
-            startSimThread();
-        }
     }
 
     /**

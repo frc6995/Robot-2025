@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RuntimeType;
 
 /**
  * Do NOT add any static variables to this class, or any initialization at all. Unless you know what
@@ -20,6 +21,15 @@ public final class Main {
    * <p>If you change your main robot class, change the parameter type.
    */
   public static void main(String... args) {
-    RobotBase.startRobot(Robot::new);
+    if (RobotBase.isReal()) {
+    if (RobotBase.getRuntimeType() == RuntimeType.kRoboRIO){
+      RobotBase.startRobot(AlphaRobot::new);
+    } else {
+      RobotBase.startRobot(Robot::new);
+    }
+  } else {
+      RobotBase.startRobot(Robot::new);
+  }
+
   }
 }

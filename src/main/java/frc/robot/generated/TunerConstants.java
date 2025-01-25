@@ -206,6 +206,16 @@ public class TunerConstants {
         );
     }
 
+    public static DriveBaseS createAlphaDrivetrain() {
+        return new DriveBaseS(
+            DrivetrainConstants,
+            FrontLeft.withEncoderOffset(kFrontLeftEncoderOffset),
+            FrontRight.withEncoderOffset(kFrontRightEncoderOffset),
+            BackLeft.withEncoderOffset(kBackLeftDriveMotorId),
+            BackRight.withEncoderOffset(kBackRightEncoderOffset)
+        );
+    }
+
 
     /**
      * Swerve Drive class utilizing CTR Electronics' Phoenix 6 API with the selected device types.

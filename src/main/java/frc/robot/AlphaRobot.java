@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -36,7 +35,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -63,11 +61,11 @@ import frc.robot.util.AllianceFlipUtil;
  * this project, you must also update the Main.java file in the project.
  */
 @Logged
-public class Robot extends TimedRobot {
+public class AlphaRobot extends TimedRobot {
   // public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
-  private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
-  private final RealArm m_arm = new RealArm();
+  private final DriveBaseS m_drivebaseS = TunerConstants.createAlphaDrivetrain();
+  private final NoneArm m_arm = new NoneArm();
 
   private final Autos m_autos = new Autos(m_drivebaseS, m_arm, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
@@ -80,7 +78,7 @@ public class Robot extends TimedRobot {
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
-  public Robot() {
+  public AlphaRobot() {
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
     Epilogue.bind(this);
     AlertsUtil.bind(new Alert("Driver Xbox Disconnect", AlertType.kError), ()->!m_driverController.isConnected());
@@ -99,7 +97,7 @@ public class Robot extends TimedRobot {
 
     RobotVisualizer.setupVisualizer();
   
-    RobotVisualizer.addArmPivot(m_arm.ARM);
+    RobotVisualizer.addArmPivot(m_arm.getMechanism());
     //RobotVisualizer.addAlgaeIntake(m_algaePivotS.ALGAE_PIVOT);
     SmartDashboard.putData("visualizer", VISUALIZER);
 
@@ -107,28 +105,9 @@ public class Robot extends TimedRobot {
 
     m_driverController.a().whileTrue(m_arm.goToPosition(Arm.Positions.L4));
     m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
-    boolean doingSysId = false;
-    // if (doingSysId) {
-    // SignalLogger.start();
-    // m_keypad.key(CommandOperatorKeypad.Button.kLowLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kForward));
-    // m_keypad.key( CommandOperatorKeypad.Button.kMidLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kReverse));
-    // m_keypad.key( CommandOperatorKeypad.Button.kHighLeft).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kForward));
-    // m_keypad.key(CommandOperatorKeypad.Button.kLeftGrid).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kReverse));
-    // // Rotation
-    // m_keypad.key(CommandOperatorKeypad.Button.kLowCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kForward));
-    // m_keypad.key( CommandOperatorKeypad.Button.kMidCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kReverse));
-    // m_keypad.key( CommandOperatorKeypad.Button.kHighCenter).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kForward));
-    // m_keypad.key(CommandOperatorKeypad.Button.kCenterGrid).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kReverse));
-
-    // m_keypad.key(CommandOperatorKeypad.Button.kLowRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kForward));
-    // m_keypad.key( CommandOperatorKeypad.Button.kMidRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kReverse));
-    // m_keypad.key( CommandOperatorKeypad.Button.kHighRight).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kForward));
-    // m_keypad.key(CommandOperatorKeypad.Button.kRightGrid).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kReverse));
-    // }
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
-  ArrayList<Translation2d> toGoal = new ArrayList<>();
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -138,7 +117,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    m_arm.update();
     Epilogue.talonFXLogger.refreshAll();
     //pdh.update();
     CommandScheduler.getInstance().run();
@@ -156,10 +134,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    if (RobotBase.isSimulation()) {
-      Commands.waitSeconds(15.3).andThen(()->{
-        DriverStationSim.setEnabled(false); DriverStationSim.notifyNewData();}).schedule();
-    }
+    
   }
 
   /** This function is called periodically during autonomous. */
