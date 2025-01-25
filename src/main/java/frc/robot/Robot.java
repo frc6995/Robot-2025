@@ -47,6 +47,7 @@ import frc.robot.subsystems.DrivetrainSysId;
 import frc.robot.subsystems.ElevatorS;
 import frc.robot.subsystems.AlgaePivotS;
 import frc.robot.util.AlertsUtil;
+import frc.robot.util.AllianceFlipUtil;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -55,7 +56,7 @@ import frc.robot.util.AlertsUtil;
  */
 @Logged
 public class Robot extends TimedRobot {
-  public PDData pdh = PDData.create(1, ModuleType.kRev);
+  // public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   //private final AlgaePivotS m_algaePivotS = new AlgaePivotS();
@@ -64,7 +65,7 @@ public class Robot extends TimedRobot {
   private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
   private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
-    private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
+  // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
 
   private Mechanism2d VISUALIZER;
   /**
@@ -103,28 +104,27 @@ public class Robot extends TimedRobot {
     m_driverController.a().whileTrue(m_elevatorS.up());
     m_driverController.b().whileTrue(m_elevatorS.down());
     boolean doingSysId = false;
-    if (doingSysId) {
-    SignalLogger.start();
-    m_keypad.key(CommandOperatorKeypad.Button.kLowLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kForward));
-    m_keypad.key( CommandOperatorKeypad.Button.kMidLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kReverse));
-    m_keypad.key( CommandOperatorKeypad.Button.kHighLeft).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kForward));
-    m_keypad.key(CommandOperatorKeypad.Button.kLeftGrid).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kReverse));
-    // Rotation
-    m_keypad.key(CommandOperatorKeypad.Button.kLowCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kForward));
-    m_keypad.key( CommandOperatorKeypad.Button.kMidCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kReverse));
-    m_keypad.key( CommandOperatorKeypad.Button.kHighCenter).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kForward));
-    m_keypad.key(CommandOperatorKeypad.Button.kCenterGrid).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kReverse));
+    // if (doingSysId) {
+    // SignalLogger.start();
+    // m_keypad.key(CommandOperatorKeypad.Button.kLowLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kForward));
+    // m_keypad.key( CommandOperatorKeypad.Button.kMidLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kReverse));
+    // m_keypad.key( CommandOperatorKeypad.Button.kHighLeft).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kForward));
+    // m_keypad.key(CommandOperatorKeypad.Button.kLeftGrid).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kReverse));
+    // // Rotation
+    // m_keypad.key(CommandOperatorKeypad.Button.kLowCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kForward));
+    // m_keypad.key( CommandOperatorKeypad.Button.kMidCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kReverse));
+    // m_keypad.key( CommandOperatorKeypad.Button.kHighCenter).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kForward));
+    // m_keypad.key(CommandOperatorKeypad.Button.kCenterGrid).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kReverse));
 
-    m_keypad.key(CommandOperatorKeypad.Button.kLowRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kForward));
-    m_keypad.key( CommandOperatorKeypad.Button.kMidRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kReverse));
-    m_keypad.key( CommandOperatorKeypad.Button.kHighRight).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kForward));
-    m_keypad.key(CommandOperatorKeypad.Button.kRightGrid).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kReverse));
-    }
+    // m_keypad.key(CommandOperatorKeypad.Button.kLowRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kForward));
+    // m_keypad.key( CommandOperatorKeypad.Button.kMidRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kReverse));
+    // m_keypad.key( CommandOperatorKeypad.Button.kHighRight).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kForward));
+    // m_keypad.key(CommandOperatorKeypad.Button.kRightGrid).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kReverse));
+    // }
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
-  private static Translation2d amp = new Translation2d(2, 8);
-
+  ArrayList<Translation2d> toGoal = new ArrayList<>();
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -135,6 +135,10 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     if (RobotBase.isSimulation()) {
+      toGoal.clear();
+      toGoal.addAll(m_drivebaseS.m_repulsor.getTrajectory(
+        m_drivebaseS.state().Pose.getTranslation(),
+        m_drivebaseS.m_repulsor.goal().getTranslation(), 3*0.02));
       // This needs to be just before pdh.update() so it can't be in simulationPeriodic, which is after 
       // TalonFXPDHChannel.refresh();
       // TalonFXPDHChannel.currentSignalsRio.forEach((channel, signal)->{
@@ -148,6 +152,7 @@ public class Robot extends TimedRobot {
     // to_a_left.clear();
     // to_b_left.clear();
     // to_proc_stat.clear();
+
     // toProc.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc.getTranslation(), 3*0.02));
     // to_a_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), a_left.getTranslation(), 3*0.02));
     // to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), b_left.getTranslation(), 3*0.02));
@@ -158,7 +163,7 @@ public class Robot extends TimedRobot {
       BaseStatusSignal.refreshAll(object.statorCurrent(), object.torqueCurrent(), object.position());
       //PowerDistributionSim.instance.setChannelCurrent(TalonFXPDHChannel.channels.getOrDefault(i, Channel.c00), object.supplyCurrent().getValueAsDouble());
     }
-    pdh.update();
+    // pdh.update();
     CommandScheduler.getInstance().run();
   }
 
