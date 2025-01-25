@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -52,8 +53,14 @@ import edu.wpi.first.units.measure.Per;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.AlgaePivotS.AlgaePivotConstants;
+import frc.robot.subsystems.MainPivotS.MainPivotConstants;
+
 import static edu.wpi.first.units.Units.VoltsPerMeterPerSecond;
 import static edu.wpi.first.units.Units.VoltsPerMeterPerSecondSquared;
+
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj.simulation.TiltedElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -64,14 +71,17 @@ public class ElevatorS extends SubsystemBase {
     public static final int LEADER_ID = 40;
     public static final int FOLLOWER_ID = 41;
     // Approved by CAD
-    public static final Per<AngleUnit, DistanceUnit> MOTOR_ROTATIONS_PER_METER_UNIT = 
-      Rotations.of(1).div(Inches.of(1.32278 * 2));
+    public static final Per<AngleUnit, DistanceUnit> MOTOR_ROTATIONS_PER_METER_UNIT = Rotations.of(1)
+        .div(Inches.of(1.32278 * 2));
     public static final double MOTOR_ROTATIONS_PER_METER = MOTOR_ROTATIONS_PER_METER_UNIT.in(Rotations.per(Meter));
 
     public static final Distance MIN_LENGTH = Inches.of(27.0);
     public static final Distance MAX_LENGTH = Inches.of(67.0);
-    public static final double MIN_LENGTH_ROTATIONS = MIN_LENGTH.in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
-    public static final double MAX_LENGTH_ROTATIONS = MAX_LENGTH.in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
+    public static final double MIN_LENGTH_ROTATIONS = MIN_LENGTH.in(Meters)
+        * ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
+    public static final double MAX_LENGTH_ROTATIONS = MAX_LENGTH.in(Meters)
+        * ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
+
     private static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.MotorOutput
           .withNeutralMode(NeutralModeValue.Coast)
@@ -86,12 +96,11 @@ public class ElevatorS extends SubsystemBase {
           .withSupplyCurrentLimitEnable(true)
           .withSupplyCurrentLimit(Amps.of(50));
       config.Slot0
-        .withKS(0).withKV(K_V.in(VoltsPerRotationPerSecond)).withKA(K_A.in(VoltsPerRotationPerSecondSquared))
-        .withKP(1).withKD(0);
+          .withKS(0).withKV(K_V.in(VoltsPerRotationPerSecond)).withKA(K_A.in(VoltsPerRotationPerSecondSquared))
+          .withKP(1).withKD(0);
       config.MotionMagic
-        .withMotionMagicAcceleration(MOTOR_ROTATIONS_PER_METER * 1)
-        .withMotionMagicCruiseVelocity(MOTOR_ROTATIONS_PER_METER * 4)
-      ;
+          .withMotionMagicAcceleration(MOTOR_ROTATIONS_PER_METER * 7)
+          .withMotionMagicCruiseVelocity(MOTOR_ROTATIONS_PER_METER * 4);
       return config;
     }
 
@@ -111,10 +120,10 @@ public class ElevatorS extends SubsystemBase {
         .per(RotationsPerSecond);
     public static final PerUnit<VoltageUnit, AngularAccelerationUnit> VoltsPerRotationPerSecondSquared = Volts
         .per(RotationsPerSecond.per(Second));
-    public static final Per<VoltageUnit, AngularVelocityUnit> K_V = VoltsPerRotationPerSecond.ofNative(12.0/100.0);
-    
+    public static final Per<VoltageUnit, AngularVelocityUnit> K_V = VoltsPerRotationPerSecond.ofNative(12.0 / 100.0);
+
     public static final Per<VoltageUnit, AngularAccelerationUnit> K_A = VoltsPerRotationPerSecondSquared.ofNative(
-      0.06 / MOTOR_ROTATIONS_PER_METER);
+        0.06 / MOTOR_ROTATIONS_PER_METER);
 
     public static final LinearSystem<N2, N1, N2> PLANT = LinearSystemId
         .identifyPositionSystem(
@@ -137,27 +146,31 @@ public class ElevatorS extends SubsystemBase {
       ElevatorConstants.MAX_LENGTH.in(Meters), false);
 
   public final MechanismLigament2d ELEVATOR = new MechanismLigament2d(
-      "elevator", ElevatorConstants.MIN_LENGTH.in(Meters), 0, 4, new Color8Bit(235, 137, 52));    
+      "elevator", ElevatorConstants.MIN_LENGTH.in(Meters), 0, 4, new Color8Bit(235, 137, 52));
+
+  private DoubleSupplier angleRadiansSupplier = () -> MainPivotConstants.CW_LIMIT.in(Radians);
   /** Creates a new ElevatorS. */
 
   public ElevatorS() {
     leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
     var config = new TalonFXConfiguration();
     leader.getConfigurator().refresh(config);
-    leader.getConfigurator().apply(
-        ElevatorConstants.configureLeader(
-            config));
+    leader.getConfigurator().apply(ElevatorConstants.configureLeader(config));
 
     var followerConfig = new TalonFXConfiguration();
     follower.getConfigurator().refresh(followerConfig);
-    follower.getConfigurator().apply(
-        ElevatorConstants.configureFollower(
-            followerConfig));
+    follower.getConfigurator().apply(ElevatorConstants.configureFollower(followerConfig));
 
     follower.setControl(new Follower(ElevatorConstants.LEADER_ID, false));
-    setDefaultCommand(this.stop());
+    setDefaultCommand(this.hold());
   }
 
+  public Command hold() {
+    return this.runOnce(()->
+    positionReq.withPosition(getMotorRotations()).withVelocity(0)).andThen(
+      this.run(()->leader.setControl(positionReq))
+    );
+  }
   public double getLengthMeters() {
     return getMotorRotations() / ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
   }
@@ -166,14 +179,8 @@ public class ElevatorS extends SubsystemBase {
     return positionSignal.getValueAsDouble();
   }
 
-  public double elevatorAngle = 0;
-
-  public void setElevatorAngle(double angleRadians) {
-    elevatorAngle = angleRadians;
-  }
-
-  private double getKGVolts() {
-    return ElevatorConstants.K_G * Math.sin(elevatorAngle);
+  public double getKGVolts() {
+    return ElevatorConstants.K_G * Math.sin(angleRadiansSupplier.getAsDouble());
   }
 
   public void simulationPeriodic() {
@@ -197,24 +204,38 @@ public class ElevatorS extends SubsystemBase {
     BaseStatusSignal.refreshAll(positionSignal);
     ELEVATOR.setLength(getLengthMeters());
   }
+
   VoltageOut voltage = new VoltageOut(0);
+
   public Command up() {
-    return this.run(()->leader.setControl(voltage.withOutput(10)));
+    return this.run(() -> leader.setControl(voltage.withOutput(1)));
   }
+
   public Command down() {
-    return this.run(()->leader.setControl(voltage.withOutput(-10)));
+    return this.run(() -> leader.setControl(voltage.withOutput(-1)));
   }
+
   public Command stop() {
-    return this.run(()->leader.setControl(voltage.withOutput(0)));
+    return this.run(() -> leader.setControl(voltage.withOutput(0)));
   }
+
   private void goToRotations(double motorRotations) {
     leader.setControl(profileReq
-      .withPosition(motorRotations)
-      .withFeedForward(ElevatorConstants.K_G * Math.sin(elevatorAngle))
-    );
+        .withPosition(motorRotations)
+        .withFeedForward(getKGVolts()));
   }
-  public Command mid() {
-    return this.run(()-> goToRotations(
-      (ElevatorConstants.MAX_LENGTH_ROTATIONS + ElevatorConstants.MIN_LENGTH_ROTATIONS) / 2));
+
+  public Command goToLength(DoubleSupplier length) {
+    return this.run(() -> goToRotations(
+        length.getAsDouble() * ElevatorConstants.MOTOR_ROTATIONS_PER_METER));
+  }
+
+  public Command goToLength(Supplier<Distance> length) {
+    return this.run(() -> goToRotations(
+        length.get().in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER));
+  }
+
+  public void setAngleSupplier(DoubleSupplier angleRadians) {
+    angleRadiansSupplier = angleRadians;
   }
 }

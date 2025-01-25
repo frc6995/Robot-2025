@@ -15,12 +15,14 @@ import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 public class Autos {
     private DriveBaseS m_drivebase;
+    private Arm m_arm;
 
     private AutoFactory m_autoFactory;
     public AutoChooser m_autoChooser;
 
-    public Autos(DriveBaseS drivebase, TrajectoryLogger<SwerveSample> trajlogger) {
+    public Autos(DriveBaseS drivebase, Arm arm, TrajectoryLogger<SwerveSample> trajlogger) {
         m_drivebase = drivebase;
+        m_arm = arm;
         m_autoChooser = new AutoChooser();
         m_autoFactory = new AutoFactory(
             ()->m_drivebase.state().Pose, 
