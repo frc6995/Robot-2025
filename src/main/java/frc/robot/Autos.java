@@ -26,16 +26,19 @@ public class Autos {
         m_autoChooser = new AutoChooser();
         m_autoFactory = new AutoFactory(
             ()->m_drivebase.state().Pose, 
-            m_drivebase::resetPose, 
+            m_drivebase::resetOdometry, 
             m_drivebase::followPath, 
             true, 
             m_drivebase, 
             m_drivebase::logTrajectory);
 
         // add autos to the chooser
-        m_autoChooser.addCmd("testPath", this::testPath);
-        m_autoChooser.addRoutine("testPathRoutine", this::testPathRoutine);
-        m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
+        // m_autoChooser.addCmd("testPath", this::testPath);
+        // m_autoChooser.addRoutine("testPathRoutine", this::testPathRoutine);
+        // m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
+        m_autoChooser.addRoutine("KK_SL3", this::KK_SL3);
+        // m_autoChooser.addRoutine("JKL_SL3", this::JKL_SL3);
+        // m_autoChooser.addRoutine("JKLA_SL3", this::JKLA_SL3);
         
     }
 
@@ -73,6 +76,61 @@ public class Autos {
             )
         );
 
+        return routine;
+    }
+
+    public AutoRoutine JKL_SL3() {
+        var routine = m_autoFactory.newRoutine("JKL_SL3");
+        AutoTrajectory J_SL3 = routine.trajectory("SL3-J", 1);
+        AutoTrajectory SL3_K = routine.trajectory("SL3-K", 0);
+        AutoTrajectory K_SL3 = routine.trajectory("SL3-K", 1);
+        AutoTrajectory SL3_L = routine.trajectory("SL3-L", 0);
+
+        routine.active().onTrue(
+            sequence(
+                J_SL3.resetOdometry(),
+                J_SL3.cmd(),
+                SL3_K.cmd(),
+                K_SL3.cmd(),
+                SL3_L.cmd()
+            )
+        );
+        return routine;
+    }
+
+    public AutoRoutine JKLA_SL3() {
+        var routine = m_autoFactory.newRoutine("JKLA_SL3");
+        AutoTrajectory J_SL3 = routine.trajectory("SL3-J", 1);
+        AutoTrajectory SL3_K = routine.trajectory("SL3-K", 0);
+        AutoTrajectory K_SL3 = routine.trajectory("SL3-K", 1);
+        AutoTrajectory SL3_L = routine.trajectory("SL3-L", 0);
+        AutoTrajectory L_SL3 = routine.trajectory("SL3-L", 1);
+        AutoTrajectory A_SL3 = routine.trajectory("SL3-A", 0);
+        routine.active().onTrue(
+            sequence(
+                J_SL3.resetOdometry(),
+                J_SL3.cmd(),
+                SL3_K.cmd(),
+                K_SL3.cmd(),
+                SL3_L.cmd(),
+                L_SL3.cmd(),
+                A_SL3.cmd()
+            )
+        );
+        return routine;
+    }
+
+    public AutoRoutine KK_SL3() {
+        var routine = m_autoFactory.newRoutine("KK_SL3");
+        AutoTrajectory K_SL3 = routine.trajectory("SL3-K", 1);
+        AutoTrajectory SL3_K = routine.trajectory("SL3-K", 0);
+        routine.active().onTrue(
+            sequence(
+                K_SL3.resetOdometry(),
+                K_SL3.cmd(),
+                SL3_K.cmd()
+            )
+        );
         return routine;
     }
 

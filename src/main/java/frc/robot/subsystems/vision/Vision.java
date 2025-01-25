@@ -30,6 +30,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.util.TriConsumer;
 public class Vision {
@@ -82,6 +84,12 @@ public class Vision {
                 Units.inchesToMeters(0),
                 Units.inchesToMeters(7.25)-0.02,
                 new Rotation3d(Units.degreesToRadians(180), Units.degreesToRadians(-34), Units.degreesToRadians(0))
+            ),
+            "OV9281-FR", new Transform3d(
+                Units.inchesToMeters(-(13-3.375)),
+                Units.inchesToMeters(-(13-2.625)),
+                Units.inchesToMeters(9.25),
+                new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-10), Units.degreesToRadians(180))
             )
         );
         public static final AprilTagFieldLayout FIELD_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
@@ -92,6 +100,10 @@ public class Vision {
     private List<PhotonCameraSim> m_simCameras;
     private VisionConsumer addVisionMeasurement;
     private Supplier<Pose2d> getPose;
+    private double lastPoseResetTimestamp = 0;
+    public void resetPose() {
+        lastPoseResetTimestamp = Timer.getFPGATimestamp();
+    }
     public Vision(
         VisionConsumer addVisionMeasurement, Supplier<Pose2d> getPose) {
         if (RobotBase.isSimulation()) {
@@ -133,9 +145,50 @@ public class Vision {
         }
         camera.setRawPose(robotPoseOpt.get().estimatedPose);
         var pose = robotPoseOpt.get();
+        if (pose.timestampSeconds < lastPoseResetTimestamp) {
+            return;
+        }
+        double xConfidence;
+                double yConfidence;
+                double angleConfidence;
+                if(pose.targetsUsed.size() == 0) {
+                    return; //should never happen but measurement shouldn't be trusted
+                }
+                double closestDistance = 1000;
+                double avgDistance = 0;
+                double closeEnoughTgts = 0;
+                boolean ignore = false;
+                for (var tgt : pose.targetsUsed ) {
+                    double tdist = tgt.getBestCameraToTarget().getTranslation().getNorm();
+                    avgDistance += tdist;
+                    if (tdist < closestDistance) {
+                        closestDistance = tdist;
+                    }
+                    if (tdist <= Units.feetToMeters(15)) {
+                        closeEnoughTgts++;
+                    }
+                    // ignore |= (tgt.getFiducialId() == 13);
+                    // ignore |= (tgt.getFiducialId() == 14);
+                }
+                if (ignore) {return;}
+                double distance = avgDistance / pose.targetsUsed.size();
+                // SmartDashboard.putNumber(camera.name + "/distance", distance);
+                if (closeEnoughTgts ==0) {
+                    return;
+                }
+                if (pose.targetsUsed.size() < 2) {
+                    xConfidence = 0.5 * distance / 4.0;
+                    yConfidence = 0.5 * distance / 4.0;
+                    angleConfidence = 1;
+                }
+                else {
+                    xConfidence = 0.02 * distance;
+                    yConfidence = 0.02 * distance;
+                    angleConfidence = 0.3*distance;
+                }
         this.addVisionMeasurement.accept(
             pose.estimatedPose.toPose2d(), Utils.fpgaToCurrentTime(pose.timestampSeconds),
-            VecBuilder.fill(0.05, 0.05, 0.05));
+            VecBuilder.fill(xConfidence, yConfidence, angleConfidence));
         
     }
 
