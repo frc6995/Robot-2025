@@ -22,14 +22,13 @@ public final class Main {
    */
   public static void main(String... args) {
     if (RobotBase.isReal()) {
-    if (RobotBase.getRuntimeType() == RuntimeType.kRoboRIO){
-      RobotBase.startRobot(AlphaRobot::new);
+      if (RobotBase.getRuntimeType() == RuntimeType.kRoboRIO) {
+        RobotBase.startRobot(AlphaRobot::new);
+      } else {
+        RobotBase.startRobot(Robot::new);
+      }
     } else {
       RobotBase.startRobot(Robot::new);
     }
-  } else {
-      RobotBase.startRobot(Robot::new);
-  }
-
   }
 }

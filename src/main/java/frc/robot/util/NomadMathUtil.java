@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import java.util.function.Supplier;
 
 public class NomadMathUtil {
 
@@ -71,17 +70,14 @@ public class NomadMathUtil {
   }
 
   public static Translation2d mirrorTranslation(Translation2d blueTranslation) {
-    return new Translation2d(
-        FIELD_LENGTH - blueTranslation.getX(),
-        blueTranslation.getY());
+    return new Translation2d(FIELD_LENGTH - blueTranslation.getX(), blueTranslation.getY());
   }
 
-  public static Translation2d mirrorTranslation(Translation2d blueTranslation, DriverStation.Alliance alliance) {
+  public static Translation2d mirrorTranslation(
+      Translation2d blueTranslation, DriverStation.Alliance alliance) {
     if (alliance != Alliance.Red) {
       return blueTranslation;
     }
     return mirrorTranslation(blueTranslation);
   }
-
-  
 }
