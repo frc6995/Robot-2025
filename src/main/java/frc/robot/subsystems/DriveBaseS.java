@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -38,6 +39,7 @@ import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.drive.Pathing;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.RepulsorFieldPlanner;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -364,6 +366,30 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     return state().Speeds;
   }
 
+  public Command pidToPoseC(Supplier<Pose2d> poseSupplier) {
+    return this.run(
+        () -> {
+          var target = poseSupplier.get();
+          m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+          var pose = state().Pose;
+          var targetSpeeds =
+              new ChassisSpeeds(
+                  m_pathXController.calculate(pose.getX(), target.getX()),
+                  m_pathYController.calculate(pose.getY(), target.getY()),
+                  m_pathThetaController.calculate(
+                      pose.getRotation().getRadians(), target.getRotation().getRadians()));
+          setControl(m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds));
+        });
+  }
+
+  public Command pidToPoseC(Optional<Pose2d> poseOpt) {
+    return poseOpt.map((pose) -> pidToPoseC(() -> pose)).orElse(Commands.none());
+  }
+
+  public Command pidToPoseC(Pose2d poseSup) {
+    return pidToPoseC(() -> poseSup);
+  }
+
   private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(new Constraints(3, 6));
   private TrapezoidProfile driveToPoseRotationProfile =
       new TrapezoidProfile(new Constraints(8, 12));
@@ -445,5 +471,13 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                           -rotSetpoint.velocity)); // rotSetpoint.velocity));
                 }))
         .finallyDo(time::stop);
+  }
+
+  public Command driveToPoseC(Optional<Pose2d> poseOpt) {
+    return poseOpt.map((pose) -> driveToPoseC(() -> pose)).orElse(Commands.none());
+  }
+
+  public Command driveToPoseC(Pose2d poseSup) {
+    return driveToPoseC(() -> poseSup);
   }
 }

@@ -11,6 +11,8 @@ import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -20,7 +22,10 @@ import frc.robot.Arm.ArmPosition;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.util.ChoreoVariables;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class Autos {
   private DriveBaseS m_drivebase;
@@ -105,10 +110,6 @@ public class Autos {
     return routine;
   }
 
-  public Command drivetrainAlignTo(Optional<Pose2d> poseOpt) {
-    return poseOpt.map((pose) -> m_drivebase.driveToPoseC(() -> pose)).orElse(Commands.none());
-  }
-
   public double toleranceMeters = Units.inchesToMeters(1);
   public double toleranceRadians = Units.degreesToRadians(2);
 
@@ -123,23 +124,25 @@ public class Autos {
     return dot > Math.cos(toleranceRadians);
   }
 
+  public Trigger atPose(Supplier<Pose2d> poseSup) {
+    return new Trigger(
+        () -> {
+          Pose2d pose = poseSup.get();
+          Pose2d currentPose = m_drivebase.getPose();
+          boolean transValid =
+              currentPose.getTranslation().getDistance(pose.getTranslation()) < toleranceMeters;
+          boolean rotValid =
+              withinTolerance(currentPose.getRotation(), pose.getRotation(), toleranceRadians);
+          return transValid && rotValid;
+        });
+  }
+
   public Trigger atPose(Optional<Pose2d> poseOpt) {
-    return poseOpt
-        .map(
-            (pose) -> {
-              return new Trigger(
-                  () -> {
-                    Pose2d currentPose = m_drivebase.getPose();
-                    boolean transValid =
-                        currentPose.getTranslation().getDistance(pose.getTranslation())
-                            < toleranceMeters;
-                    boolean rotValid =
-                        withinTolerance(
-                            currentPose.getRotation(), pose.getRotation(), toleranceRadians);
-                    return transValid && rotValid;
-                  });
-            })
-        .orElse(new Trigger(() -> false));
+    return poseOpt.map(this::atPose).orElse(new Trigger(() -> false));
+  }
+
+  public Trigger atPose(Pose2d pose) {
+    return atPose(() -> pose);
   }
 
   /**
@@ -151,6 +154,13 @@ public class Autos {
    */
   public Command alignAndDrop(
       Optional<Pose2d> target, ArmPosition position, double outtakeSeconds) {
+    return target
+        .map((pose) -> alignAndDrop(() -> pose, position, outtakeSeconds))
+        .orElse(Commands.none());
+  }
+
+  public Command alignAndDrop(
+      Supplier<Pose2d> target, ArmPosition position, double outtakeSeconds) {
     return race(
         waitUntil(
                 atPose(target)
@@ -159,7 +169,18 @@ public class Autos {
                           return m_arm.atPosition(position);
                         }))
             .andThen(waitSeconds(outtakeSeconds)),
-        drivetrainAlignTo(target));
+        m_drivebase.pidToPoseC(target));
+  }
+  public double getDistanceSensorOffset() {
+    return -1;
+  }
+  public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
+    // TODO reduce allocations
+    // TODO angle instead of sideways? 
+    return () ->
+        original
+            .get()
+            .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
   }
 
   private static List<String> TRAJECTORIES = List.of(Choreo.availableTrajectories());
@@ -208,29 +229,43 @@ public class Autos {
     }
   }
 
-  public Command flexAuto(POI start, POI intake, POI firstScore, POI... rest) {
+  public Command flexAuto(POI start, POI intake, POI firstScore, POI... rest)
+      throws NoSuchElementException {
     var routine = m_autoFactory.newRoutine("JKLA_SL3");
     var start_first = start.to(firstScore, routine).map(this::bindL4).get();
+    var start_first_final = start_first.getFinalPose().get();
     var first_intake = firstScore.to(intake, routine).map(this::bindIntake).get();
+    // Set up the start->first score -> intake 
     routine
         .active()
         .onTrue(
             sequence(
                 start_first.resetOdometry(),
-                start_first.cmd(),
-                alignAndDrop(start_first.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME)
+                start_first
+                    .cmd()
+                    .until(
+                        start_first.atTranslation(
+                            firstScore.bluePose.getTranslation(), Units.inchesToMeters(48))),
+                alignAndDrop(
+                        sensorOffsetPose(() -> start_first_final),
+                        Arm.Positions.L4,
+                        AUTO_OUTTAKE_TIME)
                     .onlyWhile(routine.active()),
                 first_intake.cmd()));
     var toIntake = first_intake;
     for (POI poi : rest) {
       var toReef = intake.to(poi, routine).map(this::bindL4).get();
+      var toReefFinal = toReef.getFinalPose().get();
       var nextToIntake = poi.to(intake, routine).map(this::bindIntake).get();
       toIntake
           .done()
           .onTrue(
               sequence(
-                  toReef.cmd(),
-                  alignAndDrop(toReef.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME)
+                  toReef.cmd().until(
+                    toReef.atTranslation(
+                        poi.bluePose.getTranslation(), Units.inchesToMeters(48))),
+                  alignAndDrop(
+                          sensorOffsetPose(() -> toReefFinal), Arm.Positions.L4, AUTO_OUTTAKE_TIME)
                       .onlyWhile(routine.active()),
                   nextToIntake.cmd()));
       toIntake = nextToIntake;
