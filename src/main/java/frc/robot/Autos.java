@@ -172,7 +172,7 @@ public class Autos {
         m_drivebase.pidToPoseC(target));
   }
   public double getDistanceSensorOffset() {
-    return -1;
+    return -0.1;
   }
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
     // TODO reduce allocations
@@ -245,7 +245,7 @@ public class Autos {
                     .cmd()
                     .until(
                         start_first.atTranslation(
-                            firstScore.bluePose.getTranslation(), Units.inchesToMeters(48))),
+                            firstScore.bluePose.getTranslation(), Units.inchesToMeters(24))),
                 alignAndDrop(
                         sensorOffsetPose(() -> start_first_final),
                         Arm.Positions.L4,
@@ -263,7 +263,7 @@ public class Autos {
               sequence(
                   toReef.cmd().until(
                     toReef.atTranslation(
-                        poi.bluePose.getTranslation(), Units.inchesToMeters(48))),
+                        poi.bluePose.getTranslation(), Units.inchesToMeters(24))),
                   alignAndDrop(
                           sensorOffsetPose(() -> toReefFinal), Arm.Positions.L4, AUTO_OUTTAKE_TIME)
                       .onlyWhile(routine.active()),
