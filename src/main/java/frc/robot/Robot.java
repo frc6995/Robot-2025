@@ -29,6 +29,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.operator.OperatorBoard;
+import frc.operator.RealOperatorBoard;
+import frc.operator.SimOperatorBoard;
 import frc.robot.generated.TunerConstants;
 import frc.robot.logging.PDData;
 import frc.robot.logging.PowerDistributionSim;
@@ -47,6 +50,7 @@ import frc.robot.util.AlertsUtil;
 public class Robot extends TimedRobot {
   public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
+  private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final Autos m_autos = new Autos(m_drivebaseS, (traj, isStarting)->{});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
@@ -99,6 +103,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    m_operatorBoard.poll();
     if (RobotBase.isSimulation()) {
       // This needs to be just before pdh.update() so it can't be in simulationPeriodic, which is after 
       // TalonFXPDHChannel.refresh();

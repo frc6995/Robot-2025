@@ -22,42 +22,45 @@ class Selector:
             button.direction = digitalio.Direction.INPUT
             button.pull = digitalio.Pull.UP
         self.button_state = [True for j in range(len(pins))]
-        self.selected = 1
-    def getSelected(self):
-        return self.selected
+        self.selected = 0
     def update(self):
+        
         for j, button in enumerate(self.buttons):
+            
             pressed = not button.value
-            if (pressed and not button_state[j]):
-                self.selected = j+1
-            button_state[j] = pressed
+            if (pressed and not self.button_state[j]):
+                self.selected = j
+            self.button_state[j] = pressed
 
 
-branch_pins = [board.GPIO0, board.GPIO1, board.GPIO2, board.GPIO3, board.GPIO4, board.GPIO5, board.GPIO6, board.GPIO7, board.GPIO10, board.GPIO11]
-level_pins = [board.GPIO12, board.GPIO13, board.GPIO14,board.GPIO15]
-climb_pins = [board.GPIO16, board.GPIO17,board.GPIO18]
-# 1 = A, 12 = L
+branch_pins = [board.GP0, board.GP1, board.GP2, board.GP3, board.GP4, board.GP5, board.GP6, board.GP7, board.GP8, board.GP9, board.GP10, board.GP11]
+level_pins = [board.GP12, board.GP13, board.GP14,board.GP15]
+climb_pins = [board.GP16, board.GP17,board.GP18]
+
+
+#1 = A, 12 = L
 branch_selector = Selector(branch_pins)
 level_selector = Selector(level_pins)
 climb_selector = Selector(climb_pins)
 
 
 print('start')
+gp.press_buttons(1)
+gp.release_buttons(1)
 while True:
-
     branch_selector.update ()
     level_selector.update ()
     climb_selector.update ()
     branch_button = branch_selector.selected
-    level_button = level_selector.selected + len(branch_pins)
-    climb_button = climb_selector.selected + len(branch_pins) +len(level_pins)
+    level_button = level_selector.selected
+    climb_button = climb_selector.selected
 
+    bitfield = (branch_button & 0xf) + ((level_button & 0x3) << 4) + ((climb_button & 0x3) << 6)
    # send the current state
-    for i in range(1,20):
+    for i in range(1,8):
         # 0 is invalid button id
-        if i == 0:
-            continue
-        if i == branch_button or i == level_button or i == climb_button:
+
+        if bitfield & (1 << (i-1)):
             gp.press_buttons(i)
         else:
             gp.release_buttons(i)
