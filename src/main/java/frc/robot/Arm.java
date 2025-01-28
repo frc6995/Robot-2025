@@ -41,11 +41,15 @@ public abstract class Arm {
 
   class Positions {
     public static final ArmPosition L3 =
-        new ArmPosition(Degrees.of(95), Meters.of(1), Radians.of(0));
+        new ArmPosition(Degrees.of(95), Meters.of(1), Radians.of(-2));
     public static final ArmPosition L4 =
-        new ArmPosition(Degrees.of(95), ElevatorConstants.MAX_LENGTH, Radians.of(0));
+        new ArmPosition(Degrees.of(95), ElevatorConstants.MAX_LENGTH, Radians.of(-2));
     public static final ArmPosition STOW =
         new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_LENGTH, Radians.of(0));
+    public static final ArmPosition INTAKE =
+        new ArmPosition(MainPivotConstants.CW_LIMIT.plus(Degrees.of(3)), ElevatorConstants.MIN_LENGTH, Radians.of(-1.7));
+    public static final ArmPosition L2 =
+        new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_LENGTH, Radians.of(-2.3));
   }
 
   public Arm() {}

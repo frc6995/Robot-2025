@@ -1,10 +1,19 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.robot.Arm.ArmPosition;
+import frc.robot.subsystems.ElevatorS.ElevatorConstants;
 
 public class RobotVisualizer {
   private static final double BASE_X = Units.feetToMeters(3);
@@ -15,7 +24,7 @@ public class RobotVisualizer {
       MECH_VISUALIZER.getRoot("root", BASE_X, Units.inchesToMeters(7.5));
   private static final MechanismRoot2d ARM_PIVOT_BASE =
       MECH_VISUALIZER.getRoot(
-          "arm-base", BASE_X - Units.inchesToMeters(11.5), Units.inchesToMeters(9.5));
+          "arm-base", BASE_X - Units.inchesToMeters(10), Units.inchesToMeters(11));
   private static final MechanismRoot2d INTAKE_PIVOT_BASE =
       MECH_VISUALIZER.getRoot(
           "algae-intake-pivot-base",
@@ -37,5 +46,18 @@ public class RobotVisualizer {
 
   public static void addArmPivot(MechanismLigament2d pivot) {
     ARM_PIVOT_BASE.append(pivot);
+  }
+
+  final static double PIVOT_X = -Units.inchesToMeters(10);
+  final static double PIVOT_Z = Units.inchesToMeters(11);
+  final static Pose3d PIVOT_BASE = new Pose3d(PIVOT_X, 0, PIVOT_Z, Rotation3d.kZero);
+  private static Pose3d[] components = new Pose3d[] {Pose3d.kZero,Pose3d.kZero,Pose3d.kZero,new Pose3d(new Translation3d(ElevatorConstants.MIN_LENGTH.in(Meters), 0,0), new Rotation3d(0,0,0))};
+  public static Pose3d[] getComponents() {return components;}
+  public static void setArmPosition(ArmPosition position) {
+    components[0] = PIVOT_BASE.transformBy(new Transform3d(Translation3d.kZero, new Rotation3d(0,-position.pivotRadians(),0)));
+    components[1] = components[0].transformBy(new Transform3d(new Translation3d(
+      (position.elevatorMeters()-ElevatorConstants.MIN_LENGTH.in(Meters))/2  + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
+    components[2] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters() - ElevatorConstants.MIN_LENGTH.in(Meters) + Units.inchesToMeters(0.4), 0,0), Rotation3d.kZero));
+    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-position.wristRadians(),0)));
   }
 }

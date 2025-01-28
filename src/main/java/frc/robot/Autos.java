@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Arm.ArmPosition;
 import frc.robot.subsystems.DriveBaseS;
+import frc.robot.subsystems.Hand;
 import frc.robot.util.ChoreoVariables;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,15 +29,16 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class Autos {
-  private DriveBaseS m_drivebase;
-  private Arm m_arm;
+  private final DriveBaseS m_drivebase;
+  private final Arm m_arm;
+  private final Hand m_hand;
+  private final AutoFactory m_autoFactory;
+  public final AutoChooser m_autoChooser;
 
-  private AutoFactory m_autoFactory;
-  public AutoChooser m_autoChooser;
-
-  public Autos(DriveBaseS drivebase, Arm arm, TrajectoryLogger<SwerveSample> trajlogger) {
+  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
+    m_hand = hand;
     m_autoChooser = new AutoChooser();
     m_autoFactory =
         new AutoFactory(
@@ -60,22 +62,6 @@ public class Autos {
     m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
   }
 
-  public Command testPath() {
-    return m_autoFactory.trajectoryCmd("test_path");
-  }
-
-  public AutoRoutine testPathRoutine() {
-    AutoRoutine routine = m_autoFactory.newRoutine("testPathRoutine");
-
-    AutoTrajectory testTrajectory = routine.trajectory("test_path");
-
-    // When the routine begins, reset odometry and start the first trajectory
-    routine
-        .active()
-        .onTrue(Commands.sequence(testTrajectory.resetOdometry(), testTrajectory.cmd()));
-
-    return routine;
-  }
 
   public AutoRoutine splitPathAutoRoutine() {
     AutoRoutine routine = m_autoFactory.newRoutine("splitPathRoutine");
@@ -168,11 +154,14 @@ public class Autos {
                         () -> {
                           return m_arm.atPosition(position);
                         }))
-            .andThen(waitSeconds(outtakeSeconds)),
+            .andThen(m_hand.out().withTimeout(outtakeSeconds).asProxy()), // Proxy so hand isn't directly required
         m_drivebase.pidToPoseC(target));
   }
   public double getDistanceSensorOffset() {
     return -0.1;
+  }
+  public boolean hasCoral() {
+    return getDistanceSensorOffset() > -0.2;
   }
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
     // TODO reduce allocations
@@ -298,7 +287,7 @@ public class Autos {
                 L_SL3.cmd(),
                 SL3_A.cmd(),
                 alignAndDrop(SL3_A.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))));
+                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE))));
     return routine.cmd();
   }
 
@@ -313,7 +302,7 @@ public class Autos {
   }
 
   private AutoTrajectory bindIntake(AutoTrajectory trajectory) {
-    trajectory.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
+    trajectory.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
     return trajectory;
   }
 
@@ -361,7 +350,7 @@ public class Autos {
                 L_SL3.cmd(),
                 SL3_A.cmd(),
                 alignAndDrop(SL3_A.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))));
+                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE))));
     return routine.cmd();
   }
 }

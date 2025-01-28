@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ElevatorS;
 import frc.robot.subsystems.ElevatorS.ElevatorConstants;
 import frc.robot.subsystems.MainPivotS;
+import frc.robot.subsystems.NoneWristS;
+import frc.robot.subsystems.Wrist;
 import java.util.Set;
 
 @Logged
@@ -24,7 +26,7 @@ public class RealArm extends Arm {
         new ArmPosition(
             Radians.of(mainPivotS.getAngleRadians()),
             Meters.of(elevatorS.getLengthMeters()),
-            Radians.of(0));
+            Radians.of(wristS.getAngle()));
   }
 
   @Override
@@ -41,6 +43,7 @@ public class RealArm extends Arm {
 
   public MainPivotS mainPivotS = new MainPivotS();
   public ElevatorS elevatorS = new ElevatorS();
+  public Wrist wristS = new NoneWristS();
   private static final Distance SAFE_PIVOT_ELEVATOR_LENGTH =
       ElevatorConstants.MIN_LENGTH.plus(Inches.of(3));
 
@@ -49,7 +52,7 @@ public class RealArm extends Arm {
         () -> {
           double startMainPivot = mainPivotS.getAngleRadians();
           double startElevator = elevatorS.getLengthMeters();
-          double startWrist = 0;
+          double startWrist = wristS.getAngle();
           double dPivot = position.pivotRadians() - startMainPivot;
           double dElevator = position.elevatorMeters() - startElevator;
           double dWrist = position.wristRadians() - startWrist;
@@ -84,6 +87,6 @@ public class RealArm extends Arm {
   private Command goDirectlyTo(
       double mainPivotRadians, double elevatorMeters, double wristRadians) {
     return parallel(
-        mainPivotS.goTo(() -> mainPivotRadians), elevatorS.goToLength(() -> elevatorMeters));
+        mainPivotS.goTo(() -> mainPivotRadians), elevatorS.goToLength(() -> elevatorMeters), wristS.goTo(()->wristRadians));
   }
 }

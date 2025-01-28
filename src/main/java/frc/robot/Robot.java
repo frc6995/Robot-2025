@@ -8,7 +8,11 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -25,6 +29,7 @@ import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.generated.TunerConstants;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
+import frc.robot.subsystems.RealHandS;
 import frc.robot.util.AlertsUtil;
 import java.util.ArrayList;
 
@@ -39,14 +44,15 @@ public class Robot extends TimedRobot {
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
-
-  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, (traj, isStarting) -> {});
+  private final RealHandS m_hand = new RealHandS();
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
 
   private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
 
   private Mechanism2d VISUALIZER;
+  public Pose3d[] components() {return RobotVisualizer.getComponents();}
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -85,7 +91,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
     m_driverController.a().whileTrue(m_arm.goToPosition(Arm.Positions.L4));
-    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
+    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
+    m_driverController.x().whileTrue(m_arm.goToPosition(Arm.Positions.L2));
+    m_driverController.y().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
     boolean doingSysId = false;
     // if (doingSysId) {
     // SignalLogger.start();
@@ -114,7 +122,7 @@ public class Robot extends TimedRobot {
   }
 
   ArrayList<Translation2d> toGoal = new ArrayList<>();
-
+  Pose3d emptyPose = Pose3d.kZero;
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -125,9 +133,27 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     m_arm.update();
+    RobotVisualizer.setArmPosition(m_arm.position);
     Epilogue.talonFXLogger.refreshAll();
     // pdh.update();
     CommandScheduler.getInstance().run();
+  }
+
+  private final Rotation3d coral_hand_rotation = new Rotation3d(0, Units.degreesToRadians(105), 0);
+  public Pose3d getCoralPose() {
+    if (m_autos.hasCoral()) {
+    return new Pose3d(m_drivebaseS.getPose()).plus(new Transform3d(
+      RobotVisualizer.getComponents()[3].getTranslation(),
+      RobotVisualizer.getComponents()[3].getRotation()
+    )).plus(
+      new Transform3d(
+        -0.12, -m_autos.getDistanceSensorOffset(), 0.1, coral_hand_rotation
+      )
+    );
+    }
+    else {
+      return Pose3d.kZero;
+    }
   }
 
   /**

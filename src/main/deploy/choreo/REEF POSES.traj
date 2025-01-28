@@ -24,14 +24,14 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"A.x", "val":2.9340081176758}, "y":{"exp":"A.y", "val":4.1904845123291}, "heading":{"exp":"A.heading", "val":3.141592653589793}, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"B.x", "val":2.9340081176758}, "y":{"exp":"B.y", "val":3.862436782836916}, "heading":{"exp":"B.heading", "val":3.141592653589793}, "intervals":28, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"A.x", "val":2.9340081176758}, "y":{"exp":"A.y", "val":4.1804845123291}, "heading":{"exp":"A.heading", "val":3.141592653589793}, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"B.x", "val":2.9340081176758}, "y":{"exp":"B.y", "val":3.872436782836916}, "heading":{"exp":"B.heading", "val":3.141592653589793}, "intervals":28, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"C.x", "val":3.57604250717163}, "y":{"exp":"C.y", "val":2.765768540129793}, "heading":{"exp":"C.heading", "val":4.1887902047863905}, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"D.x", "val":3.855394218444824}, "y":{"exp":"D.y", "val":2.6014442565299394}, "heading":{"exp":"D.heading", "val":4.1887902047863905}, "intervals":28, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"E.x", "val":5.128205444335938}, "y":{"exp":"E.y", "val":2.6014442565299394}, "heading":{"exp":"E.heading", "val":5.235987755982989}, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"F.x", "val":5.4075571556091315}, "y":{"exp":"F.y", "val":2.765768540129793}, "heading":{"exp":"F.heading", "val":5.235987755982989}, "intervals":28, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"G.x", "val":6.0495915451049616}, "y":{"exp":"G.y", "val":3.862436782836916}, "heading":{"exp":"G.heading", "val":0.0}, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"H.x", "val":6.0495915451049616}, "y":{"exp":"H.y", "val":4.1904845123291}, "heading":{"exp":"H.heading", "val":0.0}, "intervals":28, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"G.x", "val":6.0495915451049616}, "y":{"exp":"G.y", "val":3.872436782836916}, "heading":{"exp":"G.heading", "val":0.0}, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"H.x", "val":6.0495915451049616}, "y":{"exp":"H.y", "val":4.1804845123291}, "heading":{"exp":"H.heading", "val":0.0}, "intervals":28, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"I.x", "val":5.4075571556091315}, "y":{"exp":"I.y", "val":5.286231459870207}, "heading":{"exp":"I.heading", "val":-5.235987755982989}, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"J.x", "val":5.128205444335938}, "y":{"exp":"J.y", "val":5.45055574347006}, "heading":{"exp":"J.heading", "val":1.0471975511965976}, "intervals":28, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"K.x", "val":3.855394218444824}, "y":{"exp":"K.y", "val":5.45055574347006}, "heading":{"exp":"K.heading", "val":2.0943951023931953}, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

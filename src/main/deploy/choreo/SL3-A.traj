@@ -16,7 +16,7 @@
  "params":{
   "waypoints":[
     {"x":{"exp":"SL3.x", "val":1.645925521850586}, "y":{"exp":"SL3.y", "val":7.444474220275879}, "heading":{"exp":"SL3.heading", "val":2.199114857512855}, "intervals":39, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"A.x", "val":2.9340081176758}, "y":{"exp":"A.y", "val":4.1904845123291}, "heading":{"exp":"A.heading", "val":3.141592653589793}, "intervals":39, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"A.x", "val":2.9340081176758}, "y":{"exp":"A.y", "val":4.1804845123291}, "heading":{"exp":"A.heading", "val":3.141592653589793}, "intervals":39, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"SL3.x", "val":1.645925521850586}, "y":{"exp":"SL3.y", "val":7.444474220275879}, "heading":{"exp":"SL3.heading", "val":2.199114857512855}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
