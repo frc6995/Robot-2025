@@ -32,8 +32,7 @@ import java.util.Objects;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
-public class Force
-    implements Interpolatable<Force>, ProtobufSerializable, StructSerializable {
+public class Force implements Interpolatable<Force>, ProtobufSerializable, StructSerializable {
   /**
    * A preallocated Force representing the origin.
    *
@@ -64,8 +63,8 @@ public class Force
   }
 
   /**
-   * Constructs a Force with the provided distance and angle. This is essentially converting
-   * from polar coordinates to Cartesian coordinates.
+   * Constructs a Force with the provided distance and angle. This is essentially converting from
+   * polar coordinates to Cartesian coordinates.
    *
    * @param distance The distance from the origin to the end of the translation.
    * @param angle The angle between the x-axis and the translation vector.
@@ -76,8 +75,8 @@ public class Force
   }
 
   /**
-   * Constructs a Force with the X and Y components equal to the provided values. The X and
-   * Y components will be converted to and tracked as meters.
+   * Constructs a Force with the X and Y components equal to the provided values. The X and Y
+   * components will be converted to and tracked as meters.
    *
    * @param x The x component of the translation.
    * @param y The y component of the translation.
@@ -87,8 +86,8 @@ public class Force
   }
 
   /**
-   * Constructs a Force from the provided translation vector's X and Y components. The
-   * values are assumed to be in meters.
+   * Constructs a Force from the provided translation vector's X and Y components. The values are
+   * assumed to be in meters.
    *
    * @param vector The translation vector to represent.
    */
@@ -184,8 +183,8 @@ public class Force
    * [y_new] = [other.sin,  other.cos][y]
    * </pre>
    *
-   * <p>For example, rotating a Force of &lt;2, 0&gt; by 90 degrees will return a
-   * Force of &lt;0, 2&gt;.
+   * <p>For example, rotating a Force of &lt;2, 0&gt; by 90 degrees will return a Force of &lt;0,
+   * 2&gt;.
    *
    * @param other The rotation to rotate the translation by.
    * @return The new rotated translation.
@@ -311,4 +310,3 @@ public class Force
         MathUtil.interpolate(this.getY(), endValue.getY(), t));
   }
 }
-

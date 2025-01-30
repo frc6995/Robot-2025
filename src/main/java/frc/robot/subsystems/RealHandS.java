@@ -12,12 +12,21 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.AlgaePivotS.AlgaePivotConstants;
 
-public class HandRollerS extends SubsystemBase {
-  public class HandRollerSconstants {
+public class RealHandS extends Hand {
+    public final MechanismLigament2d TOP_ROLLER =
+      new MechanismLigament2d(
+          "top-roller", 0.05, 0, 4, new Color8Bit(Color.kWhite));
+  public final MechanismLigament2d BOTTOM_ROLLER =
+      new MechanismLigament2d(
+          "top-roller", 0.05, 0, 4, new Color8Bit(Color.kWhite));
+  public class HandConstants {
 
   public static final int CAN_ID = 51;
 
@@ -26,7 +35,7 @@ public class HandRollerS extends SubsystemBase {
   public static final double OUT_VOLTAGE = -6;
 
   }
-  private final TalonFX motor = new TalonFX(HandRollerSconstants.CAN_ID);
+  private final TalonFX motor = new TalonFX(HandConstants.CAN_ID);
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
 
@@ -50,23 +59,24 @@ public class HandRollerS extends SubsystemBase {
 
 
   /** Creates a new HandRollerS. */
-  public HandRollerS() {
-    setDefaultCommand(stop());
+  public RealHandS() {
+   super();
   }
 
   @Override
   public void periodic() {
-
+    TOP_ROLLER.setAngle(TOP_ROLLER.getAngle() + 4 * voltageRequest.Output);
+    BOTTOM_ROLLER.setAngle(BOTTOM_ROLLER.getAngle() - 4 * voltageRequest.Output);
     // This method will be called once per scheduler run
   }
   public Command stop(){
     return this.run(()->motor.setControl(voltageRequest.withOutput(0)));
   }
   public Command in(){
-    return this.run(()->motor.setControl(voltageRequest.withOutput(HandRollerSconstants.IN_VOLTAGE)));
+    return this.run(()->motor.setControl(voltageRequest.withOutput(HandConstants.IN_VOLTAGE)));
   }
   public Command out(){
-    return this.run(()->motor.setControl(voltageRequest.withOutput(HandRollerSconstants.OUT_VOLTAGE)));
+    return this.run(()->motor.setControl(voltageRequest.withOutput(HandConstants.OUT_VOLTAGE)));
 
   }
 
