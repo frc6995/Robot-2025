@@ -6,9 +6,11 @@
 # See this Learn Guide for details:
 # https://learn.adafruit.com/customizing-usb-devices-in-circuitpython/hid-devices#custom-hid-devices-3096614-9
 
+import time
 import board
 import digitalio
 import analogio
+from operatorController.lib import neopixel
 import usb_hid
 
 from adafruit_hid.hid_gamepad import Gamepad
@@ -21,7 +23,7 @@ class Selector:
         for button in self.buttons:
             button.direction = digitalio.Direction.INPUT
             button.pull = digitalio.Pull.UP
-        self.button_state = [True for j in range(len(pins))]
+        self.button_state = [False for j in range(len(pins))]
         self.selected = 0
     def update(self):
         
@@ -34,9 +36,21 @@ class Selector:
 
 
 branch_pins = [board.GP0, board.GP1, board.GP2, board.GP3, board.GP4, board.GP5, board.GP6, board.GP7, board.GP8, board.GP9, board.GP10, board.GP11]
-level_pins = [board.GP12, board.GP13, board.GP14,board.GP15]
-climb_pins = [board.GP16, board.GP17,board.GP18]
+level_pins = [board.GP19, board.GP18, board.GP17,board.GP16]
+climb_pins = [board.GP22, board.GP27,board.GP28]
 
+pixel_pin = board.GP20
+
+PIXEL_PIN = board.GP20  # pin that the NeoPixel is connected to
+ORDER = neopixel.RGB  # pixel color channel order
+COLOR = (100, 50, 150)  # color to blink
+CLEAR = (0, 0, 0)  # clear (or second color)
+DELAY = 0.25  # blink rate in seconds
+
+# Create the NeoPixel object
+pixel = neopixel.NeoPixel(PIXEL_PIN, 1, pixel_order=ORDER)
+
+# Loop forever and blink the color
 
 #1 = A, 12 = L
 branch_selector = Selector(branch_pins)
@@ -55,6 +69,9 @@ while True:
     level_button = level_selector.selected
     climb_button = climb_selector.selected
 
+    #8 bits
+    # button 1 = bit 0
+    # MSB | climb (2 bits) | level (2 bits) | branch (4 bits) | LSB
     bitfield = (branch_button & 0xf) + ((level_button & 0x3) << 4) + ((climb_button & 0x3) << 6)
    # send the current state
     for i in range(1,8):
