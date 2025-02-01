@@ -98,11 +98,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    m_driverController.a().whileTrue(m_autos.autoScore());
-    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
-    // m_driverController.x().whileTrue(m_arm.goToPosition(Arm.Positions.L2));
-    m_driverController.y().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
-    m_driverController.x().whileTrue(m_autos.alignToSelectedPose());
+    configureDriverController();
+    
     boolean doingSysId = false;
     // if (doingSysId) {
     // SignalLogger.start();
@@ -128,6 +125,14 @@ public class Robot extends TimedRobot {
     // m_keypad.key(CommandOperatorKeypad.Button.kRightGrid).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kReverse));
     // }
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
+  }
+
+  public void configureDriverController() {
+    m_driverController.a().whileTrue(m_autos.autoScore());
+    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
+    // m_driverController.x().whileTrue(m_arm.goToPosition(Arm.Positions.L2));
+    m_driverController.y().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
+    m_driverController.x().whileTrue(m_autos.alignToSelectedPose());
   }
 
   ArrayList<Translation2d> toGoal = new ArrayList<>();
