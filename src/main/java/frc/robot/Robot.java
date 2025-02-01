@@ -25,6 +25,10 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.operator.OperatorBoard;
+import frc.operator.RealOperatorBoard;
+import frc.operator.SimOperatorBoard;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.generated.TunerConstants;
 // import frc.robot.logging.TalonFXLogger;
@@ -42,6 +46,7 @@ import java.util.ArrayList;
 public class Robot extends TimedRobot {
   // public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
+  private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
   private final RealHandS m_hand = new RealHandS();
@@ -132,6 +137,31 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    m_operatorBoard.poll();
+    if (RobotBase.isSimulation()) {
+      toGoal.clear();
+      toGoal.addAll(m_drivebaseS.m_repulsor.getTrajectory(
+        m_drivebaseS.state().Pose.getTranslation(),
+        m_drivebaseS.m_repulsor.goal().getTranslation(), 3*0.02));
+      // This needs to be just before pdh.update() so it can't be in simulationPeriodic, which is after 
+      // TalonFXPDHChannel.refresh();
+      // TalonFXPDHChannel.currentSignalsRio.forEach((channel, signal)->{
+      //   PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
+      //   );
+      // TalonFXPDHChannel.currentSignalsCanivore.forEach((channel, signal)->{
+      //   PowerDistributionSim.instance.setChannelCurrent(channel, signal.getValueAsDouble());}
+      //   );
+    }
+    // toProc.clear();
+    // to_a_left.clear();
+    // to_b_left.clear();
+    // to_proc_stat.clear();
+
+    // toProc.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc.getTranslation(), 3*0.02));
+    // to_a_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), a_left.getTranslation(), 3*0.02));
+    // to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), b_left.getTranslation(), 3*0.02));
+    // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc_stat.getTranslation(), 3*0.02));
+
     m_arm.update();
     RobotVisualizer.setArmPosition(m_arm.position);
     Epilogue.talonFXLogger.refreshAll();
