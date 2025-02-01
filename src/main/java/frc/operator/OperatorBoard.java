@@ -10,7 +10,9 @@ public abstract class OperatorBoard {
     public OperatorBoard(int port) {}
 
     public abstract int getBitfield();
-
+    public int getBranch() {return branch;}
+    public int getClimb() {return climb;}
+    public int getLevel() {return level;}
     public void poll() {
         var bitfield = getBitfield();
         branch = bitfield & 0xf;
