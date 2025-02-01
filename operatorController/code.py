@@ -10,7 +10,7 @@ import time
 import board
 import digitalio
 import analogio
-from operatorController.lib import neopixel
+# from operatorController.lib import neopixel
 import usb_hid
 
 from adafruit_hid.hid_gamepad import Gamepad
@@ -39,16 +39,16 @@ branch_pins = [board.GP0, board.GP1, board.GP2, board.GP3, board.GP4, board.GP5,
 level_pins = [board.GP19, board.GP18, board.GP17,board.GP16]
 climb_pins = [board.GP22, board.GP27,board.GP28]
 
-pixel_pin = board.GP20
+# pixel_pin = board.GP20
 
-PIXEL_PIN = board.GP20  # pin that the NeoPixel is connected to
-ORDER = neopixel.RGB  # pixel color channel order
-COLOR = (100, 50, 150)  # color to blink
-CLEAR = (0, 0, 0)  # clear (or second color)
-DELAY = 0.25  # blink rate in seconds
+# PIXEL_PIN = board.GP20  # pin that the NeoPixel is connected to
+# ORDER = neopixel.RGB  # pixel color channel order
+# COLOR = (100, 50, 150)  # color to blink
+# CLEAR = (0, 0, 0)  # clear (or second color)
+# DELAY = 0.25  # blink rate in seconds
 
-# Create the NeoPixel object
-pixel = neopixel.NeoPixel(PIXEL_PIN, 1, pixel_order=ORDER)
+# # Create the NeoPixel object
+# pixel = neopixel.NeoPixel(PIXEL_PIN, 1, pixel_order=ORDER)
 
 # Loop forever and blink the color
 

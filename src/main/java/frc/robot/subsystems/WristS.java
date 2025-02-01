@@ -50,8 +50,8 @@ public class WristS extends SubsystemBase {
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
     // rotations per arm rotation.
 
-    public static final Angle CCW_LIMIT = Degrees.of(100);
-    public static final Angle CW_LIMIT = Degrees.of(-40);
+    public static final Angle CCW_LIMIT = Degrees.of(180);
+    public static final Angle CW_LIMIT = Degrees.of(-180);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 70;
     // Units=volts/pivot rotation/s
     public static final double K_V = 9.2;

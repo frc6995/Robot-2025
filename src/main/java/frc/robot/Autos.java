@@ -9,6 +9,8 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -18,27 +20,34 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.operator.OperatorBoard;
 import frc.robot.Arm.ArmPosition;
+import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.Hand;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+@Logged(strategy = Strategy.OPT_IN)
 public class Autos {
   private final DriveBaseS m_drivebase;
   private final Arm m_arm;
   private final Hand m_hand;
+  private final OperatorBoard m_board;
   private final AutoFactory m_autoFactory;
   public final AutoChooser m_autoChooser;
 
-  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, TrajectoryLogger<SwerveSample> trajlogger) {
+  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
     m_hand = hand;
+    m_board = board;
     m_autoChooser = new AutoChooser();
     m_autoFactory =
         new AutoFactory(
@@ -157,9 +166,11 @@ public class Autos {
             .andThen(m_hand.out().withTimeout(outtakeSeconds).asProxy()), // Proxy so hand isn't directly required
         m_drivebase.pidToPoseC(target));
   }
+  @Logged
   public double getDistanceSensorOffset() {
     return -0.1;
   }
+  @Logged
   public boolean hasCoral() {
     return getDistanceSensorOffset() > -0.2;
   }
@@ -170,6 +181,66 @@ public class Autos {
         original
             .get()
             .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
+  }
+
+  private POI selectedReefPOI() {
+    return switch(m_board.getBranch()) {
+      case 0 -> POI.A;
+      case 1 -> POI.B;
+      case 2 -> POI.C;
+      case 3 -> POI.D;
+      case 4 -> POI.E;
+      case 5 -> POI.F;
+      case 6 -> POI.G;
+      case 7 -> POI.H;
+      case 8 -> POI.I;
+      case 9 -> POI.J;
+      case 10 -> POI.K;
+      case 11 -> POI.L;
+      default -> POI.A;
+    };
+  }
+  public Pose2d selectedReefPose() {
+    return selectedReefPOI().flippedPose();
+  }
+  public Supplier<Pose2d> offsetSelectedReefPose = sensorOffsetPose(this::selectedReefPose);
+  @Logged
+  public Pose2d offsetSelectedReefPoseLog() {
+    return offsetSelectedReefPose.get();
+  }
+
+  public Command alignToSelectedPose() {
+    return m_drivebase.repulsorCommand(offsetSelectedReefPose);
+  }
+
+  private ArmPosition selectedBranch() {
+    return switch (m_board.getLevel()) {
+      case 0-> Arm.Positions.STOW;
+      case 1-> Arm.Positions.L2;
+      case 2-> Arm.Positions.L3;
+      case 3-> Arm.Positions.L4;
+      default-> Arm.Positions.STOW;
+    };
+  }
+
+  public Command autoScore() {
+    var target = offsetSelectedReefPose;
+    return defer(
+      ()->{
+        return deadline(
+          waitUntil(
+            atPose(target)
+                .and(
+                    () -> m_arm.atPosition(selectedBranch())))
+          .andThen(m_hand.out().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
+          ,
+          m_drivebase.pidToPoseC(offsetSelectedReefPose).asProxy(),
+          m_arm.goToPosition(selectedBranch()).asProxy()
+        ).andThen(
+          m_arm.goToPosition(Arm.Positions.STOW).asProxy()
+        );
+      },Set.of());
+    
   }
 
   private static List<String> TRAJECTORIES = List.of(Choreo.availableTrajectories());
@@ -192,13 +263,22 @@ public class Autos {
     STI(false),
     STH(false);
     public final Pose2d bluePose;
+    public final Pose2d redPose;
     public final boolean isReef;
 
     private POI(boolean isReef) {
       this.isReef = isReef;
       bluePose = ChoreoVariables.getPose(this.name());
+      redPose = AllianceFlipUtil.flip(bluePose);
     }
-
+    private POI(boolean isReef, Pose2d bluePose) {
+      this.isReef = isReef;
+      this.bluePose = bluePose;
+      redPose = AllianceFlipUtil.flip(bluePose);
+    }
+    public Pose2d flippedPose() {
+      return AllianceFlipUtil.shouldFlip() ? redPose : bluePose;
+    }
     public Optional<AutoTrajectory> to(POI next, AutoRoutine routine) {
       String name;
       boolean reverse;

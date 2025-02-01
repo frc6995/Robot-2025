@@ -17,6 +17,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.operator.OperatorBoard;
+import frc.operator.RealOperatorBoard;
+import frc.operator.SimOperatorBoard;
 import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.generated.TunerConstants;
 // import frc.robot.logging.TalonFXLogger;
@@ -33,10 +36,11 @@ import frc.robot.util.AlertsUtil;
 public class AlphaRobot extends TimedRobot {
   // public PDData pdh = PDData.create(1, ModuleType.kRev);
   private final CommandXboxController m_driverController = new CommandXboxController(0);
+    private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createAlphaDrivetrain();
   private final NoneArm m_arm = new NoneArm();
   private final NoneHandS m_hand = new NoneHandS();
-  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, (traj, isStarting) -> {});
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
 
   private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
