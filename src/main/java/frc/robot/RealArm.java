@@ -17,6 +17,8 @@ import frc.robot.subsystems.ElevatorS.ElevatorConstants;
 import frc.robot.subsystems.MainPivotS;
 import frc.robot.subsystems.NoneWristS;
 import frc.robot.subsystems.Wrist;
+import frc.robot.subsystems.WristS;
+
 import java.util.Set;
 
 @Logged
@@ -26,7 +28,7 @@ public class RealArm extends Arm {
         new ArmPosition(
             Radians.of(mainPivotS.getAngleRadians()),
             Meters.of(elevatorS.getLengthMeters()),
-            Radians.of(wristS.getAngle()));
+            Radians.of(wristS.getAngleRadians()));
   }
 
   @Override
@@ -36,14 +38,18 @@ public class RealArm extends Arm {
 
   public RealArm() {
     mainPivotS.setLengthSupplier(elevatorS::getLengthMeters);
+    mainPivotS.setMoISupplier(elevatorS::getMoI);
     elevatorS.setAngleSupplier(mainPivotS::getAngleRadians);
     ARM = mainPivotS.MAIN_PIVOT;
     ARM.append(elevatorS.ELEVATOR);
+    elevatorS.ELEVATOR.append(wristS.WRIST);
+    
+    wristS.WRIST.append(new MechanismLigament2d("hand", 0.3, 0));
   }
 
   public MainPivotS mainPivotS = new MainPivotS();
   public ElevatorS elevatorS = new ElevatorS();
-  public Wrist wristS = new NoneWristS();
+  public WristS wristS = new WristS();
   private static final Distance SAFE_PIVOT_ELEVATOR_LENGTH =
       ElevatorConstants.MIN_LENGTH.plus(Inches.of(3));
 
@@ -52,7 +58,7 @@ public class RealArm extends Arm {
         () -> {
           double startMainPivot = mainPivotS.getAngleRadians();
           double startElevator = elevatorS.getLengthMeters();
-          double startWrist = wristS.getAngle();
+          double startWrist = wristS.getAngleRadians();
           double dPivot = position.pivotRadians() - startMainPivot;
           double dElevator = position.elevatorMeters() - startElevator;
           double dWrist = position.wristRadians() - startWrist;
@@ -81,7 +87,7 @@ public class RealArm extends Arm {
                     position.pivotRadians(), position.elevatorMeters(), position.wristRadians()));
           }
         },
-        Set.of(mainPivotS, elevatorS));
+        Set.of(mainPivotS, elevatorS, wristS));
   }
 
   private Command goDirectlyTo(

@@ -1,6 +1,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -14,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Arm.ArmPosition;
 import frc.robot.subsystems.ElevatorS.ElevatorConstants;
+import frc.robot.subsystems.WristS.WristConstants;
 
 public class RobotVisualizer {
   private static final double BASE_X = Units.feetToMeters(3);
@@ -58,6 +60,6 @@ public class RobotVisualizer {
     components[1] = components[0].transformBy(new Transform3d(new Translation3d(
       (position.elevatorMeters()-ElevatorConstants.MIN_LENGTH.in(Meters))/2  + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
     components[2] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters() - ElevatorConstants.MIN_LENGTH.in(Meters) + Units.inchesToMeters(0.4), 0,0), Rotation3d.kZero));
-    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-position.wristRadians(),0)));
+    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-(position.wristRadians() - Units.degreesToRadians(140)),0)));
   }
 }

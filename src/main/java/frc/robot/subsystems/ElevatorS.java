@@ -26,6 +26,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
@@ -47,6 +48,8 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.MainPivotS.MainPivotConstants;
+
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -110,6 +113,14 @@ public class ElevatorS extends SubsystemBase {
             K_V.in(VoltsPerRotationPerSecond) * MOTOR_ROTATIONS_PER_METER,
             K_A.in(VoltsPerRotationPerSecondSquared) * MOTOR_ROTATIONS_PER_METER);
     public static final double K_G = 0.1;
+    public static final InterpolatingDoubleTreeMap LENGTH_TO_MOI =
+        InterpolatingDoubleTreeMap.ofEntries(
+            Map.entry(ElevatorConstants.MIN_LENGTH.in(Meters), 0.7419),
+            Map.entry(ElevatorConstants.MAX_LENGTH.in(Meters), 2.812027));
+
+    public static double getMoI(double armLengthMeters) {
+      return LENGTH_TO_MOI.get(armLengthMeters);
+    }
   }
 
   private TalonFX leader = new TalonFX(ElevatorConstants.LEADER_ID);
@@ -149,6 +160,9 @@ public class ElevatorS extends SubsystemBase {
     setDefaultCommand(this.hold());
   }
 
+  public double getMoI() {
+    return ElevatorConstants.getMoI(getLengthMeters());
+  }
   public Command hold() {
     return this.runOnce(() -> positionReq.withPosition(getMotorRotations()).withVelocity(0))
         .andThen(this.run(() -> leader.setControl(positionReq)));

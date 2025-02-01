@@ -30,6 +30,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.simulation.VariableLengthArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -43,14 +44,14 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 @Logged
-public class MainPivotS extends SubsystemBase {
-  public class MainPivotConstants {
+public class WristS extends SubsystemBase {
+  public class WristConstants {
 
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
     // rotations per arm rotation.
 
     public static final Angle CCW_LIMIT = Degrees.of(100);
-    public static final Angle CW_LIMIT = Degrees.of(40);
+    public static final Angle CW_LIMIT = Degrees.of(-40);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 70;
     // Units=volts/pivot rotation/s
     public static final double K_V = 9.2;
@@ -63,23 +64,19 @@ public class MainPivotS extends SubsystemBase {
     // Pose
 
     // CAN IDs
-    public static final int LEADER_CAN_ID = 30;
-    public static final int FOLLOWER_CAN_ID = 31;
-    public static final int OPPOSING1_CAN_ID = 32;
-    public static final int OPPOSING2_CAN_ID = 33;
+    public static final int LEADER_CAN_ID = 50;
 
     public static final int CURRENT_LIMIT = 100;
 
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
 
-    public static final double K_G_RETRACTED = 0.5;
-    public static final double K_G_EXTENDED = 3;
+    public static final double K_G = 0.5;
     public static final double K_S = 0;
     // arm plus hand
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(0));
-    public static final DCMotor GEARBOX = DCMotor.getKrakenX60(4);
-
+    public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
+    public static final double MOI = 0.6995;
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(10).withKD(1);
       config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(2);
@@ -94,89 +91,44 @@ public class MainPivotS extends SubsystemBase {
       return config;
     }
 
-    public static TalonFXConfiguration configureFollower(TalonFXConfiguration config) {
-      config.Feedback
-          // .withFeedbackRemoteSensorID(34)
-          // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
-          .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
-      return config;
-    }
-
-    public static TalonFXConfiguration configureOppose(TalonFXConfiguration config) {
-      config.Feedback
-          // .withFeedbackRemoteSensorID(34)
-          // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
-          .withSensorToMechanismRatio(-MOTOR_ROTATIONS_PER_ARM_ROTATION);
-      return config;
-    }
   }
 
-  private final VariableLengthArmSim m_pivotSim =
-      new VariableLengthArmSim(
-          MainPivotConstants.PLANT,
-          MainPivotConstants.GEARBOX,
-          MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION,
-          ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters)),
-          ElevatorConstants.MIN_LENGTH.in(Meters),
-          MainPivotConstants.CW_LIMIT.in(Radians),
-          MainPivotConstants.CCW_LIMIT.in(Radians),
-          MainPivotConstants.ARM_MASS.in(Kilograms),
-          false);
+  private final SingleJointedArmSim m_pivotSim =
+      new SingleJointedArmSim(
+        WristConstants.GEARBOX, WristConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION, 
+        WristConstants.MOI, 0.2, WristConstants.CW_LIMIT.in(Radians), 
+        WristConstants.CCW_LIMIT.in(Radians), false, 0
+      );
 
-  private DoubleSupplier m_lengthSupplier = () -> ElevatorConstants.MIN_LENGTH.in(Meters);
-  private DoubleSupplier m_moiSupplier = () -> ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters));
-  public void setLengthSupplier(DoubleSupplier lengthSupplier) {
-    m_lengthSupplier = lengthSupplier;
-  }
-
-  public void setMoISupplier(DoubleSupplier moiSupplier) {
-    m_moiSupplier = moiSupplier;
-  }
-
-  public final MechanismLigament2d MAIN_PIVOT =
-      new MechanismLigament2d("main_pivot", 0, 0, 4, new Color8Bit(235, 137, 52));
-  private TalonFX m_leader = new TalonFX(MainPivotConstants.LEADER_CAN_ID);
-  private TalonFX m_follower = new TalonFX(MainPivotConstants.FOLLOWER_CAN_ID);
-  private TalonFX m_oppose1 = new TalonFX(MainPivotConstants.OPPOSING1_CAN_ID);
-  private TalonFX m_oppose2 = new TalonFX(MainPivotConstants.OPPOSING2_CAN_ID);
+  public final MechanismLigament2d WRIST =
+      new MechanismLigament2d("wrist", 0, 0, 4, new Color8Bit(235, 137, 52));
+  private TalonFX m_leader = new TalonFX(WristConstants.LEADER_CAN_ID);
   private MotionMagicVoltage m_profileReq = new MotionMagicVoltage(0);
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();
   private double m_setpointRotations;
 
+  private DoubleSupplier m_mainAngleSupplier = () -> 0;
+  public void setMainAngleSupplier(DoubleSupplier mainAngleSupplier) {
+    m_mainAngleSupplier = mainAngleSupplier;
+  }
   /** Creates a new MainPivotS. */
-  public MainPivotS() {
+  public WristS() {
     m_leader
         .getConfigurator()
-        .apply(MainPivotConstants.configureLeader(new TalonFXConfiguration()));
-    m_follower
-        .getConfigurator()
-        .apply(MainPivotConstants.configureFollower(new TalonFXConfiguration()));
-    m_oppose1
-        .getConfigurator()
-        .apply(MainPivotConstants.configureOppose(new TalonFXConfiguration()));
-    m_oppose2
-        .getConfigurator()
-        .apply(MainPivotConstants.configureOppose(new TalonFXConfiguration()));
+        .apply(WristConstants.configureLeader(new TalonFXConfiguration()));
     m_leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
-    m_follower.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
-    m_oppose1.getSimState().Orientation = ChassisReference.Clockwise_Positive;
-    m_oppose2.getSimState().Orientation = ChassisReference.Clockwise_Positive;
-    m_pivotSim.setState(VecBuilder.fill(MainPivotConstants.CW_LIMIT.in(Radians), 0));
-    m_follower.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, false));
-    m_oppose1.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
-    m_oppose2.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
+    m_pivotSim.setState(VecBuilder.fill(WristConstants.CW_LIMIT.in(Radians), 0));
+    setDefaultCommand(hold());
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    MAIN_PIVOT.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
+    WRIST.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
   }
 
   public void simulationPeriodic() {
-    m_pivotSim.setMOI(m_moiSupplier.getAsDouble());
-    m_pivotSim.setCGRadius(m_lengthSupplier.getAsDouble() / 2.0);
     for (int i = 0; i < 2; i++) {
       var simState = m_leader.getSimState();
       simState.setSupplyVoltage(12);
@@ -184,27 +136,21 @@ public class MainPivotS extends SubsystemBase {
       double volts = simState.getMotorVoltage();
 
       m_pivotSim.setInput(
-          NomadMathUtil.subtractkS(volts, MainPivotConstants.K_S)
+          NomadMathUtil.subtractkS(volts, WristConstants.K_S)
           // - getKgVolts()
           );
       m_pivotSim.update(0.01);
       var rotorPos =
           m_pivotSim.getAngleRads()
-              * MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION
+              * WristConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION
               / (2 * Math.PI);
       var rotorVel =
           m_pivotSim.getVelocityRadPerSec()
-              * MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION
+              * WristConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION
               / (2 * Math.PI);
 
       simState.setRawRotorPosition(rotorPos);
       simState.setRotorVelocity(rotorVel);
-      m_follower.getSimState().setRawRotorPosition(rotorPos);
-      m_follower.getSimState().setRotorVelocity(rotorVel);
-      m_oppose1.getSimState().setRawRotorPosition(-rotorPos);
-      m_oppose1.getSimState().setRotorVelocity(-rotorVel);
-      m_oppose2.getSimState().setRawRotorPosition(-rotorPos);
-      m_oppose2.getSimState().setRotorVelocity(-rotorVel);
     }
   }
 
@@ -216,19 +162,8 @@ public class MainPivotS extends SubsystemBase {
     return Units.rotationsToRadians(m_angleSig.getValueAsDouble());
   }
 
-  private double getLengthMeters() {
-    return m_lengthSupplier.getAsDouble();
-  }
-
   public double getKgVolts() {
-    return Math.cos(getAngleRadians())
-        * MathUtil.interpolate(
-            MainPivotConstants.K_G_RETRACTED,
-            MainPivotConstants.K_G_EXTENDED,
-            MathUtil.inverseInterpolate(
-                ElevatorConstants.MIN_LENGTH.in(Meters),
-                ElevatorConstants.MAX_LENGTH.in(Meters),
-                getLengthMeters()));
+    return Math.cos(getAngleRadians() + m_mainAngleSupplier.getAsDouble())*WristConstants.K_G;
   }
 
   public void setAngleRadians(double angle) {
