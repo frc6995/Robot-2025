@@ -1,13 +1,16 @@
 package frc.operator;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
 
 public class RealOperatorBoard extends OperatorBoard {
     final int port;
+    int selectedBranch = 0;
+    int selectedLevel = 0;
+    int selectedClimb = 0;
     public RealOperatorBoard(int port){
         super(port);
         this.port = port;
+        
     }
 
     @Override
