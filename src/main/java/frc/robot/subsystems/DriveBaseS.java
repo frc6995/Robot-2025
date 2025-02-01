@@ -107,10 +107,10 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private final SwerveModuleConstants<?, ?, ?>[] modules;
 
   private double getOffset(int moduleIndex) {
-    return this.state()
-        .ModuleStates[0]
+    return Rotation2d.fromRotations(modules[moduleIndex].EncoderOffset).minus(this.state()
+        .ModuleStates[moduleIndex]
         .angle
-        .plus(Rotation2d.fromRotations(modules[0].EncoderOffset))
+    )
         .getRotations();
   }
 

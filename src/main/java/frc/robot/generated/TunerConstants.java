@@ -247,7 +247,11 @@ public class TunerConstants {
    * program,.
    */
   public static DriveBaseS createDrivetrain() {
-    return new DriveBaseS(DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight);
+    return new DriveBaseS(DrivetrainConstants,
+        FrontLeft.withEncoderOffset(Rotations.of(0.1074218)),
+        FrontRight.withEncoderOffset(Rotations.of(-0.393066)),
+        BackLeft.withEncoderOffset(Rotations.of(0.3203125)),
+        BackRight.withEncoderOffset(Rotations.of(-0.45361328)));
   }
 
   public static DriveBaseS createAlphaDrivetrain() {
