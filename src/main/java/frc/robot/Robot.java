@@ -50,7 +50,7 @@ public class Robot extends TimedRobot {
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
   private final RealHandS m_hand = new RealHandS();
-  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, (traj, isStarting) -> {});
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
 
   private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
@@ -95,10 +95,11 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    m_driverController.a().whileTrue(m_arm.goToPosition(Arm.Positions.L4));
+    m_driverController.a().whileTrue(m_autos.autoScore());
     m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
-    m_driverController.x().whileTrue(m_arm.goToPosition(Arm.Positions.L2));
+    // m_driverController.x().whileTrue(m_arm.goToPosition(Arm.Positions.L2));
     m_driverController.y().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
+    m_driverController.x().whileTrue(m_autos.alignToSelectedPose());
     boolean doingSysId = false;
     // if (doingSysId) {
     // SignalLogger.start();
