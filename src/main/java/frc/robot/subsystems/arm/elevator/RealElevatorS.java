@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.arm.elevator;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
@@ -47,14 +47,14 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.MainPivotS.MainPivotConstants;
+import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 @Logged
-public class ElevatorS extends SubsystemBase {
+public class RealElevatorS extends Elevator {
   public class ElevatorConstants {
     public static final int LEADER_ID = 40;
     public static final int FOLLOWER_ID = 41;
@@ -146,7 +146,7 @@ public class ElevatorS extends SubsystemBase {
   private DoubleSupplier angleRadiansSupplier = () -> MainPivotConstants.CW_LIMIT.in(Radians);
 
   /** Creates a new ElevatorS. */
-  public ElevatorS() {
+  public RealElevatorS() {
     leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
     var config = new TalonFXConfiguration();
     leader.getConfigurator().refresh(config);

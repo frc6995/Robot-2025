@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.arm.wrist;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Kilograms;
@@ -37,14 +37,14 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.ElevatorS.ElevatorConstants;
+import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.util.NomadMathUtil;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 @Logged
-public class WristS extends SubsystemBase {
+public class RealWristS extends Wrist {
   public class WristConstants {
 
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
@@ -113,7 +113,7 @@ public class WristS extends SubsystemBase {
     m_mainAngleSupplier = mainAngleSupplier;
   }
   /** Creates a new MainPivotS. */
-  public WristS() {
+  public RealWristS() {
     m_leader
         .getConfigurator()
         .apply(WristConstants.configureLeader(new TalonFXConfiguration()));

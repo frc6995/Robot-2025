@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
@@ -11,8 +11,8 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.ElevatorS.ElevatorConstants;
-import frc.robot.subsystems.MainPivotS.MainPivotConstants;
+import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
+import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 
 public abstract class Arm {
   public MechanismLigament2d ARM;
@@ -39,7 +39,7 @@ public abstract class Arm {
   }
   ;
 
-  class Positions {
+  public class Positions {
     public static final ArmPosition L3 =
         new ArmPosition(Degrees.of(95), Meters.of(1), Radians.of(0));
     public static final ArmPosition L4 =

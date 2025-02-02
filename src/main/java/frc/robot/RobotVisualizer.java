@@ -13,9 +13,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import frc.robot.Arm.ArmPosition;
-import frc.robot.subsystems.ElevatorS.ElevatorConstants;
-import frc.robot.subsystems.WristS.WristConstants;
+import frc.robot.subsystems.arm.Arm.ArmPosition;
+import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
+import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 
 public class RobotVisualizer {
   private static final double BASE_X = Units.feetToMeters(3);

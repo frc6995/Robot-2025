@@ -21,10 +21,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.operator.OperatorBoard;
-import frc.robot.Arm.ArmPosition;
 import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.Hand;
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
 import java.util.List;
@@ -66,8 +67,7 @@ public class Autos {
     // m_autoChooser.addRoutine("JKL_SL3", this::JKL_SL3);
     m_autoChooser.addCmd("JKLA_SL3", this::JKLA_SL3);
     m_autoChooser.addCmd("JKLA_FLEX", () -> flexAuto(POI.STJ, POI.SL3, POI.J, POI.K, POI.L, POI.A));
-    m_autoChooser.addCmd(
-        "HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SL3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
+    m_autoChooser.addCmd("HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SL3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
     m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
   }
 

@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.arm.wrist;
 
 import java.util.function.DoubleSupplier;
 
@@ -9,14 +9,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 public class NoneWristS extends Wrist {
 
     @Override
-    public double getAngle() {
+    public double getAngleRadians() {
        return position;
     }
 
     @Override
-    public Command goTo(DoubleSupplier angleSupplier) {
+    public Command goTo(DoubleSupplier angleSupplierRadians) {
         // TODO Auto-generated method stub
-        return run(()->position = angleSupplier.getAsDouble());
+        return run(()->position = angleSupplierRadians.getAsDouble());
     }
     private double position = 0;
 }
