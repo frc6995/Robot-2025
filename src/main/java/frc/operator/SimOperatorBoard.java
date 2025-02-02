@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class SimOperatorBoard extends OperatorBoard {
     final int port;
@@ -11,9 +12,11 @@ public class SimOperatorBoard extends OperatorBoard {
     int selectedLevel = 0;
     int selectedClimb = 0;
     CommandGenericHID hid;
+    private Trigger isSim;
     public SimOperatorBoard(int port){
         super(port);
         this.port = port;
+        isSim = new Trigger(()->DriverStation.getStickButtonCount(port) > 16);
         hid = new CommandGenericHID(port);
         for (int i = 0; i < 12; i++) {
             branchCmd(i);
@@ -26,21 +29,26 @@ public class SimOperatorBoard extends OperatorBoard {
         levelCmd(2);
         levelCmd(3);
     }
+ 
 
     private void branchCmd(int branch) {
-        hid.button(branch+1).onTrue(Commands.runOnce(()->selectedBranch = branch).ignoringDisable(true));
+        isSim.and(hid.button(branch+1)).onTrue(Commands.runOnce(()->selectedBranch = branch).ignoringDisable(true));
     }
 
     private void climbCmd(int cage) {
-        hid.button(cage+12+4+1).onTrue(Commands.runOnce(()->selectedClimb = cage).ignoringDisable(true));
+        isSim.and(hid.button(cage+12+4+1)).onTrue(Commands.runOnce(()->selectedClimb = cage).ignoringDisable(true));
     }
 
     private void levelCmd(int level) {
-        hid.button(level+12+1).onTrue(Commands.runOnce(()->selectedLevel = level).ignoringDisable(true));
+        isSim.and(hid.button(level+12+1)).onTrue(Commands.runOnce(()->selectedLevel = level).ignoringDisable(true));
     }
 
     @Override
     public int getBitfield() {
-        return (selectedBranch & 0xf) + ((selectedLevel & 0x3) << 4) + ((selectedClimb & 0x3) << 6);
+        if (isSim.getAsBoolean()) {
+            return (selectedBranch & 0xf) + ((selectedLevel & 0x3) << 4) + ((selectedClimb & 0x3) << 6);
+        } else {
+            return DriverStation.getStickButtons(port);
+        }
     }
 }

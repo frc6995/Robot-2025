@@ -37,7 +37,7 @@ class Selector:
 
 branch_pins = [board.GP0, board.GP1, board.GP2, board.GP3, board.GP4, board.GP5, board.GP6, board.GP7, board.GP8, board.GP9, board.GP10, board.GP11]
 level_pins = [board.GP19, board.GP18, board.GP17,board.GP16]
-climb_pins = [board.GP22, board.GP27,board.GP28]
+climb_pins = [board.GP22, board.GP21,board.GP20]
 
 # pixel_pin = board.GP20
 

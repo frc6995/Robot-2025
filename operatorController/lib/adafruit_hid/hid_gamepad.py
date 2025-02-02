@@ -75,7 +75,10 @@ class Gamepad:
         for button in buttons:
             self._buttons_state &= ~(1 << self._validate_button_number(button) - 1)
         self._send()
-
+    def set_bitfield(self, bitfield):
+        """Set the button state to the given bitfield with the LSB being button 1"""
+        self._buttons_state = bitfield
+        self._send()
     def release_all_buttons(self):
         """Release all the buttons."""
 
