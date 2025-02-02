@@ -16,7 +16,11 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
@@ -51,7 +55,7 @@ public class MainPivotS extends SubsystemBase {
 
     public static final Angle CCW_LIMIT = Degrees.of(100);
     public static final Angle CW_LIMIT = Degrees.of(40);
-    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 70;
+    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651;
     // Units=volts/pivot rotation/s
     public static final double K_V = 9.2;
     public static final double K_A = 0.04;
@@ -77,16 +81,18 @@ public class MainPivotS extends SubsystemBase {
     public static final double K_G_EXTENDED = 3;
     public static final double K_S = 0;
     // arm plus hand
-    public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(0));
+    public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(4);
 
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(10).withKD(1);
       config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(2);
+      config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.Feedback
-          // .withFeedbackRemoteSensorID(34)
-          // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
-          .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
+          .withFeedbackRemoteSensorID(30)
+          .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
+          .withSensorToMechanismRatio(1)
+          .withRotorToSensorRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
@@ -143,7 +149,8 @@ public class MainPivotS extends SubsystemBase {
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();
   private double m_setpointRotations;
-
+  private CANcoder m_cancoder = new CANcoder(30);
+  private StatusSignal<Angle> m_cancoderAngleSig = m_cancoder.getPosition();
   /** Creates a new MainPivotS. */
   public MainPivotS() {
     m_leader
@@ -166,6 +173,18 @@ public class MainPivotS extends SubsystemBase {
     m_follower.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, false));
     m_oppose1.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
     m_oppose2.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
+    setDefaultCommand(voltage(()->0));
+    setNeutralMode(NeutralModeValue.Brake);
+  }
+  public double getCanCoderAngle() {
+    m_cancoderAngleSig.refresh();
+    return m_cancoderAngleSig.getValueAsDouble();
+  }
+  public void setNeutralMode(NeutralModeValue mode) {
+    m_leader.setNeutralMode(mode);
+    m_follower.setNeutralMode(mode);
+    m_oppose1.setNeutralMode(mode);
+    m_oppose2.setNeutralMode(mode);
   }
 
   @Override

@@ -50,8 +50,8 @@ public class WristS extends SubsystemBase {
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
     // rotations per arm rotation.
 
-    public static final Angle CCW_LIMIT = Degrees.of(180);
-    public static final Angle CW_LIMIT = Degrees.of(-180);
+    public static final Angle CCW_LIMIT = Degrees.of(85);
+    public static final Angle CW_LIMIT = Degrees.of(-40);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 70;
     // Units=volts/pivot rotation/s
     public static final double K_V = 9.2;
@@ -76,7 +76,7 @@ public class WristS extends SubsystemBase {
     // arm plus hand
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(0));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
-    public static final double MOI = 0.6995;
+    public static final double MOI = 0.10829;
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(10).withKD(1);
       config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(2);

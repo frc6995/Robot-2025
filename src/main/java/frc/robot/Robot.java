@@ -51,12 +51,13 @@ public class Robot extends TimedRobot {
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
-  private final Arm m_arm = RobotBase.isReal() ? new NoneArm() : new RealArm();
+  private final RealArm m_arm = /*RobotBase.isReal() ? new NoneArm() :*/ new RealArm();
   private final Hand m_hand = RobotBase.isReal() ?  new NoneHandS() : new RealHandS();
   private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
 
   private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
+  private final DriverDisplay m_driverDisplay = new DriverDisplay();
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
 
   private Mechanism2d VISUALIZER;
@@ -69,6 +70,12 @@ public class Robot extends TimedRobot {
   public Robot() {
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
     Epilogue.bind(this);
+    m_driverDisplay.
+      setAllHomedSupplier(()->false)
+      .setHasCoralSupplier(m_autos::hasCoral)
+      .setBranchSupplier(m_operatorBoard::getBranch)
+      .setClimbSupplier(m_operatorBoard::getClimb)
+      .setLevelSupplier(m_operatorBoard::getLevel);
     AlertsUtil.bind(
         new Alert("Driver Xbox Disconnect", AlertType.kError),
         () -> !m_driverController.isConnected());
@@ -98,11 +105,13 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    m_driverController.a().whileTrue(m_autos.autoScore());
-    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
-    // m_driverController.x().whileTrue(m_arm.goToPosition(Arm.Positions.L2));
-    m_driverController.y().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
-    m_driverController.x().whileTrue(m_autos.alignToSelectedPose());
+    m_driverController.a().whileTrue(m_arm.mainPivotS.voltage(()->10));
+    m_driverController.b().whileTrue(m_arm.mainPivotS.voltage(()->-10));
+    // m_driverController.a().whileTrue(m_autos.autoScore());
+    // m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
+    // // m_driverController.x().whileTrue(m_arm.goToPosition(Arm.Positions.L2));
+    // m_driverController.y().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
+    // m_driverController.x().whileTrue(m_autos.alignToSelectedPose());
     boolean doingSysId = false;
     // if (doingSysId) {
     // SignalLogger.start();
@@ -142,6 +151,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     m_operatorBoard.poll();
+    m_driverDisplay.update();
     if (RobotBase.isSimulation()) {
       toGoal.clear();
       toGoal.addAll(m_drivebaseS.m_repulsor.getTrajectory(

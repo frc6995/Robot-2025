@@ -59,7 +59,7 @@ public class RobotVisualizer {
     components[0] = PIVOT_BASE.transformBy(new Transform3d(Translation3d.kZero, new Rotation3d(0,-position.pivotRadians(),0)));
     components[1] = components[0].transformBy(new Transform3d(new Translation3d(
       (position.elevatorMeters()-ElevatorConstants.MIN_LENGTH.in(Meters))/2  + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
-    components[2] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters() - ElevatorConstants.MIN_LENGTH.in(Meters) + Units.inchesToMeters(0.4), 0,0), Rotation3d.kZero));
-    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-(position.wristRadians() - Units.degreesToRadians(140)),0)));
+    components[2] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters() - ElevatorConstants.MIN_LENGTH.in(Meters) + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
+    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-(position.wristRadians()-Units.degreesToRadians(85)),0)));
   }
 }
