@@ -178,7 +178,7 @@ public class Robot extends TimedRobot {
     // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc_stat.getTranslation(), 3*0.02));
 
     m_arm.update();
-    RobotVisualizer.setArmPosition(m_arm.position);
+    RobotVisualizer.setArmPosition(m_arm.getPosition());
     Epilogue.talonFXLogger.refreshAll();
     // pdh.update();
     CommandScheduler.getInstance().run();

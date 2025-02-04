@@ -31,6 +31,9 @@ public class RealArm extends Arm {
             Radians.of(wristS.getAngleRadians()));
   }
 
+  public ArmPosition getPosition() {
+    return position;
+  }
   @Override
   public MechanismLigament2d getMechanism() {
     return ARM;
