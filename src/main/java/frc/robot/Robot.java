@@ -51,12 +51,12 @@ public class Robot extends TimedRobot {
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
-  private final NoneArm m_arm = new NoneArm();
+  private final RealArm m_arm = new RealArm();
   private final Hand m_hand = RobotBase.isReal() ?  new NoneHandS() : new RealHandS();
   private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
 
-  private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
+  // private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
 
   private Mechanism2d VISUALIZER;
@@ -98,37 +98,49 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    m_driverController.a().whileTrue(m_autos.autoScore());
-    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
-    // m_driverController.x().whileTrue(m_arm.goToPosition(Arm.Positions.L2));
-    m_driverController.y().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
-    m_driverController.x().whileTrue(m_autos.alignToSelectedPose());
+    configureDriverController();
+    
     boolean doingSysId = false;
-    // if (doingSysId) {
-    // SignalLogger.start();
-    // m_keypad.key(CommandOperatorKeypad.Button.kLowLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kForward));
-    // m_keypad.key(
-    // CommandOperatorKeypad.Button.kMidLeft).whileTrue(m_driveId.sysIdTranslationDynamic(Direction.kReverse));
-    // m_keypad.key(
-    // CommandOperatorKeypad.Button.kHighLeft).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kForward));
-    // m_keypad.key(CommandOperatorKeypad.Button.kLeftGrid).whileTrue(m_driveId.sysIdTranslationQuasistatic(Direction.kReverse));
-    // // Rotation
-    // m_keypad.key(CommandOperatorKeypad.Button.kLowCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kForward));
-    // m_keypad.key(
-    // CommandOperatorKeypad.Button.kMidCenter).whileTrue(m_driveId.sysIdRotationDynamic(Direction.kReverse));
-    // m_keypad.key(
-    // CommandOperatorKeypad.Button.kHighCenter).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kForward));
-    // m_keypad.key(CommandOperatorKeypad.Button.kCenterGrid).whileTrue(m_driveId.sysIdRotationQuasistatic(Direction.kReverse));
-
-    // m_keypad.key(CommandOperatorKeypad.Button.kLowRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kForward));
-    // m_keypad.key(
-    // CommandOperatorKeypad.Button.kMidRight).whileTrue(m_driveId.sysIdSteerDynamic(Direction.kReverse));
-    // m_keypad.key(
-    // CommandOperatorKeypad.Button.kHighRight).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kForward));
-    // m_keypad.key(CommandOperatorKeypad.Button.kRightGrid).whileTrue(m_driveId.sysIdSteerQuasistatic(Direction.kReverse));
-    // }
+    
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
+
+  public void configureDriverController() {
+    //TODO: assign buttons to functions specified in comments
+
+    // intake algae from ground (move arm to ground position, intake and stow)
+    m_driverController.a().whileTrue(m_autos.autoScore());
+    // Drive and autoalign to processor
+    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
+    // Drive and autoalign to barge
+    m_driverController.y().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
+    // Intake algae from reef (autoalign, move arm to possition, intake and stow)
+    m_driverController.x().whileTrue(m_autos.alignToSelectedPose());
+
+    // Drive and autoalign to edge of coral station L (after this, use d-pad to drive relative)
+    m_driverController.leftBumper().whileTrue(Commands.none());
+    // Drive and autoalign to edge of coral station L (after this, use d-pad to drive relative)
+    m_driverController.rightBumper().whileTrue(Commands.none());
+
+    // score algae
+    m_driverController.leftTrigger().whileTrue(Commands.none());
+    // Auto align to operator selected position on reef for coral scoring
+    m_driverController.rightTrigger().whileTrue(Commands.none());
+
+    /*
+    m_driverController.leftStick().whileTrue(Commands.none());
+    m_driverController.rightStick().whileTrue(Commands.none());
+    */
+
+    // autoalign to deep cage
+    m_driverController.back().whileTrue(Commands.none());
+    // execute cage climb
+    m_driverController.start().whileTrue(Commands.none());
+
+    // TODO: dpad robot relative driving
+  }
+
+
 
   ArrayList<Translation2d> toGoal = new ArrayList<>();
   Pose3d emptyPose = Pose3d.kZero;

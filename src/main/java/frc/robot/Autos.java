@@ -53,6 +53,8 @@ public class Autos {
   public final AutoChooser m_autoChooser;
 
   public final HashMap<String, Supplier<Command>> autos = new HashMap<>();
+  @Logged
+  public final CoralSensor m_coralSensor = new CoralSensor();
   public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
@@ -149,16 +151,16 @@ public class Autos {
                         () -> {
                           return m_arm.atPosition(position);
                         }))
-            .andThen(m_hand.out().withTimeout(outtakeSeconds).asProxy()), // Proxy so hand isn't directly required
+            .andThen(outtake().withTimeout(outtakeSeconds).asProxy()), // Proxy so hand isn't directly required
         m_drivebase.pidToPoseC(target));
   }
   @Logged
   public double getDistanceSensorOffset() {
-    return 0;
+    return m_coralSensor.distanceOffset();
   }
   @Logged
   public boolean hasCoral() {
-    return getDistanceSensorOffset() > -0.2;
+    return m_coralSensor.hasCoral();
   }
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
     // TODO reduce allocations
@@ -218,7 +220,7 @@ public class Autos {
             m_drivebase.atPose(target)
                 .and(
                     () -> m_arm.atPosition(selectedBranch())))
-          .andThen(m_hand.out().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
+          .andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
           ,
           m_drivebase.pidToPoseC(offsetSelectedReefPose).asProxy(),
           m_arm.goToPosition(selectedBranch()).asProxy()
@@ -229,6 +231,9 @@ public class Autos {
     
   }
 
+  public Command outtake() {
+    return m_hand.out().alongWith(runOnce(()->m_coralSensor.setHasCoral(false)));
+  }
 
   public Command flexAuto(POI start, POI intake, POI firstScore, POI... rest)
       throws NoSuchElementException {
@@ -253,8 +258,12 @@ public class Autos {
                         AUTO_OUTTAKE_TIME)
                     .onlyWhile(routine.active()),
                 first_intake.cmd()));
+    first_intake.atTime(0.1).onTrue(m_hand.in());
     var toIntake = first_intake;
     for (POI poi : rest) {
+      if (RobotBase.isSimulation()) {
+        toIntake.done(50).onTrue(runOnce(()->m_coralSensor.setHasCoral(true)));
+      }
       var toReef = intake.toChecked(poi, routine).map(this::bindL4).get();
       var toReefFinal = toReef.getFinalPose().get();
       var nextToIntake = poi.toChecked(intake, routine).map(this::bindIntake).get();
@@ -262,10 +271,13 @@ public class Autos {
           .done()
           .onTrue(
               sequence(
-                  toReef.cmd(),
-                  // .until(
-                  //   toReef.atTranslation(
-                  //       poi.bluePose.getTranslation(), Units.inchesToMeters(24))),
+                  deadline(
+                    waitUntil(this::hasCoral),
+                    m_drivebase.pidToPoseC(toReef.getInitialPose())
+                  ),
+                  toReef.cmd().until(
+                    toReef.atTranslation(
+                        poi.bluePose.getTranslation(), Units.inchesToMeters(24))),
                   alignAndDrop(
                           sensorOffsetPose(() -> toReefFinal), Arm.Positions.L4, AUTO_OUTTAKE_TIME)
                       .onlyWhile(routine.active()),
