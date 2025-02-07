@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
   private final CommandXboxController m_driverController = new CommandXboxController(0);
   private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
-  private final Arm m_arm = RobotBase.isReal() ? new NoneArm() : new RealArm();
+  private final NoneArm m_arm = new NoneArm();
   private final Hand m_hand = RobotBase.isReal() ?  new NoneHandS() : new RealHandS();
   private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
@@ -227,7 +227,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    m_drivebaseS.stop().ignoringDisable(true).until(()->true).schedule();
+  }
 
   /** This function is called periodically when disabled. */
   @Override

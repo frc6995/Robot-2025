@@ -210,7 +210,9 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
   @Override
   public void periodic() {
-    m_vision.update();
+    if (RobotBase.isReal()) {
+      m_vision.update();
+    }
     /*
      * Periodically try to apply the operator perspective.
      * If we haven't applied the operator perspective before, then we should apply
@@ -348,7 +350,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
   public void resetOdometry(Pose2d pose) {
     this.resetPose(pose);
-    m_vision.resetPose();
+    //m_vision.resetPose();
   }
 
   @NotLogged
@@ -365,7 +367,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   public ChassisSpeeds getFieldRelativeLinearSpeedsMPS() {
     return state().Speeds;
   }
-
+  private double[] emptyFeedForwards = new double[] {0,0,0,0};
   public Command pidToPoseC(Supplier<Pose2d> poseSupplier) {
     return this.run(
         () -> {
@@ -378,7 +380,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                   m_pathYController.calculate(pose.getY(), target.getY()),
                   m_pathThetaController.calculate(
                       pose.getRotation().getRadians(), target.getRotation().getRadians()));
-          setControl(m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds));
+          setControl(m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
+          .withWheelForceFeedforwardsX(emptyFeedForwards).withWheelForceFeedforwardsX(emptyFeedForwards));
         });
   }
 

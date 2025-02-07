@@ -24,6 +24,48 @@
      "exp":"8.052 m",
      "val":8.052
     }
+   },
+   "L1":{
+    "dimension":"Number",
+    "var":{
+     "exp":"8.14",
+     "val":8.14
+    }
+   },
+   "L1p":{
+    "dimension":"Number",
+    "var":{
+     "exp":"L1 * 14 / 16",
+     "val":7.1225000000000005
+    }
+   },
+   "L2":{
+    "dimension":"Number",
+    "var":{
+     "exp":"6.75",
+     "val":6.75
+    }
+   },
+   "L2p":{
+    "dimension":"Number",
+    "var":{
+     "exp":"L2 * 14 / 16",
+     "val":5.90625
+    }
+   },
+   "L3":{
+    "dimension":"Number",
+    "var":{
+     "exp":"6.12",
+     "val":6.12
+    }
+   },
+   "L3p":{
+    "dimension":"Number",
+    "var":{
+     "exp":"L3 * 14 / 16",
+     "val":5.355
+    }
    }
   },
   "poses":{
@@ -325,8 +367,8 @@
    "val":6.0
   },
   "gearing":{
-   "exp":"5.357142857142857",
-   "val":5.357142857142857
+   "exp":"L2p",
+   "val":5.90625
   },
   "radius":{
    "exp":"1.96 in",

@@ -168,7 +168,7 @@ public class Autos {
   }
   @Logged
   public double getDistanceSensorOffset() {
-    return -0.1;
+    return 0;
   }
   @Logged
   public boolean hasCoral() {
@@ -237,7 +237,7 @@ public class Autos {
           m_drivebase.pidToPoseC(offsetSelectedReefPose).asProxy(),
           m_arm.goToPosition(selectedBranch()).asProxy()
         ).andThen(
-          m_arm.goToPosition(Arm.Positions.STOW).asProxy()
+          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
         );
       },Set.of());
     
@@ -311,10 +311,10 @@ public class Autos {
             sequence(
                 start_first.resetOdometry(),
                 start_first
-                    .cmd()
-                    .until(
-                        start_first.atTranslation(
-                            firstScore.bluePose.getTranslation(), Units.inchesToMeters(24))),
+                    .cmd(),
+                    // .until(
+                    //     start_first.atTranslation(
+                    //         firstScore.bluePose.getTranslation(), Units.inchesToMeters(24))),
                 alignAndDrop(
                         sensorOffsetPose(() -> start_first_final),
                         Arm.Positions.L4,
@@ -330,9 +330,10 @@ public class Autos {
           .done()
           .onTrue(
               sequence(
-                  toReef.cmd().until(
-                    toReef.atTranslation(
-                        poi.bluePose.getTranslation(), Units.inchesToMeters(24))),
+                  toReef.cmd(),
+                  // .until(
+                  //   toReef.atTranslation(
+                  //       poi.bluePose.getTranslation(), Units.inchesToMeters(24))),
                   alignAndDrop(
                           sensorOffsetPose(() -> toReefFinal), Arm.Positions.L4, AUTO_OUTTAKE_TIME)
                       .onlyWhile(routine.active()),
