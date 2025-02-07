@@ -16,6 +16,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
@@ -27,11 +31,16 @@ import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.Hand;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Logged(strategy = Strategy.OPT_IN)
@@ -43,6 +52,7 @@ public class Autos {
   private final AutoFactory m_autoFactory;
   public final AutoChooser m_autoChooser;
 
+  public final HashMap<String, Supplier<Command>> autos = new HashMap<>();
   public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
@@ -57,18 +67,29 @@ public class Autos {
             true,
             m_drivebase,
             m_drivebase::logTrajectory);
-
-    // add autos to the chooser
-    // m_autoChooser.addCmd("testPath", this::testPath);
-    // m_autoChooser.addRoutine("testPathRoutine", this::testPathRoutine);
+    addAutos();
+    new Trigger(()->DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
     m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
-    m_autoChooser.addRoutine("KK_SL3", this::KK_SL3);
-    // m_autoChooser.addRoutine("JKL_SL3", this::JKL_SL3);
-    m_autoChooser.addCmd("JKLA_SL3", this::JKLA_SL3);
-    m_autoChooser.addCmd("JKLA_FLEX", () -> flexAuto(POI.STJ, POI.SL3, POI.J, POI.K, POI.L, POI.A));
-    m_autoChooser.addCmd(
-        "HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SL3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
+
     m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
+  }
+
+  public void addAutos() {
+    autos.put("KK_SL3", ()->this.KK_SL3().cmd());
+    autos.put("JKLA_FLEX", () -> flexAuto(POI.STJ, POI.SL3, POI.J, POI.K, POI.L, POI.A));
+    autos.put( "HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SL3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
+    autos.put( "HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SR3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
+
+    for (Entry<String, Supplier<Command>> entry: autos.entrySet()) {
+      m_autoChooser.addCmd(entry.getKey(), entry.getValue());
+    }
+  }
+  private Alert successfulAutoTest = new Alert("Successfully Checked Autos", AlertType.kInfo);
+  public void testAutos() {
+    for (Entry<String, Supplier<Command>> entry: autos.entrySet()) {
+      entry.getValue().get();
+    }
+    successfulAutoTest.set(true);
   }
 
 
@@ -105,41 +126,6 @@ public class Autos {
     return routine;
   }
 
-  public double toleranceMeters = Units.inchesToMeters(1);
-  public double toleranceRadians = Units.degreesToRadians(2);
-
-  private boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
-    if (Math.abs(toleranceRadians) > Math.PI) {
-      return true;
-    }
-    double dot = lhs.getCos() * rhs.getCos() + lhs.getSin() * rhs.getSin();
-    // cos(θ) >= cos(tolerance) means |θ| <= tolerance, for tolerance in [-pi, pi],
-    // as pre-checked
-    // above.
-    return dot > Math.cos(toleranceRadians);
-  }
-
-  public Trigger atPose(Supplier<Pose2d> poseSup) {
-    return new Trigger(
-        () -> {
-          Pose2d pose = poseSup.get();
-          Pose2d currentPose = m_drivebase.getPose();
-          boolean transValid =
-              currentPose.getTranslation().getDistance(pose.getTranslation()) < toleranceMeters;
-          boolean rotValid =
-              withinTolerance(currentPose.getRotation(), pose.getRotation(), toleranceRadians);
-          return transValid && rotValid;
-        });
-  }
-
-  public Trigger atPose(Optional<Pose2d> poseOpt) {
-    return poseOpt.map(this::atPose).orElse(new Trigger(() -> false));
-  }
-
-  public Trigger atPose(Pose2d pose) {
-    return atPose(() -> pose);
-  }
-
   /**
    * Requires: only drivetrain Runs: drivetrain and rollers
    *
@@ -158,7 +144,7 @@ public class Autos {
       Supplier<Pose2d> target, ArmPosition position, double outtakeSeconds) {
     return race(
         waitUntil(
-                atPose(target)
+                m_drivebase.atPose(target)
                     .and(
                         () -> {
                           return m_arm.atPosition(position);
@@ -229,7 +215,7 @@ public class Autos {
       ()->{
         return deadline(
           waitUntil(
-            atPose(target)
+            m_drivebase.atPose(target)
                 .and(
                     () -> m_arm.atPosition(selectedBranch())))
           .andThen(m_hand.out().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
@@ -243,67 +229,13 @@ public class Autos {
     
   }
 
-  private static List<String> TRAJECTORIES = List.of(Choreo.availableTrajectories());
-
-  public enum POI {
-    A(true),
-    B(true),
-    C(true),
-    D(true),
-    E(true),
-    F(true),
-    G(true),
-    H(true),
-    I(true),
-    J(true),
-    K(true),
-    L(true),
-    SL3(false),
-    STJ(false),
-    STI(false),
-    STH(false);
-    public final Pose2d bluePose;
-    public final Pose2d redPose;
-    public final boolean isReef;
-
-    private POI(boolean isReef) {
-      this.isReef = isReef;
-      bluePose = ChoreoVariables.getPose(this.name());
-      redPose = AllianceFlipUtil.flip(bluePose);
-    }
-    private POI(boolean isReef, Pose2d bluePose) {
-      this.isReef = isReef;
-      this.bluePose = bluePose;
-      redPose = AllianceFlipUtil.flip(bluePose);
-    }
-    public Pose2d flippedPose() {
-      return AllianceFlipUtil.shouldFlip() ? redPose : bluePose;
-    }
-    public Optional<AutoTrajectory> to(POI next, AutoRoutine routine) {
-      String name;
-      boolean reverse;
-      if (this.isReef && !next.isReef) {
-        name = next.name() + "-" + this.name();
-        if (!TRAJECTORIES.contains(name)) {
-          return Optional.empty();
-        }
-        reverse = true;
-      } else if (!this.isReef && next.isReef) {
-        name = this.name() + "-" + next.name();
-        reverse = false;
-      } else {
-        return Optional.empty();
-      }
-      return Optional.of(routine.trajectory(name, reverse ? 1 : 0));
-    }
-  }
 
   public Command flexAuto(POI start, POI intake, POI firstScore, POI... rest)
       throws NoSuchElementException {
     var routine = m_autoFactory.newRoutine("JKLA_SL3");
-    var start_first = start.to(firstScore, routine).map(this::bindL4).get();
+    var start_first = start.toChecked(firstScore, routine).map(this::bindL4).get();
     var start_first_final = start_first.getFinalPose().get();
-    var first_intake = firstScore.to(intake, routine).map(this::bindIntake).get();
+    var first_intake = firstScore.toChecked(intake, routine).map(this::bindIntake).get();
     // Set up the start->first score -> intake 
     routine
         .active()
@@ -323,9 +255,9 @@ public class Autos {
                 first_intake.cmd()));
     var toIntake = first_intake;
     for (POI poi : rest) {
-      var toReef = intake.to(poi, routine).map(this::bindL4).get();
+      var toReef = intake.toChecked(poi, routine).map(this::bindL4).get();
       var toReefFinal = toReef.getFinalPose().get();
-      var nextToIntake = poi.to(intake, routine).map(this::bindIntake).get();
+      var nextToIntake = poi.toChecked(intake, routine).map(this::bindIntake).get();
       toIntake
           .done()
           .onTrue(

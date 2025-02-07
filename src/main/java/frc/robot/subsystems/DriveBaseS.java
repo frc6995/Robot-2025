@@ -23,6 +23,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -32,6 +33,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.logging.Module;
@@ -482,5 +484,40 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
   public Command driveToPoseC(Pose2d poseSup) {
     return driveToPoseC(() -> poseSup);
+  }
+
+    public double toleranceMeters = Units.inchesToMeters(1);
+  public double toleranceRadians = Units.degreesToRadians(2);
+
+  private boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
+    if (Math.abs(toleranceRadians) > Math.PI) {
+      return true;
+    }
+    double dot = lhs.getCos() * rhs.getCos() + lhs.getSin() * rhs.getSin();
+    // cos(θ) >= cos(tolerance) means |θ| <= tolerance, for tolerance in [-pi, pi],
+    // as pre-checked
+    // above.
+    return dot > Math.cos(toleranceRadians);
+  }
+
+  public Trigger atPose(Supplier<Pose2d> poseSup) {
+    return new Trigger(
+        () -> {
+          Pose2d pose = poseSup.get();
+          Pose2d currentPose = getPose();
+          boolean transValid =
+              currentPose.getTranslation().getDistance(pose.getTranslation()) < toleranceMeters;
+          boolean rotValid =
+              withinTolerance(currentPose.getRotation(), pose.getRotation(), toleranceRadians);
+          return transValid && rotValid;
+        });
+  }
+
+  public Trigger atPose(Optional<Pose2d> poseOpt) {
+    return poseOpt.map(this::atPose).orElse(new Trigger(() -> false));
+  }
+
+  public Trigger atPose(Pose2d pose) {
+    return atPose(() -> pose);
   }
 }
