@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -21,6 +22,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
@@ -84,6 +86,8 @@ public class MainPivotS extends SubsystemBase {
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(4);
 
+    public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375;
+
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(10).withKD(1);
       config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(2);
@@ -97,22 +101,28 @@ public class MainPivotS extends SubsystemBase {
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
           .withReverseSoftLimitEnable(true);
+      config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(0);
       return config;
     }
 
     public static TalonFXConfiguration configureFollower(TalonFXConfiguration config) {
       config.Feedback
-          // .withFeedbackRemoteSensorID(34)
-          // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
           .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
+          config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(10);
       return config;
     }
 
     public static TalonFXConfiguration configureOppose(TalonFXConfiguration config) {
       config.Feedback
-          // .withFeedbackRemoteSensorID(34)
-          // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
           .withSensorToMechanismRatio(-MOTOR_ROTATIONS_PER_ARM_ROTATION);
+          config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(10);
+      return config;
+    }
+
+    public static CANcoderConfiguration configureEncoder(CANcoderConfiguration config) {
+      config.MagnetSensor.MagnetOffset = ENCODER_OFFSET_ROTATIONS;
+      config.MagnetSensor.AbsoluteSensorDiscontinuityPoint = Units.degreesToRotations(250);
+      config.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
       return config;
     }
   }
@@ -124,8 +134,8 @@ public class MainPivotS extends SubsystemBase {
           MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION,
           ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters)),
           ElevatorConstants.MIN_LENGTH.in(Meters),
-          MainPivotConstants.CW_LIMIT.in(Radians),
-          MainPivotConstants.CCW_LIMIT.in(Radians),
+          -1000,//MainPivotConstants.CW_LIMIT.in(Radians),
+          1000, //MainPivotConstants.CCW_LIMIT.in(Radians),
           MainPivotConstants.ARM_MASS.in(Kilograms),
           false);
 
@@ -165,10 +175,13 @@ public class MainPivotS extends SubsystemBase {
     m_oppose2
         .getConfigurator()
         .apply(MainPivotConstants.configureOppose(new TalonFXConfiguration()));
+    m_cancoder.getConfigurator()
+        .apply(MainPivotConstants.configureEncoder(new CANcoderConfiguration()));
     m_leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
     m_follower.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
     m_oppose1.getSimState().Orientation = ChassisReference.Clockwise_Positive;
     m_oppose2.getSimState().Orientation = ChassisReference.Clockwise_Positive;
+    m_cancoder.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
     m_pivotSim.setState(VecBuilder.fill(MainPivotConstants.CW_LIMIT.in(Radians), 0));
     m_follower.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, false));
     m_oppose1.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
@@ -224,6 +237,9 @@ public class MainPivotS extends SubsystemBase {
       m_oppose1.getSimState().setRotorVelocity(-rotorVel);
       m_oppose2.getSimState().setRawRotorPosition(-rotorPos);
       m_oppose2.getSimState().setRotorVelocity(-rotorVel);
+      m_cancoder.getSimState().setRawPosition(Units.radiansToRotations(m_pivotSim.getAngleRads())-MainPivotConstants.ENCODER_OFFSET_ROTATIONS);
+      m_cancoder.getSimState().setVelocity(Units.radiansToRotations(m_pivotSim.getVelocityRadPerSec()));
+
     }
   }
 

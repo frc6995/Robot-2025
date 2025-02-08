@@ -4,9 +4,9 @@ import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ElevatorS.ElevatorConstants;
-import frc.robot.subsystems.MainPivotS.MainPivotConstants;
-import frc.robot.subsystems.WristS.WristConstants;
+import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
+import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
+import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 
 public class NoneArm extends Arm {
 

@@ -72,8 +72,8 @@ public class RealElevatorS extends Elevator {
         MAX_LENGTH.in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
 
     private static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.MotorOutput.withNeutralMode(NeutralModeValue.Coast)
-          .withInverted(InvertedValue.CounterClockwise_Positive);
+      config.MotorOutput.withNeutralMode(NeutralModeValue.Brake)
+          .withInverted(InvertedValue.Clockwise_Positive);
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(MAX_LENGTH_ROTATIONS)
           .withReverseSoftLimitEnable(true)
@@ -90,10 +90,10 @@ public class RealElevatorS extends Elevator {
     }
 
     private static TalonFXConfiguration configureFollower(TalonFXConfiguration config) {
-      config.MotorOutput.withNeutralMode(NeutralModeValue.Coast)
+      config.MotorOutput.withNeutralMode(NeutralModeValue.Brake)
           .withInverted(InvertedValue.CounterClockwise_Positive);
 
-      config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(Amps.of(50));
+      config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(Amps.of(20));
 
       return config;
     }
@@ -157,15 +157,26 @@ public class RealElevatorS extends Elevator {
     follower.getConfigurator().apply(ElevatorConstants.configureFollower(followerConfig));
 
     follower.setControl(new Follower(ElevatorConstants.LEADER_ID, false));
-    setDefaultCommand(this.hold());
+    setDefaultCommand(this.stop());
+    leader.setPosition(ElevatorConstants.MIN_LENGTH_ROTATIONS);
   }
 
+  public Command home() {
+    return runOnce(()->leader.setPosition(ElevatorConstants.MIN_LENGTH_ROTATIONS)).ignoringDisable(true);
+  }
   public double getMoI() {
     return ElevatorConstants.getMoI(getLengthMeters());
   }
   public Command hold() {
     return this.runOnce(() -> positionReq.withPosition(getMotorRotations()).withVelocity(0))
         .andThen(this.run(() -> leader.setControl(positionReq)));
+  }
+
+  public Command voltage(DoubleSupplier voltageSupplier) {
+    return run(
+        () -> {
+          leader.setControl(voltage.withOutput(voltageSupplier.getAsDouble()));
+        });
   }
 
   public double getLengthMeters() {

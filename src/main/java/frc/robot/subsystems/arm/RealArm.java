@@ -40,8 +40,8 @@ public class RealArm extends Arm {
   }
 
   public RealArm() {
-    mainPivotS.setLengthSupplier(()->ElevatorConstants.MIN_LENGTH.in(Meters));//elevatorS::getLengthMeters);
-    mainPivotS.setMoISupplier(()->ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters)));
+    mainPivotS.setLengthSupplier(elevatorS::getLengthMeters);
+    mainPivotS.setMoISupplier(elevatorS::getMoI);
     elevatorS.setAngleSupplier(mainPivotS::getAngleRadians);
     ARM = mainPivotS.MAIN_PIVOT;
     ARM.append(elevatorS.ELEVATOR);
