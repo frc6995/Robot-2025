@@ -40,6 +40,7 @@ import frc.robot.subsystems.RealHandS;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.NoneArm;
 import frc.robot.subsystems.arm.RealArm;
+import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 import frc.robot.subsystems.NoneHandS;
 import frc.robot.subsystems.Hand;
 import frc.robot.util.AlertsUtil;
@@ -114,8 +115,18 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    configureDriverController();
-    
+    //configureDriverController();
+    m_driverController.a().whileTrue(m_arm.mainPivotS.voltage(()->1));
+    m_driverController.b().whileTrue(m_arm.mainPivotS.voltage(()->-1));
+    m_driverController.x().whileTrue(m_arm.elevatorS.voltage(()->1));
+    m_driverController.y().whileTrue(m_arm.elevatorS.voltage(()->-1));
+    m_driverController.leftBumper().whileTrue(
+      m_arm.mainPivotS.goTo(()->MainPivotConstants.CCW_LIMIT.plus(MainPivotConstants.CW_LIMIT).times(1.0/3.0)));
+      m_driverController.rightBumper().whileTrue(
+        m_arm.mainPivotS.goTo(()->Arm.Positions.L3.pivotRadians()));
+    m_driverController.rightTrigger().whileTrue(m_arm.mainPivotS.voltage(m_arm.mainPivotS::getKgVolts));
+    m_driverController.start().onTrue(m_arm.elevatorS.home());
+    DriverStation.silenceJoystickConnectionWarning(true);
     boolean doingSysId = false;
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }

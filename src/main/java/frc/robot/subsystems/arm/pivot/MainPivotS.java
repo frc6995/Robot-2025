@@ -59,8 +59,8 @@ public class MainPivotS extends SubsystemBase {
     public static final Angle CW_LIMIT = Degrees.of(40);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651;
     // Units=volts/pivot rotation/s
-    public static final double K_V = 9.2;
-    public static final double K_A = 0.04;
+    public static final double K_V = 12.0 / (100 / MOTOR_ROTATIONS_PER_ARM_ROTATION);
+    public static final double K_A = 0.22;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
@@ -79,8 +79,8 @@ public class MainPivotS extends SubsystemBase {
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
 
-    public static final double K_G_RETRACTED = 0.21;
-    public static final double K_G_EXTENDED = 0.33;
+    public static final double K_G_RETRACTED = 0.22;
+    public static final double K_G_EXTENDED = 0.35;
     public static final double K_S = 0;
     // arm plus hand
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
@@ -89,8 +89,8 @@ public class MainPivotS extends SubsystemBase {
     public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375;
 
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(0).withKD(0);
-      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(1);
+      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(20).withKD(0);
+      config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.Feedback
           .withFeedbackRemoteSensorID(30)
@@ -101,21 +101,21 @@ public class MainPivotS extends SubsystemBase {
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
           .withReverseSoftLimitEnable(true);
-      config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(0);
+      config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;
     }
 
     public static TalonFXConfiguration configureFollower(TalonFXConfiguration config) {
       config.Feedback
           .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
-          config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(10);
+          config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;
     }
 
     public static TalonFXConfiguration configureOppose(TalonFXConfiguration config) {
       config.Feedback
           .withSensorToMechanismRatio(-MOTOR_ROTATIONS_PER_ARM_ROTATION);
-          config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(10);
+          config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;
     }
 
@@ -158,7 +158,8 @@ public class MainPivotS extends SubsystemBase {
   private MotionMagicVoltage m_profileReq = new MotionMagicVoltage(0);
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();
-  private double m_setpointRotations;
+  private StatusSignal<Double> m_angleSetpointSig = m_leader.getClosedLoopReference();
+  private double m_goalRotations;
   private CANcoder m_cancoder = new CANcoder(30);
   private StatusSignal<Angle> m_cancoderAngleSig = m_cancoder.getPosition();
   /** Creates a new MainPivotS. */
@@ -187,8 +188,13 @@ public class MainPivotS extends SubsystemBase {
     m_follower.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, false));
     m_oppose1.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
     m_oppose2.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
+    m_angleSetpointSig.setUpdateFrequency(50);
     setDefaultCommand(voltage(()->0));
     setNeutralMode(NeutralModeValue.Brake);
+  }
+  public double getSetpoint() {
+    m_angleSetpointSig.refresh();
+    return m_angleSetpointSig.getValueAsDouble();
   }
   public double getCanCoderAngle() {
     m_cancoderAngleSig.refresh();
@@ -274,10 +280,10 @@ public class MainPivotS extends SubsystemBase {
   }
 
   public void setAngleRadians(double angle) {
-    m_setpointRotations = Units.radiansToRotations(angle);
+    m_goalRotations = Units.radiansToRotations(angle);
 
     m_leader.setControl(
-        m_profileReq.withPosition(m_setpointRotations)); // .withFeedForward(getKgVolts()));
+        m_profileReq.withPosition(m_goalRotations).withFeedForward(getKgVolts()));
   }
 
   public Command goTo(DoubleSupplier angleSupplier) {

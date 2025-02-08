@@ -26,6 +26,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
@@ -42,6 +43,7 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Per;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.TiltedElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -147,7 +149,7 @@ public class RealElevatorS extends Elevator {
 
   /** Creates a new ElevatorS. */
   public RealElevatorS() {
-    leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
+    leader.getSimState().Orientation = ChassisReference.Clockwise_Positive;
     var config = new TalonFXConfiguration();
     leader.getConfigurator().refresh(config);
     leader.getConfigurator().apply(ElevatorConstants.configureLeader(config));
@@ -158,7 +160,11 @@ public class RealElevatorS extends Elevator {
 
     follower.setControl(new Follower(ElevatorConstants.LEADER_ID, false));
     setDefaultCommand(this.stop());
+    if (RobotBase.isReal()) {
     leader.setPosition(ElevatorConstants.MIN_LENGTH_ROTATIONS);
+    } else {
+    sim.setState(VecBuilder.fill(ElevatorConstants.MIN_LENGTH.in(Meters), 0));
+    }
   }
 
   public Command home() {
