@@ -12,6 +12,8 @@ public abstract class Hand extends SubsystemBase{
     setDefaultCommand(stop());
   }
   public abstract Command stop();
-  public abstract Command in();
-  public abstract Command out();
+  public abstract Command inCoral();
+  public abstract Command outCoral();
+  public abstract Command inAlgae();
+  public abstract Command outAlgae();
 }

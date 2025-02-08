@@ -32,6 +32,8 @@ import frc.robot.subsystems.Hand;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,8 @@ public class Autos {
             m_drivebase,
             m_drivebase::logTrajectory);
     addAutos();
+    new Trigger(()->DriverStation.getStickButton(4, 1)).onTrue(runOnce(()->m_coralSensor.setHasCoral(true)).ignoringDisable(true));
+    new Trigger(()->DriverStation.getStickButton(4, 2)).onTrue(runOnce(()->m_coralSensor.setHasCoral(false)).ignoringDisable(true));
     new Trigger(()->DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
     m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
 
@@ -80,7 +84,7 @@ public class Autos {
     autos.put("KK_SL3", ()->this.KK_SL3().cmd());
     autos.put("JKLA_FLEX", () -> flexAuto(POI.STJ, POI.SL3, POI.J, POI.K, POI.L, POI.A));
     autos.put( "HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SL3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
-    autos.put( "HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SR3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
+    //autos.put( "HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SR3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
 
     for (Entry<String, Supplier<Command>> entry: autos.entrySet()) {
       m_autoChooser.addCmd(entry.getKey(), entry.getValue());
@@ -201,6 +205,48 @@ public class Autos {
     return m_drivebase.repulsorCommand(offsetSelectedReefPose);
   }
 
+  public enum ReefSide {
+    R1(POI.A, POI.B, POI.R1, Arm.Positions.HIGH_ALGAE),
+    R2(POI.C, POI.D, POI.R2, Arm.Positions.LOW_ALGAE),
+    R3(POI.E, POI.F, POI.R3, Arm.Positions.HIGH_ALGAE),
+    R4(POI.G, POI.H, POI.R4, Arm.Positions.LOW_ALGAE),
+    R5(POI.I, POI.J, POI.R5, Arm.Positions.HIGH_ALGAE),
+    R6(POI.K, POI.L, POI.R6, Arm.Positions.LOW_ALGAE);
+    public final POI left;
+    public final POI right;
+    public final POI algae;
+    public final ArmPosition algaeArm;
+    private ReefSide(POI left, POI right, POI algae, ArmPosition algaeArm) {
+      this.left = left;
+      this.right = right;
+      this.algae = algae;
+      this.algaeArm = algaeArm;
+    }
+  } 
+  @Logged
+  public ReefSide closestSide() {
+    var reef = POI.REEF.flippedPose();
+    var pose = m_drivebase.getPose();
+    var direction = pose.relativeTo(reef).getTranslation().getAngle().getRadians();
+    if (direction < -5*Math.PI/6 || direction > 5*Math.PI/6) {
+      return ReefSide.R1;
+    }
+    if (direction >= -5*Math.PI/6 && direction < -3*Math.PI/6 ) {
+      return ReefSide.R2;
+    }
+    if (direction >= -3*Math.PI/6 && direction < -1*Math.PI/6 ) {
+      return ReefSide.R3;
+    }
+    if (direction >= -1*Math.PI/6 && direction < 1*Math.PI/6 ) {
+      return ReefSide.R4;
+    }
+    if (direction >= 1*Math.PI/6 && direction < 3*Math.PI/6 ) {
+      return ReefSide.R5;
+    }
+    else {
+      return ReefSide.R6;
+    }
+  }
   private ArmPosition selectedBranch() {
     return switch (m_board.getLevel()) {
       case 0-> Arm.Positions.STOW;
@@ -209,6 +255,28 @@ public class Autos {
       case 3-> Arm.Positions.L4;
       default-> Arm.Positions.STOW;
     };
+  }
+  private POI selectedClimb() {
+    return switch (m_board.getClimb()) {
+      case 0 -> POI.CL1;
+      case 1 -> POI.CL2;
+      case 2 -> POI.CL3;
+      default -> POI.CL1;
+    };
+  }
+  public Command alignToClimb() {
+    return defer(()->
+      m_drivebase.driveToPoseSupC(selectedClimb()::flippedPose), Set.of(m_drivebase)
+    );
+  }
+  public POI closestIntake() {
+    var pose = m_drivebase.getPose();
+    if (pose.getTranslation().getDistance(POI.SL3.flippedPose().getTranslation()) < 
+    pose.getTranslation().getDistance(POI.SR3.flippedPose().getTranslation())) {
+      return POI.SL3;
+    } else {
+      return POI.SR3;
+    }
   }
 
   public Command autoScore() {
@@ -231,8 +299,26 @@ public class Autos {
     
   }
 
+  public Command autoCoralIntake(POI intake) {
+    return parallel(
+      m_drivebase.driveToPoseSupC(intake::flippedPose),
+      new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
+      new ScheduleCommand(
+        m_hand.inCoral().until(this::hasCoral).andThen(
+          m_hand.inCoral().withTimeout(0.5))
+      )
+    );
+  }
+
+  public Command alignToBarge(DoubleSupplier lateralSpeed) {
+    return m_drivebase.driveToX(
+      ()->(AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(7.5) : 7.5),
+      lateralSpeed,
+      ()->(AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
+  }
+
   public Command outtake() {
-    return m_hand.out().alongWith(runOnce(()->m_coralSensor.setHasCoral(false)));
+    return m_hand.outCoral().alongWith(runOnce(()->m_coralSensor.setHasCoral(false)));
   }
 
   public Command flexAuto(POI start, POI intake, POI firstScore, POI... rest)
@@ -258,7 +344,7 @@ public class Autos {
                         AUTO_OUTTAKE_TIME)
                     .onlyWhile(routine.active()),
                 first_intake.cmd()));
-    first_intake.atTime(0.1).onTrue(m_hand.in());
+    first_intake.atTime(0.1).onTrue(m_hand.inCoral());
     var toIntake = first_intake;
     for (POI poi : rest) {
       if (RobotBase.isSimulation()) {
@@ -312,7 +398,7 @@ public class Autos {
                 L_SL3.cmd(),
                 SL3_A.cmd(),
                 alignAndDrop(SL3_A.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE))));
+                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))));
     return routine.cmd();
   }
 
@@ -327,7 +413,7 @@ public class Autos {
   }
 
   private AutoTrajectory bindIntake(AutoTrajectory trajectory) {
-    trajectory.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
+    trajectory.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
     return trajectory;
   }
 
@@ -375,7 +461,7 @@ public class Autos {
                 L_SL3.cmd(),
                 SL3_A.cmd(),
                 alignAndDrop(SL3_A.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE))));
+                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))));
     return routine.cmd();
   }
 }

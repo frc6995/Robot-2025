@@ -30,9 +30,13 @@ public class RealHandS extends Hand {
 
   public static final int CAN_ID = 51;
 
-  public static final double IN_VOLTAGE = 6;
+  public static final double IN_CORAL_VOLTAGE = 6;
 
-  public static final double OUT_VOLTAGE = -6;
+  public static final double OUT_CORAL_VOLTAGE = -6;
+
+  public static final double IN_ALGAE_VOLTAGE = -6;
+
+  public static final double OUT_ALGAE_VOLTAGE = 6;
 
   }
   private final TalonFX motor = new TalonFX(HandConstants.CAN_ID);
@@ -69,15 +73,32 @@ public class RealHandS extends Hand {
     BOTTOM_ROLLER.setAngle(BOTTOM_ROLLER.getAngle() - 4 * voltageRequest.Output);
     // This method will be called once per scheduler run
   }
+  private Command voltage(double voltage) {
+    return this.run(()->motor.setControl(voltageRequest.withOutput(voltage)));
+  }
   public Command stop(){
-    return this.run(()->motor.setControl(voltageRequest.withOutput(0)));
+    return voltage(0);
   }
-  public Command in(){
-    return this.run(()->motor.setControl(voltageRequest.withOutput(HandConstants.IN_VOLTAGE)));
+  public Command inCoral(){
+    return voltage(HandConstants.IN_CORAL_VOLTAGE);
   }
-  public Command out(){
-    return this.run(()->motor.setControl(voltageRequest.withOutput(HandConstants.OUT_VOLTAGE)));
+  public Command outCoral(){
+    return voltage(HandConstants.OUT_CORAL_VOLTAGE);
 
+  }
+
+  @Override
+  public Command inAlgae() {
+    return voltage(HandConstants.IN_ALGAE_VOLTAGE);
+  }
+
+
+
+
+
+  @Override
+  public Command outAlgae() {
+    return voltage(HandConstants.OUT_ALGAE_VOLTAGE);
   }
 
 }

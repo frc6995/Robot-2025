@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public enum POI {
+    REEF(false),
     A(true),
     B(true),
     C(true),
@@ -26,7 +27,11 @@ public enum POI {
     K(true),
     L(true),
     // Intake left, right
+    SL1(false),
+    SL2(false),
     SL3(false),
+    SR1(false),
+    SR2(false),
     SR3(false),
     // Starting for corresponding pose
     STE(false),
@@ -34,7 +39,19 @@ public enum POI {
     STG(false),
     STH(false),
     STJ(false),
-    STI(false);
+    STI(false),
+    // Algae lineup for intake
+    R1(false),
+    R2(false),
+    R3(false),
+    R4(false),
+    R5(false),
+    R6(false),
+    PROC(false),
+    // Climb
+    CL1(false),
+    CL2(false),
+    CL3(false);
 
     public final Pose2d bluePose;
     public final Pose2d redPose;

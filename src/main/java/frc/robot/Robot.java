@@ -8,6 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -21,10 +22,12 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.operator.OperatorBoard;
 import frc.operator.RealOperatorBoard;
 import frc.operator.SimOperatorBoard;
@@ -38,7 +41,12 @@ import frc.robot.subsystems.NoneHandS;
 import frc.robot.subsystems.Hand;
 import frc.robot.NoneArm;
 import frc.robot.util.AlertsUtil;
+
+import static edu.wpi.first.wpilibj2.command.Commands.defer;
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -58,7 +66,7 @@ public class Robot extends TimedRobot {
 
   // private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
-
+  private final DriverDisplay m_DriverDisplay = new DriverDisplay();
   private Mechanism2d VISUALIZER;
   public Pose3d[] components() {return RobotVisualizer.getComponents();}
 
@@ -89,6 +97,10 @@ public class Robot extends TimedRobot {
                                 * 2
                                 * Math.PI) // Drive counterclockwise with negative X (left)
             ));
+    m_DriverDisplay
+      .setBranchSupplier(m_operatorBoard::getBranch)
+      .setClimbSupplier(m_operatorBoard::getClimb)
+      .setLevelSupplier(m_operatorBoard::getLevel);
 
     RobotVisualizer.setupVisualizer();
 
@@ -101,31 +113,47 @@ public class Robot extends TimedRobot {
     configureDriverController();
     
     boolean doingSysId = false;
-    
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
   public void configureDriverController() {
     //TODO: assign buttons to functions specified in comments
 
-    // intake algae from ground (move arm to ground position, intake and stow)
-    m_driverController.a().whileTrue(m_autos.autoScore());
+    // align to closest coral station
+    m_driverController.a().whileTrue(
+      Commands.defer(()->
+        m_autos.autoCoralIntake(m_autos.closestIntake()), Set.of(m_drivebaseS))
+    );
     // Drive and autoalign to processor
-    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE));
+    m_driverController.b()
+      .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR))
+      .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
     // Drive and autoalign to barge
-    m_driverController.y().whileTrue(m_arm.goToPosition(Arm.Positions.STOW));
-    // Intake algae from reef (autoalign, move arm to possition, intake and stow)
-    m_driverController.x().whileTrue(m_autos.alignToSelectedPose());
+    m_driverController.y()
+    .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE))
+    .whileTrue(
+      m_autos.alignToBarge(()->-m_driverController.getLeftX() * 4));
+    // Intake algae from reef (autoalign, move arm to position, intake and stow)
+    m_driverController.x().whileTrue(
+      defer(()->
+      m_drivebaseS.driveToPoseSupC(m_autos.closestSide().algae::flippedPose), Set.of(m_drivebaseS))
+    );
 
-    // Drive and autoalign to edge of coral station L (after this, use d-pad to drive relative)
-    m_driverController.leftBumper().whileTrue(Commands.none());
-    // Drive and autoalign to edge of coral station L (after this, use d-pad to drive relative)
-    m_driverController.rightBumper().whileTrue(Commands.none());
+    // Stow
+    m_driverController.leftBumper().whileTrue(
+    m_arm.goToPosition(Arm.Positions.STOW)
+    );
+    // algae ground intake
+    m_driverController.rightBumper().whileTrue(
+      Commands.none()
+    );
 
     // score algae
-    m_driverController.leftTrigger().whileTrue(Commands.none());
+    m_driverController.leftTrigger().whileTrue(parallel(
+      m_hand.outAlgae().withTimeout(0.5)
+    ));
     // Auto align to operator selected position on reef for coral scoring
-    m_driverController.rightTrigger().whileTrue(Commands.none());
+    m_driverController.rightTrigger().whileTrue(m_autos.autoScore());
 
     /*
     m_driverController.leftStick().whileTrue(Commands.none());
@@ -133,9 +161,10 @@ public class Robot extends TimedRobot {
     */
 
     // autoalign to deep cage
-    m_driverController.back().whileTrue(Commands.none());
+    m_driverController.back().onTrue(m_arm.goToPosition(Arm.Positions.PRE_CLIMB))
+    .whileTrue(m_autos.alignToClimb());
     // execute cage climb
-    m_driverController.start().whileTrue(Commands.none());
+    m_driverController.start().whileTrue(m_arm.goToPosition(Arm.Positions.POST_CLIMB));
 
     // TODO: dpad robot relative driving
   }
@@ -154,6 +183,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     m_operatorBoard.poll();
+    m_DriverDisplay.update();
     if (RobotBase.isSimulation()) {
       toGoal.clear();
       toGoal.addAll(m_drivebaseS.m_repulsor.getTrajectory(
