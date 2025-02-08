@@ -79,8 +79,8 @@ public class MainPivotS extends SubsystemBase {
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
 
-    public static final double K_G_RETRACTED = 0.5;
-    public static final double K_G_EXTENDED = 3;
+    public static final double K_G_RETRACTED = 0.21;
+    public static final double K_G_EXTENDED = 0.33;
     public static final double K_S = 0;
     // arm plus hand
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
@@ -89,8 +89,8 @@ public class MainPivotS extends SubsystemBase {
     public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375;
 
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(10).withKD(1);
-      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(2);
+      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(0).withKD(0);
+      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(1);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.Feedback
           .withFeedbackRemoteSensorID(30)
@@ -134,8 +134,8 @@ public class MainPivotS extends SubsystemBase {
           MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION,
           ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters)),
           ElevatorConstants.MIN_LENGTH.in(Meters),
-          -1000,//MainPivotConstants.CW_LIMIT.in(Radians),
-          1000, //MainPivotConstants.CCW_LIMIT.in(Radians),
+          MainPivotConstants.CW_LIMIT.in(Radians),
+          MainPivotConstants.CCW_LIMIT.in(Radians),
           MainPivotConstants.ARM_MASS.in(Kilograms),
           false);
 
@@ -177,12 +177,13 @@ public class MainPivotS extends SubsystemBase {
         .apply(MainPivotConstants.configureOppose(new TalonFXConfiguration()));
     m_cancoder.getConfigurator()
         .apply(MainPivotConstants.configureEncoder(new CANcoderConfiguration()));
-    m_leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
-    m_follower.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
-    m_oppose1.getSimState().Orientation = ChassisReference.Clockwise_Positive;
-    m_oppose2.getSimState().Orientation = ChassisReference.Clockwise_Positive;
-    m_cancoder.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
+    m_leader.getSimState().Orientation = ChassisReference.Clockwise_Positive;
+    m_follower.getSimState().Orientation = ChassisReference.Clockwise_Positive;
+    m_oppose1.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
+    m_oppose2.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
+    m_cancoder.getSimState().Orientation = ChassisReference.Clockwise_Positive;
     m_pivotSim.setState(VecBuilder.fill(MainPivotConstants.CW_LIMIT.in(Radians), 0));
+
     m_follower.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, false));
     m_oppose1.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
     m_oppose2.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
@@ -206,6 +207,9 @@ public class MainPivotS extends SubsystemBase {
     MAIN_PIVOT.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
   }
 
+  public double simulatedAngleRotations() {
+    return Units.radiansToRotations(m_pivotSim.getAngleRads());
+  }
   public void simulationPeriodic() {
     m_pivotSim.setMOI(m_moiSupplier.getAsDouble());
     m_pivotSim.setCGRadius(m_lengthSupplier.getAsDouble() / 2.0);
@@ -237,8 +241,8 @@ public class MainPivotS extends SubsystemBase {
       m_oppose1.getSimState().setRotorVelocity(-rotorVel);
       m_oppose2.getSimState().setRawRotorPosition(-rotorPos);
       m_oppose2.getSimState().setRotorVelocity(-rotorVel);
-      m_cancoder.getSimState().setRawPosition(Units.radiansToRotations(m_pivotSim.getAngleRads())-MainPivotConstants.ENCODER_OFFSET_ROTATIONS);
-      m_cancoder.getSimState().setVelocity(Units.radiansToRotations(m_pivotSim.getVelocityRadPerSec()));
+      m_cancoder.getSimState().setRawPosition(-(Units.radiansToRotations(m_pivotSim.getAngleRads())-MainPivotConstants.ENCODER_OFFSET_ROTATIONS));
+      m_cancoder.getSimState().setVelocity(-(Units.radiansToRotations(m_pivotSim.getVelocityRadPerSec())));
 
     }
   }
@@ -255,15 +259,18 @@ public class MainPivotS extends SubsystemBase {
     return m_lengthSupplier.getAsDouble();
   }
 
+  public double getLengthKg() {
+    return MathUtil.interpolate(
+      MainPivotConstants.K_G_RETRACTED,
+      MainPivotConstants.K_G_EXTENDED,
+      MathUtil.inverseInterpolate(
+          ElevatorConstants.MIN_LENGTH.in(Meters),
+          ElevatorConstants.MAX_LENGTH.in(Meters),
+          getLengthMeters()));
+  }
   public double getKgVolts() {
     return Math.cos(getAngleRadians())
-        * MathUtil.interpolate(
-            MainPivotConstants.K_G_RETRACTED,
-            MainPivotConstants.K_G_EXTENDED,
-            MathUtil.inverseInterpolate(
-                ElevatorConstants.MIN_LENGTH.in(Meters),
-                ElevatorConstants.MAX_LENGTH.in(Meters),
-                getLengthMeters()));
+        * getLengthKg();
   }
 
   public void setAngleRadians(double angle) {
