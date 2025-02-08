@@ -37,9 +37,11 @@ import frc.robot.generated.TunerConstants;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.RealHandS;
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.NoneArm;
+import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.NoneHandS;
 import frc.robot.subsystems.Hand;
-import frc.robot.NoneArm;
 import frc.robot.util.AlertsUtil;
 
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
@@ -66,7 +68,7 @@ public class Robot extends TimedRobot {
 
   // private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
-  private final DriverDisplay m_DriverDisplay = new DriverDisplay();
+  private final DriverDisplay m_driverDisplay = new DriverDisplay();
   private Mechanism2d VISUALIZER;
   public Pose3d[] components() {return RobotVisualizer.getComponents();}
 
@@ -77,6 +79,12 @@ public class Robot extends TimedRobot {
   public Robot() {
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
     Epilogue.bind(this);
+    m_driverDisplay.
+      setAllHomedSupplier(()->false)
+      .setHasCoralSupplier(m_autos::hasCoral)
+      .setBranchSupplier(m_operatorBoard::getBranch)
+      .setClimbSupplier(m_operatorBoard::getClimb)
+      .setLevelSupplier(m_operatorBoard::getLevel);
     AlertsUtil.bind(
         new Alert("Driver Xbox Disconnect", AlertType.kError),
         () -> !m_driverController.isConnected());
@@ -97,10 +105,6 @@ public class Robot extends TimedRobot {
                                 * 2
                                 * Math.PI) // Drive counterclockwise with negative X (left)
             ));
-    m_DriverDisplay
-      .setBranchSupplier(m_operatorBoard::getBranch)
-      .setClimbSupplier(m_operatorBoard::getClimb)
-      .setLevelSupplier(m_operatorBoard::getLevel);
 
     RobotVisualizer.setupVisualizer();
 
@@ -183,7 +187,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     m_operatorBoard.poll();
-    m_DriverDisplay.update();
+    m_driverDisplay.update();
     if (RobotBase.isSimulation()) {
       toGoal.clear();
       toGoal.addAll(m_drivebaseS.m_repulsor.getTrajectory(
@@ -209,7 +213,7 @@ public class Robot extends TimedRobot {
     // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(), proc_stat.getTranslation(), 3*0.02));
 
     m_arm.update();
-    RobotVisualizer.setArmPosition(m_arm.position);
+    RobotVisualizer.setArmPosition(m_arm.getPosition());
     Epilogue.talonFXLogger.refreshAll();
     // pdh.update();
     CommandScheduler.getInstance().run();

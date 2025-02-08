@@ -25,10 +25,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.operator.OperatorBoard;
-import frc.robot.Arm.ArmPosition;
 import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.Hand;
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
 
@@ -76,7 +77,6 @@ public class Autos {
     new Trigger(()->DriverStation.getStickButton(4, 2)).onTrue(runOnce(()->m_coralSensor.setHasCoral(false)).ignoringDisable(true));
     new Trigger(()->DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
     m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
-
     m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
   }
 

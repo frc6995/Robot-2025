@@ -48,6 +48,7 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
               object.getSupplyCurrent(),
               object.getPosition(),
               object.getMotorVoltage());
+      signals.statorCurrent.setUpdateFrequency(50);
       talons.put(object.getDeviceID(), signals);
     }
     dataLogger.log("statorCurrent", signals.statorCurrent.getValue().baseUnitMagnitude());

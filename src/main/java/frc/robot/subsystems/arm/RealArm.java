@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
@@ -12,12 +12,12 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ElevatorS;
-import frc.robot.subsystems.ElevatorS.ElevatorConstants;
-import frc.robot.subsystems.MainPivotS;
-import frc.robot.subsystems.NoneWristS;
-import frc.robot.subsystems.Wrist;
-import frc.robot.subsystems.WristS;
+import frc.robot.subsystems.arm.elevator.RealElevatorS;
+import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
+import frc.robot.subsystems.arm.pivot.MainPivotS;
+import frc.robot.subsystems.arm.wrist.NoneWristS;
+import frc.robot.subsystems.arm.wrist.Wrist;
+import frc.robot.subsystems.arm.wrist.RealWristS;
 
 import java.util.Set;
 
@@ -31,14 +31,17 @@ public class RealArm extends Arm {
             Radians.of(wristS.getAngleRadians()));
   }
 
+  public ArmPosition getPosition() {
+    return position;
+  }
   @Override
   public MechanismLigament2d getMechanism() {
     return ARM;
   }
 
   public RealArm() {
-    mainPivotS.setLengthSupplier(elevatorS::getLengthMeters);
-    mainPivotS.setMoISupplier(elevatorS::getMoI);
+    mainPivotS.setLengthSupplier(()->ElevatorConstants.MIN_LENGTH.in(Meters));//elevatorS::getLengthMeters);
+    mainPivotS.setMoISupplier(()->ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters)));
     elevatorS.setAngleSupplier(mainPivotS::getAngleRadians);
     ARM = mainPivotS.MAIN_PIVOT;
     ARM.append(elevatorS.ELEVATOR);
@@ -48,8 +51,8 @@ public class RealArm extends Arm {
   }
 
   public MainPivotS mainPivotS = new MainPivotS();
-  public ElevatorS elevatorS = new ElevatorS();
-  public WristS wristS = new WristS();
+  public RealElevatorS elevatorS = new RealElevatorS();
+  public RealWristS wristS = new RealWristS();
   private static final Distance SAFE_PIVOT_ELEVATOR_LENGTH =
       ElevatorConstants.MIN_LENGTH.plus(Inches.of(3));
 
