@@ -67,6 +67,7 @@ public class RealElevatorS extends Elevator {
         MOTOR_ROTATIONS_PER_METER_UNIT.in(Rotations.per(Meter));
 
     public static final Distance MIN_LENGTH = Inches.of(27.0);
+    public static final Distance MIN_PADDED_LENGTH = MIN_LENGTH.plus(Inches.of(0.5));
     public static final Distance MAX_LENGTH = Inches.of(67.0);
     public static final double MIN_LENGTH_ROTATIONS =
         MIN_LENGTH.in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
@@ -85,9 +86,9 @@ public class RealElevatorS extends Elevator {
           .withKV(K_V.in(VoltsPerRotationPerSecond))
           .withKA(K_A.in(VoltsPerRotationPerSecondSquared))
           .withKP(1)
-          .withKD(0);
-      config.MotionMagic.withMotionMagicAcceleration(MOTOR_ROTATIONS_PER_METER * 7)
-          .withMotionMagicCruiseVelocity(MOTOR_ROTATIONS_PER_METER * 4);
+          .withKD(0.25);
+      config.MotionMagic.withMotionMagicAcceleration(180)
+          .withMotionMagicCruiseVelocity(24);
       return config;
     }
 
@@ -105,16 +106,17 @@ public class RealElevatorS extends Elevator {
     public static final PerUnit<VoltageUnit, AngularAccelerationUnit>
         VoltsPerRotationPerSecondSquared = Volts.per(RotationsPerSecond.per(Second));
     public static final Per<VoltageUnit, AngularVelocityUnit> K_V =
-        VoltsPerRotationPerSecond.ofNative(12.0 / 100.0);
+        VoltsPerRotationPerSecond.ofNative(0.15);
 
     public static final Per<VoltageUnit, AngularAccelerationUnit> K_A =
-        VoltsPerRotationPerSecondSquared.ofNative(0.06 / MOTOR_ROTATIONS_PER_METER);
+        VoltsPerRotationPerSecondSquared.ofNative(0.006);
 
+    public static final double K_C = -0.17;
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
             K_V.in(VoltsPerRotationPerSecond) * MOTOR_ROTATIONS_PER_METER,
             K_A.in(VoltsPerRotationPerSecondSquared) * MOTOR_ROTATIONS_PER_METER);
-    public static final double K_G = 0.1;
+    public static final double K_G = 0.2;
     public static final InterpolatingDoubleTreeMap LENGTH_TO_MOI =
         InterpolatingDoubleTreeMap.ofEntries(
             Map.entry(ElevatorConstants.MIN_LENGTH.in(Meters), 0.7419),
@@ -131,6 +133,7 @@ public class RealElevatorS extends Elevator {
   private MotionMagicVoltage profileReq =
       new MotionMagicVoltage(ElevatorConstants.MIN_LENGTH_ROTATIONS);
   private StatusSignal<Angle> positionSignal = leader.getPosition();
+  private StatusSignal<Double> m_setpointSig = leader.getClosedLoopReference();
   private TiltedElevatorSim sim =
       new TiltedElevatorSim(
           ElevatorConstants.PLANT,
@@ -165,10 +168,15 @@ public class RealElevatorS extends Elevator {
     } else {
     sim.setState(VecBuilder.fill(ElevatorConstants.MIN_LENGTH.in(Meters), 0));
     }
+    m_setpointSig.setUpdateFrequency(50);
   }
 
   public Command home() {
     return runOnce(()->leader.setPosition(ElevatorConstants.MIN_LENGTH_ROTATIONS)).ignoringDisable(true);
+  }
+  public double getSetpoint() {
+    m_setpointSig.refresh();
+    return m_setpointSig.getValueAsDouble();
   }
   public double getMoI() {
     return ElevatorConstants.getMoI(getLengthMeters());
@@ -194,8 +202,10 @@ public class RealElevatorS extends Elevator {
   }
 
   public double getKGVolts() {
-    return ElevatorConstants.K_G * Math.sin(angleRadiansSupplier.getAsDouble());
+    return ElevatorConstants.K_G * Math.sin(angleRadiansSupplier.getAsDouble()) + ElevatorConstants.K_C;
   }
+
+
 
   public void simulationPeriodic() {
     var simState = leader.getSimState();

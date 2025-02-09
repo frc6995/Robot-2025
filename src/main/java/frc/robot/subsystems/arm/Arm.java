@@ -41,22 +41,22 @@ public abstract class Arm {
 
   public class Positions {
     public static final ArmPosition L2 =
-    new ArmPosition(Degrees.of(95), ElevatorConstants.MIN_LENGTH, Radians.of(0));
+    new ArmPosition(Degrees.of(95), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
     public static final ArmPosition L3 =
         new ArmPosition(Degrees.of(95), Meters.of(1), Radians.of(0));
     public static final ArmPosition L4 =
         new ArmPosition(Degrees.of(95), ElevatorConstants.MAX_LENGTH, Radians.of(0));
     public static final ArmPosition STOW =
-        new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_LENGTH, Radians.of(2));
+        new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(2));
     public static final ArmPosition INTAKE_CORAL =
-        new ArmPosition(MainPivotConstants.CW_LIMIT.plus(Degrees.of(3)), ElevatorConstants.MIN_LENGTH, Radians.of(0.3));
-    public static final ArmPosition LOW_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_LENGTH, Radians.of(0));
-    public static final ArmPosition HIGH_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_LENGTH, Radians.of(0));
-    public static final ArmPosition GROUND_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_LENGTH, Radians.of(0));
+        new ArmPosition(MainPivotConstants.CW_LIMIT.plus(Degrees.of(3)), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0.3));
+    public static final ArmPosition LOW_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
+    public static final ArmPosition HIGH_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
+    public static final ArmPosition GROUND_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
     public static final ArmPosition SCORE_BARGE = new ArmPosition(Degrees.of(95), ElevatorConstants.MAX_LENGTH, Radians.of(0));
-    public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_LENGTH, Radians.of(0));
-    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(95), ElevatorConstants.MIN_LENGTH, Radians.of(0));
-    public static final ArmPosition POST_CLIMB = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_LENGTH, Radians.of(0));
+    public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
+    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(95), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
+    public static final ArmPosition POST_CLIMB = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
 
   }
 

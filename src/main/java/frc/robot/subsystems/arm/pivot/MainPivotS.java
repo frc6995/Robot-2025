@@ -159,6 +159,7 @@ public class MainPivotS extends SubsystemBase {
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();
   private StatusSignal<Double> m_angleSetpointSig = m_leader.getClosedLoopReference();
+  
   private double m_goalRotations;
   private CANcoder m_cancoder = new CANcoder(30);
   private StatusSignal<Angle> m_cancoderAngleSig = m_cancoder.getPosition();

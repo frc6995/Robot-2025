@@ -8,6 +8,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -54,8 +55,8 @@ public class RealArm extends Arm {
   public RealElevatorS elevatorS = new RealElevatorS();
   public RealWristS wristS = new RealWristS();
   private static final Distance SAFE_PIVOT_ELEVATOR_LENGTH =
-      ElevatorConstants.MIN_LENGTH.plus(Inches.of(3));
-
+      ElevatorConstants.MIN_LENGTH.plus(Inches.of(6));
+  private static final Distance MIN_ELEVATOR_LENGTH = ElevatorConstants.MIN_PADDED_LENGTH;
   public Command goToPosition(ArmPosition position) {
     return defer(
         () -> {
@@ -66,14 +67,12 @@ public class RealArm extends Arm {
           double dElevator = position.elevatorMeters() - startElevator;
           double dWrist = position.wristRadians() - startWrist;
           // Just need to move wrist
-          if (Math.abs(dPivot) < Units.degreesToRadians(1)) {
+          if (Math.abs(dPivot) < Units.degreesToRadians(4)) {
             return goDirectlyTo(
                 position.pivotRadians(), position.elevatorMeters(), position.wristRadians());
           } else {
-            double prePivotElevator =
-                Math.min(startElevator, SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
-            double postPivotElevator =
-                Math.min(position.elevatorMeters(), SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
+            double prePivotElevator = MathUtil.clamp(startElevator, MIN_ELEVATOR_LENGTH.in(Meters), SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
+            double postPivotElevator =MathUtil.clamp(position.elevatorMeters(), MIN_ELEVATOR_LENGTH.in(Meters), SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
             return sequence(
                 // Retract elevator
                 goDirectlyTo(startMainPivot, prePivotElevator, startWrist)
@@ -85,7 +84,8 @@ public class RealArm extends Arm {
                     .until(
                         () ->
                             Math.abs(elevatorS.getLengthMeters() - postPivotElevator)
-                                < Units.inchesToMeters(1)),
+                                < Units.inchesToMeters(1)
+                            && Math.abs(mainPivotS.getAngleRadians() - position.pivotRadians()) < Units.degreesToRadians(10)),
                 goDirectlyTo(
                     position.pivotRadians(), position.elevatorMeters(), position.wristRadians()));
           }
