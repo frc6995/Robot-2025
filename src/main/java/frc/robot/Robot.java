@@ -31,6 +31,7 @@ import frc.operator.SimOperatorBoard;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.ArmBrakeS;
 import frc.robot.subsystems.ClimbHookS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
@@ -54,8 +55,9 @@ public class Robot extends TimedRobot {
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
   private final Hand m_hand = RobotBase.isReal() ?  new NoneHandS() : new RealHandS();
-  private final ClimbHookS m_ClimbHookS = new ClimbHookS();
-  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_ClimbHookS, (traj, isStarting) -> {});
+  private final ClimbHookS m_climbHookS = new ClimbHookS();
+  private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_climbHookS, m_armBrakeS, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
 
   // private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
