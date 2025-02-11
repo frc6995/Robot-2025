@@ -16,6 +16,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
@@ -44,7 +45,8 @@ public class Autos {
   private final AutoFactory m_autoFactory;
   public final AutoChooser m_autoChooser;
   public final ClimbHookS m_ClimbHookS;
-
+  @Logged
+  public final CoralSensor m_coralSensor = new CoralSensor();
   public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, ClimbHookS ClimbHookS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
@@ -166,16 +168,16 @@ public class Autos {
                         () -> {
                           return m_arm.atPosition(position);
                         }))
-            .andThen(m_hand.out().withTimeout(outtakeSeconds).asProxy()), // Proxy so hand isn't directly required
+            .andThen(outtake().withTimeout(outtakeSeconds).asProxy()), // Proxy so hand isn't directly required
         m_drivebase.pidToPoseC(target));
   }
   @Logged
   public double getDistanceSensorOffset() {
-    return -0.1;
+    return m_coralSensor.distanceOffset();
   }
   @Logged
   public boolean hasCoral() {
-    return getDistanceSensorOffset() > -0.2;
+    return m_coralSensor.hasCoral();
   }
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
     // TODO reduce allocations
@@ -235,7 +237,7 @@ public class Autos {
             atPose(target)
                 .and(
                     () -> m_arm.atPosition(selectedBranch())))
-          .andThen(m_hand.out().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
+          .andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
           ,
           m_drivebase.pidToPoseC(offsetSelectedReefPose).asProxy(),
           m_arm.goToPosition(selectedBranch()).asProxy()
@@ -244,6 +246,10 @@ public class Autos {
         );
       },Set.of());
     
+  }
+
+  public Command outtake() {
+    return m_hand.out().alongWith(runOnce(()->m_coralSensor.setHasCoral(false)));
   }
 
   private static List<String> TRAJECTORIES = List.of(Choreo.availableTrajectories());
@@ -324,8 +330,12 @@ public class Autos {
                         AUTO_OUTTAKE_TIME)
                     .onlyWhile(routine.active()),
                 first_intake.cmd()));
+    first_intake.atTime(0.1).onTrue(m_hand.in());
     var toIntake = first_intake;
     for (POI poi : rest) {
+      if (RobotBase.isSimulation()) {
+        toIntake.done(50).onTrue(runOnce(()->m_coralSensor.setHasCoral(true)));
+      }
       var toReef = intake.to(poi, routine).map(this::bindL4).get();
       var toReefFinal = toReef.getFinalPose().get();
       var nextToIntake = poi.to(intake, routine).map(this::bindIntake).get();
@@ -333,6 +343,10 @@ public class Autos {
           .done()
           .onTrue(
               sequence(
+                  deadline(
+                    waitUntil(this::hasCoral),
+                    m_drivebase.pidToPoseC(toReef.getInitialPose())
+                  ),
                   toReef.cmd().until(
                     toReef.atTranslation(
                         poi.bluePose.getTranslation(), Units.inchesToMeters(24))),
