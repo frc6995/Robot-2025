@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.operator.OperatorBoard;
 import frc.robot.Arm.ArmPosition;
 import frc.robot.driver.CommandOperatorKeypad;
+import frc.robot.subsystems.ClimbHookS;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.Hand;
 import frc.robot.util.AllianceFlipUtil;
@@ -42,12 +43,14 @@ public class Autos {
   private final OperatorBoard m_board;
   private final AutoFactory m_autoFactory;
   public final AutoChooser m_autoChooser;
+  public final ClimbHookS m_ClimbHookS;
 
-  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, TrajectoryLogger<SwerveSample> trajlogger) {
+  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, ClimbHookS ClimbHookS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
     m_hand = hand;
     m_board = board;
+    m_ClimbHookS  = ClimbHookS;
     m_autoChooser = new AutoChooser();
     m_autoFactory =
         new AutoFactory(
