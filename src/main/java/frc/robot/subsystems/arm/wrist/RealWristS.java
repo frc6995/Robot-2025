@@ -52,9 +52,9 @@ public class RealWristS extends Wrist {
 
     public static final Angle CCW_LIMIT = Degrees.of(85);
     public static final Angle CW_LIMIT = Degrees.of(-127);
-    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 70;
+    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
     // Units=volts/pivot rotation/s
-    public static final double K_V = 9.2;
+    public static final double K_V = 0.12 * MOTOR_ROTATIONS_PER_ARM_ROTATION;
     public static final double K_A = 0.04;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
@@ -66,7 +66,7 @@ public class RealWristS extends Wrist {
     // CAN IDs
     public static final int LEADER_CAN_ID = 50;
 
-    public static final int CURRENT_LIMIT = 100;
+    public static final int CURRENT_LIMIT = 10;
 
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
@@ -74,7 +74,6 @@ public class RealWristS extends Wrist {
     public static final double K_G = 0.5;
     public static final double K_S = 0;
     // arm plus hand
-    public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(0));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
     public static final double MOI = 0.10829;
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
@@ -118,14 +117,18 @@ public class RealWristS extends Wrist {
         .getConfigurator()
         .apply(WristConstants.configureLeader(new TalonFXConfiguration()));
     m_leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
-    m_pivotSim.setState(VecBuilder.fill(WristConstants.CW_LIMIT.in(Radians), 0));
-    setDefaultCommand(hold());
+    m_pivotSim.setState(VecBuilder.fill(WristConstants.CCW_LIMIT.in(Radians), 0));
+    setDefaultCommand(voltage(()->0));
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     WRIST.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
+  }
+
+  public Command home() {
+    return this.runOnce(()->m_leader.getConfigurator().setPosition(WristConstants.CCW_LIMIT)).ignoringDisable(true);
   }
 
   public void simulationPeriodic() {
