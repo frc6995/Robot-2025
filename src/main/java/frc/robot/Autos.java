@@ -249,7 +249,7 @@ public class Autos {
   }
   private ArmPosition selectedBranch() {
     return switch (m_board.getLevel()) {
-      case 0-> Arm.Positions.STOW;
+      case 0-> Arm.Positions.L1;
       case 1-> Arm.Positions.L2;
       case 2-> Arm.Positions.L3;
       case 3-> Arm.Positions.L4;
@@ -288,13 +288,13 @@ public class Autos {
             m_drivebase.atPose(target)
                 .and(
                     () -> m_arm.atPosition(selectedBranch())))
-          .andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
+          //.andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
           ,
           m_drivebase.pidToPoseC(offsetSelectedReefPose).asProxy(),
           m_arm.goToPosition(selectedBranch()).asProxy()
         ).andThen(
-          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
-        );
+          //new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
+        ).asProxy();
       },Set.of());
     
   }
@@ -348,7 +348,7 @@ public class Autos {
     var toIntake = first_intake;
     for (POI poi : rest) {
       if (RobotBase.isSimulation()) {
-        toIntake.done(50).onTrue(runOnce(()->m_coralSensor.setHasCoral(true)));
+        toIntake.done(10).onTrue(runOnce(()->m_coralSensor.setHasCoral(true)));
       }
       var toReef = intake.toChecked(poi, routine).map(this::bindL4).get();
       var toReefFinal = toReef.getFinalPose().get();

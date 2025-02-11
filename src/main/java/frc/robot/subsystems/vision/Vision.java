@@ -79,24 +79,24 @@ public class Vision {
 
     public static final Map<String, Transform3d> CAMERAS =
         Map.of(
-            "OV9281-FL",
+            "OV9281-BL",
                 new Transform3d(
-                    Units.inchesToMeters(4.875),
-                    Units.inchesToMeters(0),
-                    Units.inchesToMeters(7.25) - 0.02,
-                    new Rotation3d(
-                        Units.degreesToRadians(180),
-                        Units.degreesToRadians(-34),
-                        Units.degreesToRadians(0))),
-            "OV9281-FR",
-                new Transform3d(
-                    Units.inchesToMeters(-(13 - 3.375)),
-                    Units.inchesToMeters(-(13 - 2.625)),
-                    Units.inchesToMeters(9.25),
+                    Units.inchesToMeters(-14) + Units.inchesToMeters(4.25),
+                    Units.inchesToMeters(14) + Units.inchesToMeters(-4.25),
+                    Units.inchesToMeters(8.5),
                     new Rotation3d(
                         Units.degreesToRadians(0),
-                        Units.degreesToRadians(-10),
-                        Units.degreesToRadians(180))));
+                        Units.degreesToRadians(10),
+                        Units.degreesToRadians(-170))),
+            "OV9281-BR",
+                new Transform3d(
+                  Units.inchesToMeters(-14) + Units.inchesToMeters(4.25),
+                  -Units.inchesToMeters(14) + Units.inchesToMeters(4.25),
+                    Units.inchesToMeters(8.5),
+                    new Rotation3d(
+                        Units.degreesToRadians(0),
+                        Units.degreesToRadians(10),
+                        Units.degreesToRadians(170))));
     public static final AprilTagFieldLayout FIELD_LAYOUT =
         AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
   }

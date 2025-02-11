@@ -51,7 +51,7 @@ public class RealWristS extends Wrist {
     // rotations per arm rotation.
 
     public static final Angle CCW_LIMIT = Degrees.of(85);
-    public static final Angle CW_LIMIT = Degrees.of(-40);
+    public static final Angle CW_LIMIT = Degrees.of(-127);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 70;
     // Units=volts/pivot rotation/s
     public static final double K_V = 9.2;
@@ -79,7 +79,7 @@ public class RealWristS extends Wrist {
     public static final double MOI = 0.10829;
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(10).withKD(1);
-      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(2);
+      config.MotionMagic.withMotionMagicCruiseVelocity(2).withMotionMagicAcceleration(2);
       config.Feedback
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)

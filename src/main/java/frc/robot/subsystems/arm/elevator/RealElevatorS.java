@@ -169,6 +169,7 @@ public class RealElevatorS extends Elevator {
     sim.setState(VecBuilder.fill(ElevatorConstants.MIN_LENGTH.in(Meters), 0));
     }
     m_setpointSig.setUpdateFrequency(50);
+    setDefaultCommand(hold());
   }
 
   public Command home() {

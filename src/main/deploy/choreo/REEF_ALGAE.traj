@@ -1,0 +1,33 @@
+{
+ "name":"REEF_ALGAE",
+ "version":1,
+ "snapshot":{
+  "waypoints":[],
+  "constraints":[],
+  "targetDt":0.05
+ },
+ "params":{
+  "waypoints":[
+    {"x":{"exp":"R1.x", "val":3.191799831390381}, "y":{"exp":"R1.y", "val":4.026460647583008}, "heading":{"exp":"R1.heading", "val":0.0}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"R2.x", "val":3.841799831390381}, "y":{"exp":"R2.y", "val":2.9006276226632375}, "heading":{"exp":"R2.heading", "val":1.0471975511965976}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"R3.x", "val":5.14179983139038}, "y":{"exp":"R3.y", "val":2.9006276226632375}, "heading":{"exp":"R3.heading", "val":2.0943951023931953}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"R4.x", "val":5.791799831390381}, "y":{"exp":"R4.y", "val":4.026460647583008}, "heading":{"exp":"R4.heading", "val":3.141592653589793}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"R5.x", "val":5.141799831390381}, "y":{"exp":"R5.y", "val":5.152293672502777}, "heading":{"exp":"R5.heading", "val":4.1887902047863905}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"R6.x", "val":3.841799831390381}, "y":{"exp":"R6.y", "val":5.152293672502778}, "heading":{"exp":"R6.heading", "val":5.235987755982989}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+  "constraints":[
+    {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"0 m", "val":0.0}, "y":{"exp":"0 m", "val":0.0}, "w":{"exp":"17.548 m", "val":17.548}, "h":{"exp":"8.052 m", "val":8.052}}}, "enabled":false}],
+  "targetDt":{
+   "exp":"0.05 s",
+   "val":0.05
+  }
+ },
+ "trajectory":{
+  "sampleType":null,
+  "waypoints":[],
+  "samples":[],
+  "splits":[]
+ },
+ "events":[]
+}

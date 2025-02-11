@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -117,17 +118,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    //configureDriverController();
-    m_driverController.a().whileTrue(m_arm.mainPivotS.voltage(()->1));
-    m_driverController.b().whileTrue(m_arm.mainPivotS.voltage(()->-1));
-    m_driverController.x().whileTrue(m_arm.elevatorS.voltage(()->1));
-    m_driverController.y().whileTrue(m_arm.elevatorS.voltage(()->-1));
-    m_driverController.leftBumper().whileTrue(
-      m_arm.goToPosition(Arm.Positions.L4));
-    m_driverController.rightBumper().whileTrue(
-      m_arm.goToPosition(Arm.Positions.STOW));
-    // m_driverController.rightTrigger().whileTrue(m_arm.mainPivotS.voltage(m_arm.mainPivotS::getKgVolts));
-    m_driverController.start().onTrue(m_arm.elevatorS.home());
+    configureDriverController();
+    m_driverController.start().and(RobotModeTriggers.disabled()).onTrue(m_arm.elevatorS.home());
     DriverStation.silenceJoystickConnectionWarning(true);
     boolean doingSysId = false;
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
@@ -154,6 +146,10 @@ public class Robot extends TimedRobot {
     m_driverController.x().whileTrue(
       defer(()->
       m_drivebaseS.driveToPoseSupC(m_autos.closestSide().algae::flippedPose), Set.of(m_drivebaseS))
+      
+    ).whileTrue(
+      defer(()->new ScheduleCommand(
+      m_arm.goToPosition(m_autos.closestSide().algaeArm)), Set.of(m_arm.mainPivotS, m_arm.elevatorS, m_arm.wristS))
     );
 
     // Stow
@@ -232,7 +228,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
   }
 
-  private final Rotation3d coral_hand_rotation = new Rotation3d(0, Units.degreesToRadians(105), 0);
+  private final Rotation3d coral_hand_rotation = new Rotation3d(0, Units.degreesToRadians(20), 0);
   public Pose3d getCoralPose() {
     if (m_autos.hasCoral()) {
     return new Pose3d(m_drivebaseS.getPose()).plus(new Transform3d(
@@ -240,13 +236,23 @@ public class Robot extends TimedRobot {
       RobotVisualizer.getComponents()[3].getRotation()
     )).plus(
       new Transform3d(
-        -0.12, -m_autos.getDistanceSensorOffset(), 0.1, coral_hand_rotation
+        -0.04, -m_autos.getDistanceSensorOffset(), 0.18, coral_hand_rotation
       )
     );
     }
     else {
       return Pose3d.kZero;
     }
+  }
+  public Pose3d getAlgaePose() {
+    return new Pose3d(m_drivebaseS.getPose()).plus(new Transform3d(
+      RobotVisualizer.getComponents()[3].getTranslation(),
+      RobotVisualizer.getComponents()[3].getRotation()
+    )).plus(
+      new Transform3d(
+        0.2, 0, 0.3, Rotation3d.kZero
+      )
+    );
   }
 
   /**

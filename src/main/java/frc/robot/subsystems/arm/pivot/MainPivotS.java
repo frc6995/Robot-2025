@@ -99,7 +99,7 @@ public class MainPivotS extends SubsystemBase {
           .withRotorToSensorRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
-          .withReverseSoftLimitThreshold(CW_LIMIT)
+          .withReverseSoftLimitThreshold(CW_LIMIT.minus(Degrees.of(10)))
           .withReverseSoftLimitEnable(true);
       config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;
@@ -134,7 +134,7 @@ public class MainPivotS extends SubsystemBase {
           MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION,
           ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters)),
           ElevatorConstants.MIN_LENGTH.in(Meters),
-          MainPivotConstants.CW_LIMIT.in(Radians),
+          MainPivotConstants.CW_LIMIT.minus(Degrees.of(10)).in(Radians),
           MainPivotConstants.CCW_LIMIT.in(Radians),
           MainPivotConstants.ARM_MASS.in(Kilograms),
           false);
@@ -159,7 +159,7 @@ public class MainPivotS extends SubsystemBase {
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();
   private StatusSignal<Double> m_angleSetpointSig = m_leader.getClosedLoopReference();
-  
+
   private double m_goalRotations;
   private CANcoder m_cancoder = new CANcoder(30);
   private StatusSignal<Angle> m_cancoderAngleSig = m_cancoder.getPosition();
@@ -190,7 +190,7 @@ public class MainPivotS extends SubsystemBase {
     m_oppose1.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
     m_oppose2.setControl(new Follower(MainPivotConstants.LEADER_CAN_ID, true));
     m_angleSetpointSig.setUpdateFrequency(50);
-    setDefaultCommand(voltage(()->0));
+    setDefaultCommand(hold());
     setNeutralMode(NeutralModeValue.Brake);
   }
   public double getSetpoint() {
