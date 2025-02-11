@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.operator.OperatorBoard;
 import frc.robot.Arm.ArmPosition;
 import frc.robot.driver.CommandOperatorKeypad;
+import frc.robot.subsystems.ArmBrakeS;
 import frc.robot.subsystems.ClimbHookS;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.Hand;
@@ -45,14 +46,16 @@ public class Autos {
   private final AutoFactory m_autoFactory;
   public final AutoChooser m_autoChooser;
   public final ClimbHookS m_ClimbHookS;
+  public final ArmBrakeS m_ArmBrakeS;
   @Logged
   public final CoralSensor m_coralSensor = new CoralSensor();
-  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, ClimbHookS ClimbHookS, TrajectoryLogger<SwerveSample> trajlogger) {
+  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, ClimbHookS climbHookS, ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
     m_hand = hand;
     m_board = board;
-    m_ClimbHookS  = ClimbHookS;
+    m_ClimbHookS  = climbHookS;
+    m_ArmBrakeS = armBrakeS;
     m_autoChooser = new AutoChooser();
     m_autoFactory =
         new AutoFactory(
