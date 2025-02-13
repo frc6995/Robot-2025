@@ -61,14 +61,17 @@ public class RealElevatorS extends Elevator {
     public static final int LEADER_ID = 40;
     public static final int FOLLOWER_ID = 41;
     // Approved by CAD
+    public static final double a = 13.0/50.0 * (Math.PI*1.508) * 2;
+    public static final double b = 1.32278 * 2;
     public static final Per<AngleUnit, DistanceUnit> MOTOR_ROTATIONS_PER_METER_UNIT =
-        Rotations.of(1).div(Inches.of(1.32278 * 2));
+        
+        Rotations.of(1).div(Inches.of(13.0/50.0 * (Math.PI*1.508) * 2));
     public static final double MOTOR_ROTATIONS_PER_METER =
         MOTOR_ROTATIONS_PER_METER_UNIT.in(Rotations.per(Meter));
 
     public static final Distance MIN_LENGTH = Inches.of(27.0);
     public static final Distance MIN_PADDED_LENGTH = MIN_LENGTH.plus(Inches.of(0.5));
-    public static final Distance MAX_LENGTH = Inches.of(67.0);
+    public static final Distance MAX_LENGTH = Inches.of(66.0);
     public static final double MIN_LENGTH_ROTATIONS =
         MIN_LENGTH.in(Meters) * ElevatorConstants.MOTOR_ROTATIONS_PER_METER;
     public static final double MAX_LENGTH_ROTATIONS =
@@ -116,7 +119,7 @@ public class RealElevatorS extends Elevator {
         LinearSystemId.identifyPositionSystem(
             K_V.in(VoltsPerRotationPerSecond) * MOTOR_ROTATIONS_PER_METER,
             K_A.in(VoltsPerRotationPerSecondSquared) * MOTOR_ROTATIONS_PER_METER);
-    public static final double K_G = 0.2;
+    public static final double K_G = 0.4;
     public static final InterpolatingDoubleTreeMap LENGTH_TO_MOI =
         InterpolatingDoubleTreeMap.ofEntries(
             Map.entry(ElevatorConstants.MIN_LENGTH.in(Meters), 0.7419),
@@ -162,7 +165,7 @@ public class RealElevatorS extends Elevator {
     follower.getConfigurator().apply(ElevatorConstants.configureFollower(followerConfig));
 
     follower.setControl(new Follower(ElevatorConstants.LEADER_ID, false));
-    setDefaultCommand(this.stop());
+    setDefaultCommand(this.hold());
     if (RobotBase.isReal()) {
     leader.setPosition(ElevatorConstants.MIN_LENGTH_ROTATIONS);
     } else {
@@ -182,9 +185,10 @@ public class RealElevatorS extends Elevator {
   public double getMoI() {
     return ElevatorConstants.getMoI(getLengthMeters());
   }
+
   public Command hold() {
-    return this.runOnce(() -> positionReq.withPosition(getMotorRotations()).withVelocity(0))
-        .andThen(this.run(() -> leader.setControl(positionReq)));
+    return this.runOnce(() -> profileReq.withPosition(getMotorRotations()))
+        .andThen(this.run(() -> leader.setControl(profileReq.withFeedForward(getKGVolts()))));
   }
 
   public Command voltage(DoubleSupplier voltageSupplier) {
@@ -242,7 +246,9 @@ public class RealElevatorS extends Elevator {
     return this.run(() -> leader.setControl(voltage.withOutput(0)));
   }
 
+  public double goalRotations = ElevatorConstants.MIN_LENGTH_ROTATIONS;
   private void goToRotations(double motorRotations) {
+    goalRotations = motorRotations;
     leader.setControl(profileReq.withPosition(motorRotations).withFeedForward(getKGVolts()));
   }
 

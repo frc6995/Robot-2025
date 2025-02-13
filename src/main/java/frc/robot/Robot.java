@@ -43,10 +43,12 @@ import frc.robot.subsystems.arm.NoneArm;
 import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
+import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 import frc.robot.subsystems.NoneHandS;
 import frc.robot.subsystems.Hand;
 import frc.robot.util.AlertsUtil;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
@@ -66,7 +68,7 @@ public class Robot extends TimedRobot {
   private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
-  private final Hand m_hand = RobotBase.isReal() ?  new NoneHandS() : new RealHandS();
+  private final Hand m_hand = new RealHandS();
   private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
 
@@ -118,8 +120,23 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    configureDriverController();
-    m_driverController.start().and(RobotModeTriggers.disabled()).onTrue(m_arm.elevatorS.home());
+    //configureDriverController();
+    var leftTarget = WristConstants.CCW_LIMIT.minus(Degrees.of(5));
+    var rightTarget = WristConstants.CW_LIMIT.plus(Degrees.of(5));
+    // m_driverController.leftBumper().whileTrue(m_arm.wristS.goTo(
+    //   ()->leftTarget
+    // ));
+    // m_driverController.rightBumper().whileTrue(m_arm.wristS.goTo(
+    //   ()->rightTarget
+    // ));
+    // m_driverController.rightTrigger().whileTrue(m_arm.wristS.voltage(m_arm.wristS::getKgVolts));
+    m_driverController.a().whileTrue(m_hand.inCoral());
+    m_driverController.b().whileTrue(m_hand.outCoral());
+    m_driverController.leftBumper().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
+
+    m_driverController.rightBumper().whileTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE));
+    m_driverController.rightTrigger().whileTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE));
+    m_driverController.start().and(RobotModeTriggers.disabled()).onTrue(m_arm.elevatorS.home().alongWith(m_arm.wristS.home()));
     DriverStation.silenceJoystickConnectionWarning(true);
     boolean doingSysId = false;
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());

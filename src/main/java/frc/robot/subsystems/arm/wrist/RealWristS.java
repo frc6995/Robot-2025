@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import com.ctre.phoenix6.StatusSignal;
@@ -17,6 +18,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
@@ -50,12 +52,12 @@ public class RealWristS extends Wrist {
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
     // rotations per arm rotation.
 
-    public static final Angle CCW_LIMIT = Degrees.of(85);
-    public static final Angle CW_LIMIT = Degrees.of(-127);
+    public static final Angle CCW_LIMIT = Rotations.of(0.141);
+    public static final Angle CW_LIMIT = Rotations.of(-0.314);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
     // Units=volts/pivot rotation/s
-    public static final double K_V = 0.12 * MOTOR_ROTATIONS_PER_ARM_ROTATION;
-    public static final double K_A = 0.04;
+    public static final double K_V = 5.01;
+    public static final double K_A = 0.2;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
@@ -71,18 +73,20 @@ public class RealWristS extends Wrist {
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
 
-    public static final double K_G = 0.5;
+    public static final double K_G = 0.25;
+    public static final Angle K_G_ANGLE = Rotations.of(-0.072);
     public static final double K_S = 0;
     // arm plus hand
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
     public static final double MOI = 0.10829;
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(10).withKD(1);
+      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(50).withKD(0);
       config.MotionMagic.withMotionMagicCruiseVelocity(2).withMotionMagicAcceleration(2);
       config.Feedback
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
           .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
+      config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
@@ -105,7 +109,8 @@ public class RealWristS extends Wrist {
   private MotionMagicVoltage m_profileReq = new MotionMagicVoltage(0);
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();
-  private double m_setpointRotations;
+  private StatusSignal<Double> m_setpointSig = m_leader.getClosedLoopReference();
+  private double m_goalRotations;
 
   private DoubleSupplier m_mainAngleSupplier = () -> 0;
   public void setMainAngleSupplier(DoubleSupplier mainAngleSupplier) {
@@ -116,9 +121,10 @@ public class RealWristS extends Wrist {
     m_leader
         .getConfigurator()
         .apply(WristConstants.configureLeader(new TalonFXConfiguration()));
-    m_leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
+    m_leader.getSimState().Orientation = ChassisReference.Clockwise_Positive;
     m_pivotSim.setState(VecBuilder.fill(WristConstants.CCW_LIMIT.in(Radians), 0));
-    setDefaultCommand(voltage(()->0));
+    m_setpointSig.setUpdateFrequency(50);
+    setDefaultCommand(hold());
   }
 
   @Override
@@ -127,6 +133,10 @@ public class RealWristS extends Wrist {
     WRIST.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
   }
 
+  public double setpoint() {
+    m_setpointSig.refresh();
+    return m_setpointSig.getValueAsDouble();
+  }
   public Command home() {
     return this.runOnce(()->m_leader.getConfigurator().setPosition(WristConstants.CCW_LIMIT)).ignoringDisable(true);
   }
@@ -166,14 +176,14 @@ public class RealWristS extends Wrist {
   }
 
   public double getKgVolts() {
-    return Math.cos(getAngleRadians() + m_mainAngleSupplier.getAsDouble())*WristConstants.K_G;
+    return Math.cos(getAngleRadians() - WristConstants.K_G_ANGLE.in(Radians) + m_mainAngleSupplier.getAsDouble())*WristConstants.K_G;
   }
 
   public void setAngleRadians(double angle) {
-    m_setpointRotations = Units.radiansToRotations(angle);
+    m_goalRotations = Units.radiansToRotations(angle);
 
     m_leader.setControl(
-        m_profileReq.withPosition(m_setpointRotations)); // .withFeedForward(getKgVolts()));
+        m_profileReq.withPosition(m_goalRotations).withFeedForward(getKgVolts()));
   }
 
   public Command goTo(DoubleSupplier angleSupplier) {

@@ -3,6 +3,7 @@ package frc.robot.subsystems.arm;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
@@ -10,6 +11,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,6 +21,7 @@ import frc.robot.subsystems.arm.pivot.MainPivotS;
 import frc.robot.subsystems.arm.wrist.NoneWristS;
 import frc.robot.subsystems.arm.wrist.Wrist;
 import frc.robot.subsystems.arm.wrist.RealWristS;
+import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 
 import java.util.Set;
 
@@ -44,6 +47,7 @@ public class RealArm extends Arm {
     mainPivotS.setLengthSupplier(elevatorS::getLengthMeters);
     mainPivotS.setMoISupplier(elevatorS::getMoI);
     elevatorS.setAngleSupplier(mainPivotS::getAngleRadians);
+    wristS.setMainAngleSupplier(mainPivotS::getAngleRadians);
     ARM = mainPivotS.MAIN_PIVOT;
     ARM.append(elevatorS.ELEVATOR);
     elevatorS.ELEVATOR.append(wristS.WRIST);
@@ -57,6 +61,8 @@ public class RealArm extends Arm {
   private static final Distance SAFE_PIVOT_ELEVATOR_LENGTH =
       ElevatorConstants.MIN_LENGTH.plus(Inches.of(6));
   private static final Distance MIN_ELEVATOR_LENGTH = ElevatorConstants.MIN_PADDED_LENGTH;
+  private static final Angle SAFE_WRIST_MIN = WristConstants.CW_LIMIT;
+  private static final Angle SAFE_WRIST_MAX = Rotations.of(-0.19);
   public Command goToPosition(ArmPosition position) {
     return defer(
         () -> {
@@ -66,6 +72,7 @@ public class RealArm extends Arm {
           double dPivot = position.pivotRadians() - startMainPivot;
           double dElevator = position.elevatorMeters() - startElevator;
           double dWrist = position.wristRadians() - startWrist;
+          
           // Just need to move wrist
           if (Math.abs(dPivot) < Units.degreesToRadians(4)) {
             return goDirectlyTo(
@@ -73,21 +80,37 @@ public class RealArm extends Arm {
           } else {
             double prePivotElevator = MathUtil.clamp(startElevator, MIN_ELEVATOR_LENGTH.in(Meters), SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
             double postPivotElevator =MathUtil.clamp(position.elevatorMeters(), MIN_ELEVATOR_LENGTH.in(Meters), SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
+            double retractWrist = MathUtil.clamp(startWrist, SAFE_WRIST_MIN.in(Radians), SAFE_WRIST_MAX.in(Radians));
+            double retractWristTarget = MathUtil.clamp(position.wristRadians(), SAFE_WRIST_MIN.in(Radians), SAFE_WRIST_MAX.in(Radians));
             return sequence(
+                // retract wrist
+                goDirectlyTo(startMainPivot, startElevator, retractWristTarget)
+                .until(
+                        () ->
+                        wristS.getAngleRadians() > SAFE_WRIST_MIN.in(Radians) && wristS.getAngleRadians() < SAFE_WRIST_MAX.in(Radians)),
                 // Retract elevator
-                goDirectlyTo(startMainPivot, prePivotElevator, startWrist)
+                goDirectlyTo(startMainPivot, prePivotElevator, retractWristTarget)
                     .until(
                         () ->
                             Math.abs(elevatorS.getLengthMeters() - prePivotElevator)
                                 < Units.inchesToMeters(1)),
-                goDirectlyTo(position.pivotRadians(), postPivotElevator, startWrist)
+                // pivot
+                goDirectlyTo(position.pivotRadians(), postPivotElevator, retractWristTarget)
                     .until(
                         () ->
                             Math.abs(elevatorS.getLengthMeters() - postPivotElevator)
                                 < Units.inchesToMeters(1)
                             && Math.abs(mainPivotS.getAngleRadians() - position.pivotRadians()) < Units.degreesToRadians(10)),
+                // extend
                 goDirectlyTo(
-                    position.pivotRadians(), position.elevatorMeters(), position.wristRadians()));
+                    position.pivotRadians(), position.elevatorMeters(), retractWristTarget)
+                    .until(
+                      () ->
+                          Math.abs(elevatorS.getLengthMeters() - position.elevatorMeters())
+                              < Units.inchesToMeters(1)),
+                goDirectlyTo(
+                  position.pivotRadians(), position.elevatorMeters(), position.wristRadians())
+                    );
           }
         },
         Set.of(mainPivotS, elevatorS, wristS));

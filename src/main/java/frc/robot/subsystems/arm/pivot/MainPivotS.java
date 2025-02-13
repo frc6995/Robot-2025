@@ -89,8 +89,10 @@ public class MainPivotS extends SubsystemBase {
     public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375;
 
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(20).withKD(0);
-      config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
+      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(40).withKD(0);
+      //TEMP
+      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(1);
+      //config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.Feedback
           .withFeedbackRemoteSensorID(30)
@@ -303,6 +305,10 @@ public class MainPivotS extends SubsystemBase {
   }
 
   public Command hold() {
-    return sequence(runOnce(() -> setAngleRadians(getAngleRadians())), Commands.idle());
+    return sequence(runOnce(() -> m_goalRotations = getAngleRotations()),
+      run(()->{
+        m_leader.setControl(
+          m_profileReq.withPosition(m_goalRotations).withFeedForward(getKgVolts()));
+      }));
   }
 }

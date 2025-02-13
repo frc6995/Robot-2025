@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -38,6 +39,10 @@ public class RealHandS extends Hand {
 
   public static final double OUT_ALGAE_VOLTAGE = 6;
 
+  public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
+    config.CurrentLimits.withStatorCurrentLimit(25);
+    return config;
+  }
   }
   private final TalonFX motor = new TalonFX(HandConstants.CAN_ID);
 
@@ -65,6 +70,9 @@ public class RealHandS extends Hand {
   /** Creates a new HandRollerS. */
   public RealHandS() {
    super();
+   motor.getConfigurator().apply(HandConstants.configureMotor(new TalonFXConfiguration()));
+   setDefaultCommand(stop());
+
   }
 
   @Override

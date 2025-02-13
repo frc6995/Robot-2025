@@ -45,9 +45,9 @@ public abstract class Arm {
     public static final ArmPosition L1 =
         new ArmPosition(MainPivotConstants.CW_LIMIT.minus(Degrees.of(10)), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition L2 =
-    new ArmPosition(Degrees.of(95), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0.2));
+    new ArmPosition(Degrees.of(95), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0.18));
     public static final ArmPosition L3 =
-        new ArmPosition(Degrees.of(95), Meters.of(1.1), Radians.of(0.2));
+        new ArmPosition(Degrees.of(95), Meters.of(1.1), Radians.of(0.18));
     public static final ArmPosition L4 =
         new ArmPosition(Degrees.of(95), ElevatorConstants.MAX_LENGTH, Radians.of(0.25));
     public static final ArmPosition STOW =
