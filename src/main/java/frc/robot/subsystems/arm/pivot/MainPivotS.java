@@ -57,10 +57,10 @@ public class MainPivotS extends SubsystemBase {
 
     public static final Angle CCW_LIMIT = Degrees.of(100);
     public static final Angle CW_LIMIT = Degrees.of(40);
-    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651;
+    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651 * 16.0/9.0;
     // Units=volts/pivot rotation/s
     public static final double K_V = 12.0 / (100 / MOTOR_ROTATIONS_PER_ARM_ROTATION);
-    public static final double K_A = 0.22;
+    public static final double K_A = 0.22 /*v/oldRot/s^2 */ * 9.0/16.0; /* newRot/oldRot */;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
