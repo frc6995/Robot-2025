@@ -96,7 +96,17 @@ public class Vision {
                     new Rotation3d(
                         Units.degreesToRadians(0),
                         Units.degreesToRadians(-10),
-                        Units.degreesToRadians(171.45))));
+                        Units.degreesToRadians(171.45))),
+                "OV9281-FL",
+                new Transform3d(
+                  Units.inchesToMeters(-14) + 0.098,
+                  -Units.inchesToMeters(13.5) + 0.096,
+                    Units.inchesToMeters(8.5),
+                    new Rotation3d(
+                        Units.degreesToRadians(0),
+                        Units.degreesToRadians(-50),
+                        Units.degreesToRadians(0)))
+        );
     public static final AprilTagFieldLayout FIELD_LAYOUT =
         AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
   }
