@@ -120,22 +120,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    //configureDriverController();
-    var leftTarget = WristConstants.CCW_LIMIT.minus(Degrees.of(5));
-    var rightTarget = WristConstants.CW_LIMIT.plus(Degrees.of(5));
-    // m_driverController.leftBumper().whileTrue(m_arm.wristS.goTo(
-    //   ()->leftTarget
-    // ));
-    // m_driverController.rightBumper().whileTrue(m_arm.wristS.goTo(
-    //   ()->rightTarget
-    // ));
-    // m_driverController.rightTrigger().whileTrue(m_arm.wristS.voltage(m_arm.wristS::getKgVolts));
-    m_driverController.a().whileTrue(m_hand.inCoral());
-    m_driverController.b().whileTrue(m_hand.outCoral());
-    m_driverController.leftBumper().whileTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
+    configureDriverController();
 
-    m_driverController.rightBumper().whileTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE));
-    m_driverController.rightTrigger().whileTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE));
     m_driverController.start().and(RobotModeTriggers.disabled()).onTrue(m_arm.elevatorS.home().alongWith(m_arm.wristS.home()));
     DriverStation.silenceJoystickConnectionWarning(true);
     boolean doingSysId = false;
