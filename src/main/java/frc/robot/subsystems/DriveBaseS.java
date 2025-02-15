@@ -511,8 +511,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     // above.
     return dot > Math.cos(toleranceRadians);
   }
-
-  public Trigger atPose(Supplier<Pose2d> poseSup) {
+  public Trigger atPose(Supplier<Pose2d> poseSup, double toleranceMeters, double toleranceRadians) {
     return new Trigger(
         () -> {
           Pose2d pose = poseSup.get();
@@ -523,11 +522,19 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
         });
   }
 
+  public Trigger atPose(Supplier<Pose2d> poseSup) {
+    return atPose(poseSup, toleranceMeters, toleranceRadians);
+  }
+
   public Trigger atPose(Optional<Pose2d> poseOpt) {
     return poseOpt.map(this::atPose).orElse(new Trigger(() -> false));
   }
 
   public Trigger atPose(Pose2d pose) {
     return atPose(() -> pose);
+  }
+
+  public Trigger safeToMoveArm(Supplier<Pose2d> poseSup) {
+    return atPose(poseSup, Units.inchesToMeters(36), 2*Math.PI);
   }
 }

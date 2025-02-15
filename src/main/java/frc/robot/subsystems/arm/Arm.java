@@ -18,8 +18,11 @@ import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 
 public abstract class Arm {
   public MechanismLigament2d ARM;
+  
 
   public record ArmPosition(Angle mainPivotAngle, Distance elevatorLength, Angle wristAngle) {
+    public static final Distance SAFE_PIVOT_ELEVATOR_LENGTH =
+    ElevatorConstants.MIN_LENGTH.plus(Inches.of(6));
     public double pivotRadians() {
       return mainPivotAngle.in(Radians);
     }
@@ -38,6 +41,12 @@ public abstract class Arm {
           && MathUtil.isNear(this.elevatorMeters(), other.elevatorMeters(), elevatorLength)
           && MathUtil.isNear(this.wristRadians(), other.wristRadians(), wristRadians);
     }
+
+    public ArmPosition premove() {
+      return new ArmPosition(mainPivotAngle,
+        elevatorLength.gt(SAFE_PIVOT_ELEVATOR_LENGTH) ? SAFE_PIVOT_ELEVATOR_LENGTH : elevatorLength,
+        wristAngle);
+    }
   }
   ;
 
@@ -45,11 +54,11 @@ public abstract class Arm {
     public static final ArmPosition L1 =
         new ArmPosition(MainPivotConstants.CW_LIMIT.minus(Degrees.of(10)), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition L2 =
-    new ArmPosition(Degrees.of(95), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0.18));
+    new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0.30));
     public static final ArmPosition L3 =
-        new ArmPosition(Degrees.of(95), Meters.of(1.1), Radians.of(0.18));
+        new ArmPosition(Degrees.of(90), Meters.of(1.05), Radians.of(0.24));
     public static final ArmPosition L4 =
-        new ArmPosition(Degrees.of(95), ElevatorConstants.MAX_LENGTH, Radians.of(0.25));
+        new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH, Radians.of(0.25));
     public static final ArmPosition STOW =
         new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition INTAKE_CORAL =
@@ -57,7 +66,7 @@ public abstract class Arm {
     public static final ArmPosition LOW_ALGAE = new ArmPosition(Degrees.of(55), ElevatorConstants.MIN_LENGTH.plus(Inches.of(8)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
     public static final ArmPosition HIGH_ALGAE = new ArmPosition(Degrees.of(60), ElevatorConstants.MIN_LENGTH.plus(Inches.of(24)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
     public static final ArmPosition GROUND_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
-    public static final ArmPosition SCORE_BARGE = new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH, Radians.of(0));
+    public static final ArmPosition SCORE_BARGE = new ArmPosition(Degrees.of(80), ElevatorConstants.MAX_LENGTH, Radians.of(0));
     public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT.plus(Degrees.of(20)));
     public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition POST_CLIMB = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
@@ -67,6 +76,7 @@ public abstract class Arm {
   public Arm() {}
 
   protected ArmPosition position;
+  
 
   public Command goToPosition(ArmPosition position) {
     return Commands.none();

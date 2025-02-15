@@ -59,10 +59,10 @@ public class RealArm extends Arm {
   public RealElevatorS elevatorS = new RealElevatorS();
   public RealWristS wristS = new RealWristS();
   private static final Distance SAFE_PIVOT_ELEVATOR_LENGTH =
-      ElevatorConstants.MIN_LENGTH.plus(Inches.of(6));
+  ArmPosition.SAFE_PIVOT_ELEVATOR_LENGTH;
   private static final Distance MIN_ELEVATOR_LENGTH = ElevatorConstants.MIN_PADDED_LENGTH;
   private static final Angle SAFE_WRIST_MIN = WristConstants.CW_LIMIT;
-  private static final Angle SAFE_WRIST_MAX = Rotations.of(-0.19);
+  private static final Angle SAFE_WRIST_MAX = WristConstants.CCW_LIMIT;
   public Command goToPosition(ArmPosition position) {
     return defer(
         () -> {

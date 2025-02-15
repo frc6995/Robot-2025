@@ -82,8 +82,11 @@ public class Autos {
     new Trigger(()->DriverStation.getStickButton(4, 1)).onTrue(runOnce(()->m_coralSensor.setHasCoral(true)).ignoringDisable(true));
     new Trigger(()->DriverStation.getStickButton(4, 2)).onTrue(runOnce(()->m_coralSensor.setHasCoral(false)).ignoringDisable(true));
     new Trigger(()->DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
+    drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
+    drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
     m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
     m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
+
   }
 
   public void addAutos() {
@@ -286,6 +289,19 @@ public class Autos {
     }
   }
 
+  private Command preMoveUntilTarget(Supplier<Pose2d> target, ArmPosition finalPosition) {
+    return sequence(
+      m_arm.goToPosition(finalPosition.premove())
+        .until(m_drivebase.safeToMoveArm(target))
+        .onlyIf(m_drivebase.safeToMoveArm(target).negate()),
+      m_arm.goToPosition(finalPosition)
+    );
+  }
+
+  @Logged
+  private Trigger drivetrainAtReefTargetTrig;
+  @Logged
+  private Trigger drivetrainCloseMoveArmTrig;
   public Command autoScore() {
     var target = offsetSelectedReefPose;
     return defer(
@@ -298,7 +314,7 @@ public class Autos {
           //.andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
           ,
           m_drivebase.pidToPoseC(offsetSelectedReefPose).asProxy(),
-          m_arm.goToPosition(selectedBranch()).asProxy()
+          preMoveUntilTarget(target, selectedBranch()).asProxy()
         ).andThen(
           //new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
         ).asProxy();
