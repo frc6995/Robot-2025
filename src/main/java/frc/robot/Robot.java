@@ -41,6 +41,7 @@ import frc.robot.subsystems.ClimbHookS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.RealHandS;
+import frc.robot.subsystems.ClimbHookS.ClimbHookConstants;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.NoneArm;
 import frc.robot.subsystems.arm.RealArm;
@@ -131,6 +132,11 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
+
+    m_driverController.a().whileTrue(m_climbHookS.release());
+
+    m_driverController.b().whileTrue(m_climbHookS.clamp());
+    
     configureDriverController();
 
     m_driverController.start().and(RobotModeTriggers.disabled())
@@ -139,17 +145,17 @@ public class Robot extends TimedRobot {
     boolean doingSysId = false;
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
-
+  
   public void configureDriverController() {
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station
-    m_driverController.a().whileTrue(
-        Commands.defer(() -> m_autos.autoCoralIntake(m_autos.closestIntake()), Set.of(m_drivebaseS)));
-    // Drive and autoalign to processor
-    m_driverController.b()
-        .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR))
-        .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
+    // m_driverController.a().whileTrue(
+    //     Commands.defer(() -> m_autos.autoCoralIntake(m_autos.closestIntake()), Set.of(m_drivebaseS)));
+    // // Drive and autoalign to processor
+    // m_driverController.b()
+    //     .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR))
+    //     .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
     // Drive and autoalign to barge
     m_driverController.y()
         .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))

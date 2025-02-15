@@ -6,9 +6,12 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.Set;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,17 +21,19 @@ public class ClimbHookS extends SubsystemBase {
     public static final int CURRENT_LIMIT = 15;
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
+    
     public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){
-      config.CurrentLimits.withStatorCurrentLimit(CURRENT_LIMIT).withStatorCurrentLimitEnable(false);
+      config.CurrentLimits.withStatorCurrentLimit(CURRENT_LIMIT).withStatorCurrentLimitEnable(true);
       return config;
+    
     }
   
   }
   public Command clamp(){
-    return voltage(12);
+    return voltage(3);
   }
   public Command release(){
-    return voltage(-12);
+    return voltage(-3);
   }
   public Command stop(){
     return voltage(0);
@@ -40,6 +45,7 @@ public class ClimbHookS extends SubsystemBase {
   /** Creates a new ClimbHookS. */
   public ClimbHookS() {
     motor.getConfigurator().apply(ClimbHookConstants.configuremotor(new TalonFXConfiguration()));
+    setDefaultCommand(stop());
   }
 
   @Override
