@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.arm.elevator.RealElevatorS;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS;
+import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 import frc.robot.subsystems.arm.wrist.NoneWristS;
 import frc.robot.subsystems.arm.wrist.Wrist;
 import frc.robot.subsystems.arm.wrist.RealWristS;
@@ -124,8 +125,8 @@ public class RealArm extends Arm {
 
   @Override
   public Command Climb() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'Climb'");
+    return mainPivotS.voltage(()->-2).until(()-> position.mainPivotAngle().lt(MainPivotConstants.climbAngle)).andThen(mainPivotS.hold());
+
   }
 
   
