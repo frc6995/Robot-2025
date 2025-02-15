@@ -68,6 +68,8 @@ public class MainPivotS extends SubsystemBase {
 
     // Pose
 
+    public static Angle climbAngle = CW_LIMIT.plus(Degrees.of(3));
+
     // CAN IDs
     public static final int LEADER_CAN_ID = 30;
     public static final int FOLLOWER_CAN_ID = 31;

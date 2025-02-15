@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.arm.elevator.RealElevatorS;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS;
+import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 import frc.robot.subsystems.arm.wrist.NoneWristS;
 import frc.robot.subsystems.arm.wrist.Wrist;
 import frc.robot.subsystems.arm.wrist.RealWristS;
@@ -121,4 +122,15 @@ public class RealArm extends Arm {
     return parallel(
         mainPivotS.goTo(() -> mainPivotRadians), elevatorS.goToLength(() -> elevatorMeters), wristS.goTo(()->wristRadians));
   }
+
+  @Override
+  public Command Climb() {
+    return mainPivotS.voltage(()->-2).until(this::readyToClimb).andThen(mainPivotS.hold());
+
+  }
+
+  public boolean readyToClimb(){
+    return position.mainPivotAngle().lt(MainPivotConstants.climbAngle);
+  }
+
 }
