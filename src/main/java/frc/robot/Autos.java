@@ -488,6 +488,6 @@ public class Autos {
     return routine.cmd();
   }
   public Command climb(){
-    return sequence(m_ClimbHookS.clamp(),m_arm.goToPosition(Arm.Positions.POST_CLIMB),m_ArmBrakeS.brake());
+    return parallel(m_ClimbHookS.clamp(),sequence(m_arm.goToPosition(Arm.Positions.POST_CLIMB),m_ArmBrakeS.brake()));
   }
 }

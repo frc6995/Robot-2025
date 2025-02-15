@@ -121,4 +121,13 @@ public class RealArm extends Arm {
     return parallel(
         mainPivotS.goTo(() -> mainPivotRadians), elevatorS.goToLength(() -> elevatorMeters), wristS.goTo(()->wristRadians));
   }
+
+  @Override
+  public Command Climb() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'Climb'");
+  }
+
+  
+
 }

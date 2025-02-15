@@ -30,4 +30,10 @@ public class NoneArm extends Arm {
 
   @Override
   public void update() {}
+
+  @Override
+  public Command Climb() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'Climb'");
+  }
 }
