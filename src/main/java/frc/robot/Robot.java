@@ -40,15 +40,17 @@ import frc.robot.subsystems.ArmBrakeS;
 import frc.robot.subsystems.ClimbHookS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
-import frc.robot.subsystems.RealHandS;
+import frc.robot.subsystems.LightStripS;
+import frc.robot.subsystems.LightStripS.States;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.NoneArm;
 import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
-import frc.robot.subsystems.NoneHandS;
-import frc.robot.subsystems.Hand;
+import frc.robot.subsystems.hand.Hand;
+import frc.robot.subsystems.hand.NoneHandS;
+import frc.robot.subsystems.hand.RealHandS;
 import frc.robot.util.AlertsUtil;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -76,7 +78,8 @@ public class Robot extends TimedRobot {
   private final Hand m_hand = new RealHandS();
   private final ClimbHookS m_climbHookS = new ClimbHookS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
-  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_climbHookS, m_armBrakeS,
+  private final LightStripS m_LightStripS = LightStripS.getInstance();
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_LightStripS, m_operatorBoard, m_climbHookS, m_armBrakeS,
       (traj, isStarting) -> {
       });
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
@@ -131,7 +134,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    configureDriverController();
+    //configureDriverController();
+    m_driverController.a().whileTrue(m_LightStripS.stateC(()->States.AutoAlign));
 
     m_driverController.start().and(RobotModeTriggers.disabled())
         .onTrue(m_arm.elevatorS.home().alongWith(m_arm.wristS.home()));
@@ -225,6 +229,7 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     m_operatorBoard.poll();
     m_driverDisplay.update();
+    m_LightStripS.periodic();
     if (RobotBase.isSimulation()) {
       toGoal.clear();
       toGoal.addAll(m_drivebaseS.m_repulsor.getTrajectory(

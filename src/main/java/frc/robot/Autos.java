@@ -29,10 +29,11 @@ import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.subsystems.ArmBrakeS;
 import frc.robot.subsystems.ClimbHookS;
 import frc.robot.subsystems.DriveBaseS;
-import frc.robot.subsystems.Hand;
+import frc.robot.subsystems.LightStripS;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
+import frc.robot.subsystems.hand.Hand;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
 
@@ -54,6 +55,7 @@ public class Autos {
   private final DriveBaseS m_drivebase;
   private final Arm m_arm;
   private final Hand m_hand;
+  private final LightStripS m_lights;
   private final OperatorBoard m_board;
   private final AutoFactory m_autoFactory;
   public final AutoChooser m_autoChooser;
@@ -63,10 +65,11 @@ public class Autos {
   public final ArmBrakeS m_ArmBrakeS;
   @Logged
   public final CoralSensor m_coralSensor = new CoralSensor();
-  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, ClimbHookS climbHookS, ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
+  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, LightStripS lights, OperatorBoard board, ClimbHookS climbHookS, ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
     m_hand = hand;
+    m_lights = lights;
     m_board = board;
     m_ClimbHookS  = climbHookS;
     m_ArmBrakeS = armBrakeS;
