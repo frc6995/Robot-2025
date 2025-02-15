@@ -23,8 +23,9 @@ public class CoralSensor {
 
     }
     public double distanceOffset(){
-        return hasCoral()? (rawDistanceMeter() - CoralSensorConstants.CENTER_DISTANCE):0;
+        return hasCoral()? Units.inchesToMeters(-0.1875)-(rawDistanceMeter() - CoralSensorConstants.CENTER_DISTANCE):0;
     }
+    
     private double rawDistanceMeter(){
         if(RobotBase.isSimulation()) {
             return simDistance;
@@ -42,8 +43,8 @@ public class CoralSensor {
     }
     public class CoralSensorConstants {
         public static final int CAN_ID = 52;
-        public static final double MAX_DISTANCE = 0.3;
-        public static final double CENTER_DISTANCE = 0.1;
+        public static final double MAX_DISTANCE = 0.39;
+        public static final double CENTER_DISTANCE = 0.179;
     }
     public boolean hasCoral(){
         return rawDistanceMeter() < CoralSensorConstants.MAX_DISTANCE - Units.inchesToMeters(3);
