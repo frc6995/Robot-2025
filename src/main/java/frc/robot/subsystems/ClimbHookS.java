@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class ClimbHookS extends SubsystemBase {
   public class ClimbHookConstants {
     public static final int CAN_ID = 54;
-    public static final int CURRENT_LIMIT = 5;
+    public static final int CURRENT_LIMIT = 15;
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
     public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){

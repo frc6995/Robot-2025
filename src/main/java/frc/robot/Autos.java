@@ -338,7 +338,7 @@ public class Autos {
       ()->(AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(7.5) : 7.5),
       lateralSpeed,
       ()->(AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
-  }
+    }
 
   public Command outtake() {
     return m_hand.outCoral().alongWith(runOnce(()->m_coralSensor.setHasCoral(false)));
