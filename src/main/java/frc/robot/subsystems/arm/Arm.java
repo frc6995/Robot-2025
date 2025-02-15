@@ -95,4 +95,5 @@ public abstract class Arm {
         position, Units.degreesToRadians(1), Units.inchesToMeters(0.5), Units.degreesToRadians(5));
   }
   public abstract Command Climb();
+  public abstract boolean readyToClimb();
 }

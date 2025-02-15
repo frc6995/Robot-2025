@@ -32,6 +32,7 @@ import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.Hand;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.Arm.ArmPosition;
+import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
 
@@ -488,6 +489,8 @@ public class Autos {
     return routine.cmd();
   }
   public Command climb(){
-    return parallel(m_ClimbHookS.clamp(),sequence(m_arm.goToPosition(Arm.Positions.POST_CLIMB),m_ArmBrakeS.brake()));
+    return parallel(m_ClimbHookS.clamp(),m_arm.Climb(),
+    sequence(waitUntil(m_arm::readyToClimb),
+    m_ArmBrakeS.brake()));
   }
 }

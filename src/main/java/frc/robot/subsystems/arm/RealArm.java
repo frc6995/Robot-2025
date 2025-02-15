@@ -125,10 +125,12 @@ public class RealArm extends Arm {
 
   @Override
   public Command Climb() {
-    return mainPivotS.voltage(()->-2).until(()-> position.mainPivotAngle().lt(MainPivotConstants.climbAngle)).andThen(mainPivotS.hold());
+    return mainPivotS.voltage(()->-2).until(this::readyToClimb).andThen(mainPivotS.hold());
 
   }
 
-  
+  public boolean readyToClimb(){
+    return position.mainPivotAngle().lt(MainPivotConstants.climbAngle);
+  }
 
 }
