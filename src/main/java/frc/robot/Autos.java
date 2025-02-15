@@ -487,4 +487,7 @@ public class Autos {
                 new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))));
     return routine.cmd();
   }
+  public Command climb(){
+    return sequence(m_ClimbHookS.clamp(),m_arm.goToPosition(Arm.Positions.POST_CLIMB),m_ArmBrakeS.brake());
+  }
 }
