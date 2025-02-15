@@ -15,20 +15,22 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class ClimbHookS extends SubsystemBase {
   public class ClimbHookConstants {
     public static final int CAN_ID = 54;
-    public static final int CURRENT_LIMIT = 5;
+    public static final int CURRENT_LIMIT = 15;
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
     public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){
-      config.CurrentLimits.withStatorCurrentLimit(CURRENT_LIMIT).withStatorCurrentLimitEnable(false);
+      config.CurrentLimits
+        .withStatorCurrentLimit(CURRENT_LIMIT)
+        .withStatorCurrentLimitEnable(true);
       return config;
     }
   
   }
   public Command clamp(){
-    return voltage(12);
+    return voltage(-3);
   }
   public Command release(){
-    return voltage(-12);
+    return voltage(3);
   }
   public Command stop(){
     return voltage(0);
@@ -40,6 +42,7 @@ public class ClimbHookS extends SubsystemBase {
   /** Creates a new ClimbHookS. */
   public ClimbHookS() {
     motor.getConfigurator().apply(ClimbHookConstants.configuremotor(new TalonFXConfiguration()));
+    setDefaultCommand(stop());
   }
 
   @Override
