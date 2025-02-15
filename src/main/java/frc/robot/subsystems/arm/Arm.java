@@ -60,7 +60,7 @@ public abstract class Arm {
     public static final ArmPosition L4 =
         new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH, Radians.of(0.25));
     public static final ArmPosition STOW =
-        new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
+        new ArmPosition(Degrees.of(70), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
     public static final ArmPosition INTAKE_CORAL =
         new ArmPosition(MainPivotConstants.CW_LIMIT.plus(Degrees.of(17)), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), WristConstants.CW_LIMIT);
     public static final ArmPosition LOW_ALGAE = new ArmPosition(Degrees.of(55), ElevatorConstants.MIN_LENGTH.plus(Inches.of(8)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));

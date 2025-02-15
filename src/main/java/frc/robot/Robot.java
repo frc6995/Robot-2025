@@ -55,6 +55,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -155,7 +156,10 @@ public class Robot extends TimedRobot {
         .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
         .whileTrue(
             parallel(
-              m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4)
+              m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4),
+              waitUntil(m_autos::atBargeLine).andThen(
+                m_arm.goToPosition(Arm.Positions.SCORE_BARGE)
+              )
             )
             );
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
@@ -165,14 +169,15 @@ public class Robot extends TimedRobot {
     ).whileTrue(
         defer(() -> new ScheduleCommand(
             m_arm.goToPosition(m_autos.closestSide().algaeArm)),
-            Set.of(m_arm.mainPivotS, m_arm.elevatorS, m_arm.wristS)));
+            Set.of(m_arm.mainPivotS, m_arm.elevatorS, m_arm.wristS)))
+    .onTrue(m_hand.inAlgae());
 
     // Stow
     m_driverController.leftBumper().whileTrue(
         m_arm.goToPosition(Arm.Positions.STOW));
-    // algae ground intake
+    // Score coral and stow
     m_driverController.rightBumper().whileTrue(
-        Commands.none());
+        m_hand.outCoral().withTimeout(0.5).andThen(m_arm.goToPosition(Arm.Positions.STOW)));
 
     // score algae
     m_driverController.leftTrigger().whileTrue(parallel(

@@ -11,6 +11,7 @@ import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -332,12 +333,18 @@ public class Autos {
       )
     );
   }
-
+  private double bargeTargetX() {
+    final double blueX = 8;
+    return AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(blueX) : blueX;
+  }
   public Command alignToBarge(DoubleSupplier lateralSpeed) {
     return m_drivebase.driveToX(
-      ()->(AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(7.5) : 7.5),
+      this::bargeTargetX,
       lateralSpeed,
       ()->(AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
+  }
+  public boolean atBargeLine() {
+    return MathUtil.isNear(bargeTargetX(), m_drivebase.getPose().getX(), 1);
   }
 
   public Command outtake() {
