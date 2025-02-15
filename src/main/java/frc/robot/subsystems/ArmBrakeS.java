@@ -28,13 +28,13 @@ public class ArmBrakeS extends SubsystemBase {
     // This method will be called once per scheduler run
   }
   public Command start() {
-    return voltage (10).withTimeout(.6);
+    return voltage (3).withTimeout(.6);
   }
   public Command brake() {
-return voltage(-3);
+return voltage(-1);
   }
   public Command holdopen() {
-return voltage(0.3);
+return voltage(0.2);
   }
   public Command end () {
 return voltage(0);
