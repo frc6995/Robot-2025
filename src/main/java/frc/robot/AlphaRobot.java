@@ -22,6 +22,8 @@ import frc.operator.RealOperatorBoard;
 import frc.operator.SimOperatorBoard;
 import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.ArmBrakeS;
+import frc.robot.subsystems.ClimbHookS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.NoneHandS;
@@ -42,7 +44,9 @@ public class AlphaRobot extends TimedRobot {
   private final DriveBaseS m_drivebaseS = TunerConstants.createAlphaDrivetrain();
   private final NoneArm m_arm = new NoneArm();
   private final NoneHandS m_hand = new NoneHandS();
-  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, (traj, isStarting) -> {});
+  private final ClimbHookS m_climbHookS = new ClimbHookS();
+  private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_climbHookS, m_armBrakeS, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
 
   private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);

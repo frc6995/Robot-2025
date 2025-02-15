@@ -26,6 +26,8 @@ import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.operator.OperatorBoard;
 import frc.robot.driver.CommandOperatorKeypad;
+import frc.robot.subsystems.ArmBrakeS;
+import frc.robot.subsystems.ClimbHookS;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.Hand;
 import frc.robot.subsystems.arm.Arm;
@@ -56,13 +58,17 @@ public class Autos {
   public final AutoChooser m_autoChooser;
 
   public final HashMap<String, Supplier<Command>> autos = new HashMap<>();
+  public final ClimbHookS m_ClimbHookS;
+  public final ArmBrakeS m_ArmBrakeS;
   @Logged
   public final CoralSensor m_coralSensor = new CoralSensor();
-  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, TrajectoryLogger<SwerveSample> trajlogger) {
+  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, ClimbHookS climbHookS, ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
     m_hand = hand;
     m_board = board;
+    m_ClimbHookS  = climbHookS;
+    m_ArmBrakeS = armBrakeS;
     m_autoChooser = new AutoChooser();
     m_autoFactory =
         new AutoFactory(
@@ -192,6 +198,7 @@ public class Autos {
       default -> POI.A;
     };
   }
+  @Logged
   public Pose2d selectedReefPose() {
     return selectedReefPOI().flippedPose();
   }
