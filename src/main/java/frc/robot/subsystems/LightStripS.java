@@ -24,7 +24,6 @@ public class LightStripS {
   private AddressableLEDBuffer buffer = new AddressableLEDBuffer(STRIP_LENGTH);
   private final PersistentLedState persistentLedState = new PersistentLedState();
   private static final double[][] defaultNoteAngles = new double[3][2];
-  private Supplier<double[][]> getNotePositions = ()->defaultNoteAngles;
   private States previousState = States.Default;
 
   private static class PersistentLedState {
@@ -39,9 +38,6 @@ public class LightStripS {
     States.Disabled.setter.accept(buffer, persistentLedState);
     led.setData(buffer);
     led.start();
-  }
-  public static void setNoteAngles(Supplier<double[][]> sup) {
-    m_instance.getNotePositions = sup;
   }
 
   public static LightStripS getInstance() {
@@ -140,35 +136,7 @@ public class LightStripS {
     previousState = state;
     // Do other things with the buffer
 
-    /**
-     * A 3x2 array of the closest 3 notes. 
-     * The first element of each of the 3 subarrays is the horizontal angle of the note center.
-     *  0 is center, negative is to the left edge of the frame, positive to the right
-     * If the angle is less than -90, the note will not show (this indicates no detection)
-     * The second element is the percentage width of the displayed bar that the note should take. This will be ignored if it corresponds to less than 5 LEDs
-    */
-    var notePositions = getNotePositions.get();
-    // angles 
-    for (int i = notePositions.length - 1; i >= 0; i--) {
-      if (i < 0) continue;
-      var angle = notePositions[i][0];
-      // 
-      var width = notePositions[i][1];
-      if (angle < -90) {
-        continue;
-      }
-      // assume 70 degree FoV
-      double proportion = angle / 35.0;
-      double halfStrip = STRIP_LENGTH / 2;
-      // find the LED index of the center of the note. The strip starts on the right, so we need to negate the offset
-      int ctrLED = (int) (halfStrip - (proportion * halfStrip));
-      // find the number of additional LEDs each side of the center LED.
-      int halfWidth = Math.max(2, (int) (halfStrip * width / 100));
-      // loop over the relevant LEDs, limiting the endpoints to avoid setting nonexistent LEDs.
-      for (int j = Math.max(0, ctrLED - halfWidth); j < Math.min(STRIP_LENGTH, ctrLED + halfWidth); j++){
-        buffer.setRGB(j, 255, 50, 0);
-      }
-    }
+    
     led.setData(buffer);
     m_states.removeAll(Set.of(States.values()));
   }
