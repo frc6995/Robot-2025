@@ -194,7 +194,7 @@ public class Robot extends TimedRobot {
     m_driverController.back().onTrue(m_arm.goToPosition(Arm.Positions.PRE_CLIMB))
         .whileTrue(m_autos.alignToClimb());
     // execute cage climb
-    m_driverController.start().whileTrue(m_arm.goToPosition(Arm.Positions.POST_CLIMB));
+    m_driverController.start().whileTrue(m_autos.climb());
 
     m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
 

@@ -11,6 +11,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -19,20 +20,23 @@ public class ArmBrakeS extends SubsystemBase {
   /** Creates a new ArmBreakS. */
   public ArmBrakeS() {
     motor.configure(ArmBrakeConstants.configureMotor(new SparkFlexConfig()), ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    setDefaultCommand(start().andThen(holdopen()));
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
   }
-
+  public Command start() {
+    return voltage (3).withTimeout(.6);
+  }
   public Command brake() {
 return voltage(-1);
   }
-  public Command release() {
-return voltage(1);
+  public Command holdopen() {
+return voltage(0.2);
   }
-  public Command stop () {
+  public Command end () {
 return voltage(0);
   }
   public Command voltage (double volts) {

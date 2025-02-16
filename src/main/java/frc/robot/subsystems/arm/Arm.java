@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 
+import org.w3c.dom.Text;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -92,4 +94,6 @@ public abstract class Arm {
     return this.position.withinTolerance(
         position, Units.degreesToRadians(1), Units.inchesToMeters(0.5), Units.degreesToRadians(5));
   }
+  public abstract Command Climb();
+  public abstract boolean readyToClimb();
 }
