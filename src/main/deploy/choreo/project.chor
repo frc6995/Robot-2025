@@ -7,15 +7,15 @@
    "ALG_BACK":{
     "dimension":"Length",
     "var":{
-     "exp":"0 in",
-     "val":0.0
+     "exp":"10 in",
+     "val":0.254
     }
    },
    "ALG_DIST":{
     "dimension":"Length",
     "var":{
      "exp":"1.3 m + ALG_BACK",
-     "val":1.3
+     "val":1.554
     }
    },
    "A_CS":{
@@ -79,6 +79,13 @@
     "var":{
      "exp":"L3 * 14 / 16",
      "val":5.355
+    }
+   },
+   "MAX_VEL":{
+    "dimension":"LinVel",
+    "var":{
+     "exp":"1 m / s",
+     "val":1.0
     }
    }
   },
@@ -352,7 +359,7 @@
    "R1":{
     "x":{
      "exp":"REEF.x - (ALG_DIST)",
-     "val":3.191799831390381
+     "val":2.9377998313903806
     },
     "y":{
      "exp":"REEF.y",
@@ -366,11 +373,11 @@
    "R2":{
     "x":{
      "exp":"REEF.x - (ALG_DIST) * cos(R2.heading)",
-     "val":3.841799831390381
+     "val":3.7147998313903807
     },
     "y":{
      "exp":"REEF.y - (ALG_DIST) * sin(R2.heading)",
-     "val":2.9006276226632375
+     "val":2.6806571701019903
     },
     "heading":{
      "exp":"60 deg",
@@ -380,11 +387,11 @@
    "R3":{
     "x":{
      "exp":"REEF.x - (ALG_DIST) * cos(R3.heading)",
-     "val":5.14179983139038
+     "val":5.26879983139038
     },
     "y":{
      "exp":"REEF.y - (ALG_DIST) * sin(R3.heading)",
-     "val":2.9006276226632375
+     "val":2.6806571701019903
     },
     "heading":{
      "exp":"120 deg",
@@ -394,7 +401,7 @@
    "R4":{
     "x":{
      "exp":"REEF.x - (ALG_DIST) * cos(R4.heading)",
-     "val":5.791799831390381
+     "val":6.045799831390381
     },
     "y":{
      "exp":"REEF.y - (ALG_DIST) * sin(R4.heading)",
@@ -408,11 +415,11 @@
    "R5":{
     "x":{
      "exp":"REEF.x - (ALG_DIST) * cos(R5.heading)",
-     "val":5.141799831390381
+     "val":5.268799831390382
     },
     "y":{
      "exp":"REEF.y - (ALG_DIST) * sin(R5.heading)",
-     "val":5.152293672502777
+     "val":5.372264125064025
     },
     "heading":{
      "exp":"240 deg",
@@ -422,11 +429,11 @@
    "R6":{
     "x":{
      "exp":"REEF.x - (ALG_DIST) * cos(R6.heading)",
-     "val":3.841799831390381
+     "val":3.7147998313903807
     },
     "y":{
      "exp":"REEF.y - (ALG_DIST) * sin(R6.heading)",
-     "val":5.152293672502778
+     "val":5.372264125064025
     },
     "heading":{
      "exp":"300 deg",
