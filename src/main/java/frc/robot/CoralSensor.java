@@ -16,6 +16,7 @@ public class CoralSensor {
     private double simDistance = CoralSensorConstants.MAX_DISTANCE;
     public CoralSensor(){
         tof.setRangingMode(RangingMode.Short, 500);
+        tof.setRangeOfInterest(8,8,12,12);
         new Trigger(()->DriverStation.getStickButton(4,1))
             .onTrue(Commands.runOnce(()->this.setHasCoral(true)).ignoringDisable(true));
         new Trigger(()->DriverStation.getStickButton(4,2))

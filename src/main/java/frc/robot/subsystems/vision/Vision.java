@@ -3,6 +3,7 @@ package frc.robot.subsystems.vision;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -82,29 +83,29 @@ public class Vision {
             "OV9281-BL",
                 new Transform3d(
                     Units.inchesToMeters(-14) + 0.097,
-                    Units.inchesToMeters(13.5) - 0.107,
+                    Units.inchesToMeters(14.25) - 0.114,
                     Units.inchesToMeters(8.5),
                     new Rotation3d(
                         Units.degreesToRadians(0),
                         Units.degreesToRadians(-10),
-                        Units.degreesToRadians(-171.45))),
+                        Units.degreesToRadians(-170))),
             "OV9281-BR",
                 new Transform3d(
                   Units.inchesToMeters(-14) + 0.098,
-                  -Units.inchesToMeters(13.5) + 0.096,
+                  -Units.inchesToMeters(14.25) + 0.127,
                     Units.inchesToMeters(8.5),
                     new Rotation3d(
                         Units.degreesToRadians(0),
-                        Units.degreesToRadians(-10),
-                        Units.degreesToRadians(171.45))),
-                "OV9281-FL",
+                        Units.degreesToRadians(-12),
+                        Units.degreesToRadians(170))),
+                "OV9281-FR",
                 new Transform3d(
-                  Units.inchesToMeters(-14) + 0.098,
-                  -Units.inchesToMeters(13.5) + 0.096,
+                  Units.inchesToMeters(-14.25) + 0.075,
+                  -Units.inchesToMeters(14.25) + 0.126,
                     Units.inchesToMeters(8.5),
                     new Rotation3d(
-                        Units.degreesToRadians(0),
-                        Units.degreesToRadians(-50),
+                        Units.degreesToRadians(90),
+                        Units.degreesToRadians(-40),
                         Units.degreesToRadians(0)))
         );
     public static final AprilTagFieldLayout FIELD_LAYOUT =
@@ -143,7 +144,7 @@ public class Vision {
                       VisionConstants.FIELD_LAYOUT,
                       PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                       translation);
-              estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
+              estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
               PhotonCameraSim simCam = null;
               if (RobotBase.isSimulation()) {
                 simCam = new PhotonCameraSim(cam, VisionConstants.SIM_CAMERA_PROPERTIES);
@@ -183,8 +184,25 @@ public class Vision {
     double avgDistance = 0;
     double closeEnoughTgts = 0;
     boolean ignore = false;
+
+    final double border = 15;
     for (var tgt : pose.targetsUsed) {
+      
+      // rule out 
+      for (var corner : tgt.detectedCorners) {
+        if (MathUtil.isNear(0, corner.x, border) ||
+          MathUtil.isNear(
+          VisionConstants.SIM_CAMERA_PROPERTIES.getResWidth(), corner.x, border) ||
+          MathUtil.isNear(0, corner.y, border) ||
+          MathUtil.isNear(
+          VisionConstants.SIM_CAMERA_PROPERTIES.getResHeight(), corner.y, border)) {
+            return;
+          }
+      } 
       double tdist = tgt.getBestCameraToTarget().getTranslation().getNorm();
+      if (pose.targetsUsed.size() < 2 && tdist > Units.feetToMeters(4)){
+        return;
+      }
       avgDistance += tdist;
       if (tdist < closestDistance) {
         closestDistance = tdist;
@@ -208,9 +226,9 @@ public class Vision {
       yConfidence = 0.5 * distance / 4.0;
       angleConfidence = 1;
     } else {
-      xConfidence = 0.02 * distance;
-      yConfidence = 0.02 * distance;
-      angleConfidence = 0.3 * distance;
+      xConfidence = 0.02 * distance * distance;
+      yConfidence = 0.02 * distance * distance;
+      angleConfidence = 0.3 * distance * distance;
     }
     this.addVisionMeasurement.accept(
         pose.estimatedPose.toPose2d(),

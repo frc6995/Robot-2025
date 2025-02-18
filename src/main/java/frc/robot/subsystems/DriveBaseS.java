@@ -413,8 +413,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     return pidToPoseC(() -> poseSup);
   }
 
-  private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(new Constraints(3, 6));
-  private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(new Constraints(8, 12));
+  private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(new Constraints(1, 4));
+  private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(new Constraints(3, 6));
 
   private class Capture<T> {
     public T inner;
@@ -436,6 +436,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     Capture<Double> dtheta = new Capture<Double>(0.0);
     Capture<Translation2d> normDirStartToEnd = new Capture<>(Translation2d.kZero);
     Timer time = new Timer();
+    Trigger atPose = atPose(poseSupplier, Units.inchesToMeters(0.5), Units.degreesToRadians(1));
     return runOnce(
         () -> {
           // Reset controller
@@ -479,6 +480,9 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                       .getRotation()
                       .interpolate(
                           startPose.getRotation(), rotSetpoint.position / dtheta.inner);
+                  if (atPose.getAsBoolean()) {
+                    this.setControl(idle);
+                  } else {
                   followPath(
                       RepulsorFieldPlanner.sample(
                           interpTrans,
@@ -486,8 +490,10 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                           normDirStartToEnd.inner.getX() * -setpoint.velocity,
                           normDirStartToEnd.inner.getY() * -setpoint.velocity,
                           -rotSetpoint.velocity)); // rotSetpoint.velocity));
+                  }
                 }))
-        .finallyDo(time::stop);
+        .finallyDo(time::stop)
+;
   }
 
   public Command driveToPoseC(Optional<Pose2d> poseOpt) {
@@ -498,8 +504,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     return driveToPoseSupC(() -> poseSup);
   }
 
-  public double toleranceMeters = Units.inchesToMeters(1);
-  public double toleranceRadians = Units.degreesToRadians(2);
+  public double toleranceMeters = Units.inchesToMeters(0.5);
+  public double toleranceRadians = Units.degreesToRadians(1);
 
   private boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
     if (Math.abs(toleranceRadians) > Math.PI) {

@@ -5,7 +5,10 @@
 package frc.robot;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
+
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
@@ -15,6 +18,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -22,6 +27,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -129,13 +135,21 @@ public class Robot extends TimedRobot {
     RobotVisualizer.addArmPivot(m_arm.ARM);
     // RobotVisualizer.addAlgaeIntake(m_algaePivotS.ALGAE_PIVOT);
     SmartDashboard.putData("visualizer", VISUALIZER);
-
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    configureDriverController();
+    //configureDriverController();
 
+    m_driverController.rightTrigger().whileTrue(m_drivebaseS.driveToPoseSupC(m_autos.offsetSelectedReefPose));
+    m_driverController.a().whileTrue(m_drivebaseS.driveToPoseSupC(POI.SL3::flippedPose));
+    m_driverController.leftTrigger().whileTrue(m_arm.mainPivotS.voltage(m_arm.mainPivotS::getKgVolts));
+    m_driverController.y().onTrue(m_arm.goToPosition(Arm.Positions.L4.premove()));
+    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.L4));
+    m_driverController.x().onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
+    m_driverController.leftBumper().whileTrue(m_hand.inCoral().until(m_autos::hasCoral));
+    m_driverController.rightBumper().whileTrue(m_hand.outCoral());
     m_driverController.start().and(RobotModeTriggers.disabled())
         .onTrue(m_arm.elevatorS.home().alongWith(m_arm.wristS.home()));
+        m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
     DriverStation.silenceJoystickConnectionWarning(true);
     boolean doingSysId = false;
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
@@ -199,12 +213,12 @@ public class Robot extends TimedRobot {
     m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
 
   }
-
+  private RobotCentric m_robotCentricRequest = new RobotCentric().withDriveRequestType(DriveRequestType.Velocity);
   public Command driveIntakeRelativePOV() {
     return m_drivebaseS.applyRequest(() -> {
       double pov = Units.degreesToRadians(-m_driverController.getHID().getPOV());
-      double adjustSpeed = Units.feetToMeters(6); // m/s
-      return m_driveRequest.withVelocityX(
+      double adjustSpeed = Units.feetToMeters(3); // m/s
+      return m_robotCentricRequest.withVelocityX(
           Math.cos(pov) * adjustSpeed).withVelocityY(
               Math.sin(pov) * adjustSpeed)
           .withRotationalRate(
@@ -309,15 +323,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    if (RobotBase.isSimulation()) {
-      Commands.waitSeconds(15.3)
-          .andThen(
-              () -> {
-                DriverStationSim.setEnabled(false);
-                DriverStationSim.notifyNewData();
-              })
-          .schedule();
-    }
+    // if (RobotBase.isSimulation()) {
+    //   Commands.waitSeconds(15.3)
+    //       .andThen(
+    //           () -> {
+    //             DriverStationSim.setEnabled(false);
+    //             DriverStationSim.notifyNewData();
+    //           })
+    //       .schedule();
+    // }
   }
 
   /** This function is called periodically during autonomous. */

@@ -57,10 +57,10 @@ public class MainPivotS extends SubsystemBase {
 
     public static final Angle CCW_LIMIT = Degrees.of(100);
     public static final Angle CW_LIMIT = Degrees.of(40);
-    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651 * 16.0/9.0;
+    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651 * 14.0/9.0;
     // Units=volts/pivot rotation/s
     public static final double K_V = 12.0 / (100 / MOTOR_ROTATIONS_PER_ARM_ROTATION);
-    public static final double K_A = 0.22 /*v/oldRot/s^2 */ * 9.0/16.0; /* newRot/oldRot */;
+    public static final double K_A = 0.22 /*v/oldRot/s^2 */ * 9.0/14.0; /* newRot/oldRot */;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
@@ -81,9 +81,9 @@ public class MainPivotS extends SubsystemBase {
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
 
-    public static final double K_G_RETRACTED = 0.22;
+    public static final double K_G_RETRACTED = 0.35;
     public static final double K_G_EXTENDED = 0.35;
-    public static final double K_S = 0;
+    public static final double K_S = 0.12;
     // arm plus hand
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(4);

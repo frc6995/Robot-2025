@@ -64,51 +64,56 @@ public class Autos {
   public final ArmBrakeS m_ArmBrakeS;
   @Logged
   public final CoralSensor m_coralSensor = new CoralSensor();
-  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, ClimbHookS climbHookS, ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
+
+  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, ClimbHookS climbHookS,
+      ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
     m_hand = hand;
     m_board = board;
-    m_ClimbHookS  = climbHookS;
+    m_ClimbHookS = climbHookS;
     m_ArmBrakeS = armBrakeS;
     m_autoChooser = new AutoChooser();
-    m_autoFactory =
-        new AutoFactory(
-            () -> m_drivebase.state().Pose,
-            m_drivebase::resetOdometry,
-            m_drivebase::followPath,
-            true,
-            m_drivebase,
-            m_drivebase::logTrajectory);
+    m_autoFactory = new AutoFactory(
+        () -> m_drivebase.state().Pose,
+        m_drivebase::resetOdometry,
+        m_drivebase::followPath,
+        true,
+        m_drivebase,
+        m_drivebase::logTrajectory);
     addAutos();
-    new Trigger(()->DriverStation.getStickButton(4, 1)).onTrue(runOnce(()->m_coralSensor.setHasCoral(true)).ignoringDisable(true));
-    new Trigger(()->DriverStation.getStickButton(4, 2)).onTrue(runOnce(()->m_coralSensor.setHasCoral(false)).ignoringDisable(true));
-    new Trigger(()->DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
+    new Trigger(() -> DriverStation.getStickButton(4, 1))
+        .onTrue(runOnce(() -> m_coralSensor.setHasCoral(true)).ignoringDisable(true));
+    new Trigger(() -> DriverStation.getStickButton(4, 2))
+        .onTrue(runOnce(() -> m_coralSensor.setHasCoral(false)).ignoringDisable(true));
+    new Trigger(() -> DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
     drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
     drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
     m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
-    m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
+    // m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
 
   }
 
   public void addAutos() {
-    autos.put("KK_SL3", ()->this.KK_SL3().cmd());
-    autos.put("JKLA_FLEX", () -> flexAuto(POI.STJ, POI.SL3, POI.J, POI.K, POI.L, POI.A));
-    autos.put( "HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SL3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
-    //autos.put( "HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SR3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
+    autos.put("KK_SL3", () -> this.KK_SL3().cmd());
+    //autos.put("JKLA_FLEX", () -> flexAuto(POI.STJ, POI.SL3, POI.J, POI.K, POI.L, POI.A));
+    //autos.put("HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SL3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
+    autos.put("IJKL_FLEX", () -> flexAuto(POI.STI, POI.SL3, POI.I, POI.J, POI.K, POI.L));
+    // POI.J, POI.K, POI.L, POI.A));
 
-    for (Entry<String, Supplier<Command>> entry: autos.entrySet()) {
+    for (Entry<String, Supplier<Command>> entry : autos.entrySet()) {
       m_autoChooser.addCmd(entry.getKey(), entry.getValue());
     }
   }
+
   private Alert successfulAutoTest = new Alert("Successfully Checked Autos", AlertType.kInfo);
+
   public void testAutos() {
-    for (Entry<String, Supplier<Command>> entry: autos.entrySet()) {
+    for (Entry<String, Supplier<Command>> entry : autos.entrySet()) {
       entry.getValue().get();
     }
     successfulAutoTest.set(true);
   }
-
 
   public AutoRoutine splitPathAutoRoutine() {
     AutoRoutine routine = m_autoFactory.newRoutine("splitPathRoutine");
@@ -161,33 +166,38 @@ public class Autos {
       Supplier<Pose2d> target, ArmPosition position, double outtakeSeconds) {
     return race(
         waitUntil(
-                m_drivebase.atPose(target)
-                    .and(
-                        () -> {
-                          return m_arm.atPosition(position);
-                        }))
-            .andThen(outtake().withTimeout(outtakeSeconds).asProxy()), // Proxy so hand isn't directly required
-        m_drivebase.pidToPoseC(target));
+            m_drivebase.atPose(target)
+                .and(
+                    () -> {
+                      return m_arm.atPosition(position);
+                    }))
+            , // Proxy so hand isn't directly required
+        waitSeconds(4),
+        m_drivebase.driveToPoseSupC(target))
+        .andThen(deadline(
+          outtake().withTimeout(outtakeSeconds).asProxy(), m_drivebase.stop()));
   }
+
   @Logged
   public double getDistanceSensorOffset() {
     return m_coralSensor.distanceOffset();
   }
+
   @Logged
   public boolean hasCoral() {
     return m_coralSensor.hasCoral();
   }
+
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
     // TODO reduce allocations
-    // TODO angle instead of sideways? 
-    return () ->
-        original
-            .get()
-            .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
+    // TODO angle instead of sideways?
+    return () -> original
+        .get()
+        .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
   }
 
   private POI selectedReefPOI() {
-    return switch(m_board.getBranch()) {
+    return switch (m_board.getBranch()) {
       case 0 -> POI.A;
       case 1 -> POI.B;
       case 2 -> POI.C;
@@ -203,11 +213,14 @@ public class Autos {
       default -> POI.A;
     };
   }
+
   @Logged
   public Pose2d selectedReefPose() {
     return selectedReefPOI().flippedPose();
   }
+
   public Supplier<Pose2d> offsetSelectedReefPose = sensorOffsetPose(this::selectedReefPose);
+
   @Logged
   public Pose2d offsetSelectedReefPoseLog() {
     return offsetSelectedReefPose.get();
@@ -224,50 +237,54 @@ public class Autos {
     R4(POI.G, POI.H, POI.R4, Arm.Positions.LOW_ALGAE),
     R5(POI.I, POI.J, POI.R5, Arm.Positions.HIGH_ALGAE),
     R6(POI.K, POI.L, POI.R6, Arm.Positions.LOW_ALGAE);
+
     public final POI left;
     public final POI right;
     public final POI algae;
     public final ArmPosition algaeArm;
+
     private ReefSide(POI left, POI right, POI algae, ArmPosition algaeArm) {
       this.left = left;
       this.right = right;
       this.algae = algae;
       this.algaeArm = algaeArm;
     }
-  } 
+  }
+
   @Logged
   public ReefSide closestSide() {
     var reef = POI.REEF.flippedPose();
     var pose = m_drivebase.getPose();
     var direction = pose.relativeTo(reef).getTranslation().getAngle().getRadians();
-    if (direction < -5*Math.PI/6 || direction > 5*Math.PI/6) {
+    if (direction < -5 * Math.PI / 6 || direction > 5 * Math.PI / 6) {
       return ReefSide.R1;
     }
-    if (direction >= -5*Math.PI/6 && direction < -3*Math.PI/6 ) {
+    if (direction >= -5 * Math.PI / 6 && direction < -3 * Math.PI / 6) {
       return ReefSide.R2;
     }
-    if (direction >= -3*Math.PI/6 && direction < -1*Math.PI/6 ) {
+    if (direction >= -3 * Math.PI / 6 && direction < -1 * Math.PI / 6) {
       return ReefSide.R3;
     }
-    if (direction >= -1*Math.PI/6 && direction < 1*Math.PI/6 ) {
+    if (direction >= -1 * Math.PI / 6 && direction < 1 * Math.PI / 6) {
       return ReefSide.R4;
     }
-    if (direction >= 1*Math.PI/6 && direction < 3*Math.PI/6 ) {
+    if (direction >= 1 * Math.PI / 6 && direction < 3 * Math.PI / 6) {
       return ReefSide.R5;
-    }
-    else {
+    } else {
       return ReefSide.R6;
     }
   }
+
   private ArmPosition selectedBranch() {
     return switch (m_board.getLevel()) {
-      case 0-> Arm.Positions.L1;
-      case 1-> Arm.Positions.L2;
-      case 2-> Arm.Positions.L3;
-      case 3-> Arm.Positions.L4;
-      default-> Arm.Positions.STOW;
+      case 0 -> Arm.Positions.L1;
+      case 1 -> Arm.Positions.L2;
+      case 2 -> Arm.Positions.L3;
+      case 3 -> Arm.Positions.L4;
+      default -> Arm.Positions.STOW;
     };
   }
+
   private POI selectedClimb() {
     return switch (m_board.getClimb()) {
       case 0 -> POI.CL1;
@@ -276,15 +293,15 @@ public class Autos {
       default -> POI.CL1;
     };
   }
+
   public Command alignToClimb() {
-    return defer(()->
-      m_drivebase.driveToPoseSupC(selectedClimb()::flippedPose), Set.of(m_drivebase)
-    );
+    return defer(() -> m_drivebase.driveToPoseSupC(selectedClimb()::flippedPose), Set.of(m_drivebase));
   }
+
   public POI closestIntake() {
     var pose = m_drivebase.getPose();
-    if (pose.getTranslation().getDistance(POI.SL3.flippedPose().getTranslation()) < 
-    pose.getTranslation().getDistance(POI.SR3.flippedPose().getTranslation())) {
+    if (pose.getTranslation().getDistance(POI.SL3.flippedPose().getTranslation()) < pose.getTranslation()
+        .getDistance(POI.SR3.flippedPose().getTranslation())) {
       return POI.SL3;
     } else {
       return POI.SR3;
@@ -293,71 +310,76 @@ public class Autos {
 
   private Command preMoveUntilTarget(Supplier<Pose2d> target, ArmPosition finalPosition) {
     return sequence(
-      m_arm.goToPosition(finalPosition.premove())
-        .until(m_drivebase.safeToMoveArm(target))
-        .onlyIf(m_drivebase.safeToMoveArm(target).negate()),
-      m_arm.goToPosition(finalPosition)
-    );
+        m_arm.goToPosition(finalPosition.premove())
+            .until(m_drivebase.safeToMoveArm(target))
+            .onlyIf(m_drivebase.safeToMoveArm(target).negate()),
+        m_arm.goToPosition(finalPosition));
   }
 
   @Logged
   private Trigger drivetrainAtReefTargetTrig;
   @Logged
   private Trigger drivetrainCloseMoveArmTrig;
+
   public Command autoScore() {
     var target = offsetSelectedReefPose;
     return defer(
-      ()->{
-        return deadline(
-          waitUntil(
-            m_drivebase.atPose(target)
-                .and(
-                    () -> m_arm.atPosition(selectedBranch())))
-          //.andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
-          ,
-          m_drivebase.pidToPoseC(offsetSelectedReefPose).asProxy(),
-          preMoveUntilTarget(target, selectedBranch()).asProxy()
-        ).andThen(
-          //new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
-        ).asProxy();
-      },Set.of());
-    
+        () -> {
+          return deadline(
+              waitUntil(
+                  m_drivebase.atPose(target)
+                      .and(
+                          () -> m_arm.atPosition(selectedBranch())))
+          // .andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
+              ,
+              m_drivebase.pidToPoseC(offsetSelectedReefPose).asProxy(),
+              preMoveUntilTarget(target, selectedBranch()).asProxy()).andThen(
+          // new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
+          ).asProxy();
+        }, Set.of());
+
   }
 
   public Command autoCoralIntake(POI intake) {
     return parallel(
-      m_drivebase.driveToPoseSupC(intake::flippedPose),
-      new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
-      new ScheduleCommand(
-        m_hand.inCoral().until(this::hasCoral).andThen(
-          m_hand.inCoral().withTimeout(0.5))
-      )
-    );
+        m_drivebase.driveToPoseSupC(intake::flippedPose),
+        new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
+        new ScheduleCommand(
+            m_hand.inCoral().until(this::hasCoral).andThen(
+                m_hand.inCoral().withTimeout(0.5))));
   }
+
   private double bargeTargetX() {
     final double blueX = 8;
     return AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(blueX) : blueX;
   }
+
   public Command alignToBarge(DoubleSupplier lateralSpeed) {
     return m_drivebase.driveToX(
-      this::bargeTargetX,
-      lateralSpeed,
-      ()->(AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
+        this::bargeTargetX,
+        lateralSpeed,
+        () -> (AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
   }
+
   public boolean atBargeLine() {
     return MathUtil.isNear(bargeTargetX(), m_drivebase.getPose().getX(), 1);
   }
 
   public Command outtake() {
-    return m_hand.outCoral().alongWith(runOnce(()->m_coralSensor.setHasCoral(false)));
+    return m_hand.outCoral().alongWith(runOnce(() -> m_coralSensor.setHasCoral(false)));
   }
 
   public Command flexAuto(POI start, POI intake, POI firstScore, POI... rest)
       throws NoSuchElementException {
+    final ArmPosition scoringPosition = Arm.Positions.L3;
     var routine = m_autoFactory.newRoutine("JKLA_SL3");
-    var start_first = start.toChecked(firstScore, routine).map(this::bindL4).get();
+    var start_first = start.toChecked(firstScore, routine)
+      .map(this::bindL4)
+      .get();
     var start_first_final = start_first.getFinalPose().get();
-    var first_intake = firstScore.toChecked(intake, routine).map(this::bindIntake).get();
+    var first_intake = firstScore.toChecked(intake, routine)
+    .map(this::bindIntake)
+    .get();
     // Set up the start->first score -> intake 
     routine
         .active()
@@ -365,15 +387,16 @@ public class Autos {
             sequence(
                 start_first.resetOdometry(),
                 start_first
-                    .cmd(),
-                    // .until(
-                    //     start_first.atTranslation(
-                    //         firstScore.bluePose.getTranslation(), Units.inchesToMeters(24))),
+                    .cmd()
+                    .until(
+                        start_first.atTranslation(
+                            firstScore.bluePose.getTranslation(), Units.inchesToMeters(12))),
                 alignAndDrop(
                         sensorOffsetPose(() -> start_first_final),
-                        Arm.Positions.L4,
+                        scoringPosition,
                         AUTO_OUTTAKE_TIME)
-                    .onlyWhile(routine.active()),
+                   .onlyWhile(routine.active()),
+                Commands.waitSeconds(AUTO_OUTTAKE_TIME),
                 first_intake.cmd()));
     first_intake.atTime(0.1).onTrue(m_hand.inCoral());
     var toIntake = first_intake;
@@ -381,23 +404,30 @@ public class Autos {
       if (RobotBase.isSimulation()) {
         toIntake.done(10).onTrue(runOnce(()->m_coralSensor.setHasCoral(true)));
       }
-      var toReef = intake.toChecked(poi, routine).map(this::bindL4).get();
+      var toReef = intake.toChecked(poi, routine)
+      .map(this::bindL4)
+      .get();
       var toReefFinal = toReef.getFinalPose().get();
-      var nextToIntake = poi.toChecked(intake, routine).map(this::bindIntake).get();
+      var nextToIntake = poi.toChecked(intake, routine)
+      .map(this::bindIntake)
+      .get();
       toIntake
           .done()
           .onTrue(
               sequence(
                   deadline(
-                    waitUntil(this::hasCoral),
-                    m_drivebase.pidToPoseC(toReef.getInitialPose())
+                    //waitUntil(this::hasCoral),
+                    waitSeconds(1),
+                    m_drivebase.driveToPoseC(toReef.getInitialPose())
                   ),
-                  toReef.cmd().until(
+                  toReef.cmd()
+                  .until(
                     toReef.atTranslation(
-                        poi.bluePose.getTranslation(), Units.inchesToMeters(24))),
+                        poi.bluePose.getTranslation(), Units.inchesToMeters(12))),
                   alignAndDrop(
-                          sensorOffsetPose(() -> toReefFinal), Arm.Positions.L4, AUTO_OUTTAKE_TIME)
+                          sensorOffsetPose(() -> toReefFinal), scoringPosition, AUTO_OUTTAKE_TIME)
                       .onlyWhile(routine.active()),
+      
                   nextToIntake.cmd()));
       toIntake = nextToIntake;
     }
@@ -439,12 +469,13 @@ public class Autos {
   private AutoTrajectory bindL4(AutoTrajectory trajectory) {
     trajectory
         .atTime(Math.max(0, trajectory.getRawTrajectory().getTotalTime() - TIME_INTAKE_TO_L4))
-        .onTrue(m_arm.goToPosition(Arm.Positions.L4));
+        .onTrue(m_arm.goToPosition(Arm.Positions.L3));
     return trajectory;
   }
 
   private AutoTrajectory bindIntake(AutoTrajectory trajectory) {
     trajectory.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
+    trajectory.atTime(1).onTrue(m_hand.inCoral().until(new Trigger(this::hasCoral).debounce(0.5)));
     return trajectory;
   }
 
@@ -495,9 +526,10 @@ public class Autos {
                 new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))));
     return routine.cmd();
   }
-  public Command climb(){
-    return parallel(m_ClimbHookS.clamp(),m_arm.Climb(),
-    sequence(waitUntil(m_arm::readyToClimb),
-    m_ArmBrakeS.brake()));
+
+  public Command climb() {
+    return parallel(m_ClimbHookS.clamp(), m_arm.Climb(),
+        sequence(waitUntil(m_arm::readyToClimb),
+            m_ArmBrakeS.brake()));
   }
 }

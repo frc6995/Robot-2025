@@ -20,7 +20,7 @@ public class ArmBrakeS extends SubsystemBase {
   /** Creates a new ArmBreakS. */
   public ArmBrakeS() {
     motor.configure(ArmBrakeConstants.configureMotor(new SparkFlexConfig()), ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-    setDefaultCommand(start().andThen(holdopen()));
+    setDefaultCommand(start().andThen(end()));//.andThen(holdopen()));
   }
 
   @Override
@@ -28,7 +28,7 @@ public class ArmBrakeS extends SubsystemBase {
     // This method will be called once per scheduler run
   }
   public Command start() {
-    return voltage (3).withTimeout(.6);
+    return voltage (10).withTimeout(0.06);
   }
   public Command brake() {
 return voltage(-1);
@@ -46,7 +46,7 @@ return this.run(()-> motor.setVoltage(volts));
 
 public class ArmBrakeConstants {
   public static final int CAN_ID = 35;
-  public static final int CURRENT_LIMIT = 5;
+  public static final int CURRENT_LIMIT =25;
   public static SparkFlexConfig configureMotor(SparkFlexConfig config) {
     config.smartCurrentLimit(CURRENT_LIMIT);
     return config;

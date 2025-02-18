@@ -56,15 +56,15 @@ public abstract class Arm {
     public static final ArmPosition L1 =
         new ArmPosition(MainPivotConstants.CW_LIMIT.minus(Degrees.of(10)), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition L2 =
-    new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0.30));
+    new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0.32));
     public static final ArmPosition L3 =
-        new ArmPosition(Degrees.of(90), Meters.of(1.05), Radians.of(0.24));
+        new ArmPosition(Degrees.of(90), Meters.of(1.025), Radians.of(0.24));
     public static final ArmPosition L4 =
         new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH, Radians.of(0.25));
     public static final ArmPosition STOW =
         new ArmPosition(Degrees.of(70), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
     public static final ArmPosition INTAKE_CORAL =
-        new ArmPosition(MainPivotConstants.CW_LIMIT.plus(Degrees.of(17)), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), WristConstants.CW_LIMIT);
+        new ArmPosition(Radians.of(0.957), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition LOW_ALGAE = new ArmPosition(Degrees.of(55), ElevatorConstants.MIN_LENGTH.plus(Inches.of(8)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
     public static final ArmPosition HIGH_ALGAE = new ArmPosition(Degrees.of(60), ElevatorConstants.MIN_LENGTH.plus(Inches.of(24)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
     public static final ArmPosition GROUND_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
@@ -92,7 +92,7 @@ public abstract class Arm {
 
   public boolean atPosition(ArmPosition position) {
     return this.position.withinTolerance(
-        position, Units.degreesToRadians(1), Units.inchesToMeters(0.5), Units.degreesToRadians(5));
+        position, Units.degreesToRadians(2), Units.inchesToMeters(0.5), Units.degreesToRadians(5));
   }
   public abstract Command Climb();
   public abstract boolean readyToClimb();
