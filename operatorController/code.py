@@ -37,7 +37,9 @@ class Selector:
 
 branch_pins = [board.GP0, board.GP1, board.GP2, board.GP3, board.GP4, board.GP5, board.GP6, board.GP7, board.GP8, board.GP9, board.GP10, board.GP11]
 level_pins = [board.GP19, board.GP18, board.GP17,board.GP16]
-climb_pins = [board.GP22, board.GP21,board.GP20]
+bottom_button_1 = board.GP22 
+bottom_button_2 = board.GP21
+bottom_button_3 = board.GP20
 
 # pixel_pin = board.GP20
 
@@ -55,7 +57,9 @@ climb_pins = [board.GP22, board.GP21,board.GP20]
 #1 = A, 12 = L
 branch_selector = Selector(branch_pins)
 level_selector = Selector(level_pins)
-climb_selector = Selector(climb_pins)
+bottom_button_1_function = Selector(bottom_button_1)
+bottom_button_2_function = Selector(bottom_button_2)
+bottom_button_3_function = Selector(bottom_button_3)
 
 
 print('start')
@@ -64,17 +68,37 @@ gp.release_buttons(1)
 while True:
     branch_selector.update ()
     level_selector.update ()
-    climb_selector.update ()
+    bottom_button_1_function.update ()
+    bottom_button_2_function.update ()
+    bottom_button_3_function.update ()
     branch_button = branch_selector.selected
     level_button = level_selector.selected
-    climb_button = climb_selector.selected
+    bottom_button_1_button = bottom_button_1_function.selected
+    bottom_button_2_button = bottom_button_2_function.selected
+    bottom_button_3_button = bottom_button_3_function.selected
 
     #8 bits
     # button 1 = bit 0
     # MSB | climb (2 bits) | level (2 bits) | branch (4 bits) | LSB
-    bitfield = (branch_button & 0xf) + ((level_button & 0x3) << 4) + ((climb_button & 0x3) << 6)
+    bitfield = (branch_button & 0xf) + ((level_button & 0x3) << 4) + ((bottom_button_1_button & 0x3) == 7) + ((bottom_button_2_button & 0x3) == 8) + ((bottom_button_1_button & 0x3) == 9)
    # send the current state
-    for i in range(1,8):
+    for i in range(7):
+        # 0 is invalid button id
+
+        if bitfield & (1 << (i-1)):
+            gp.press_buttons(i)
+        else:
+            gp.release_buttons(i)
+                
+    for i in range(8):
+        # 0 is invalid button id
+
+        if bitfield & (1 << (i-1)):
+            gp.press_buttons(i)
+        else:
+            gp.release_buttons(i)
+  
+    for i in range(9):
         # 0 is invalid button id
 
         if bitfield & (1 << (i-1)):
@@ -82,4 +106,5 @@ while True:
         else:
             gp.release_buttons(i)
 
+                
                 
