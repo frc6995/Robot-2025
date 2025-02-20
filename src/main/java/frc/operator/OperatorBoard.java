@@ -1,6 +1,7 @@
 package frc.operator;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 @Logged
 public abstract class OperatorBoard {
@@ -11,12 +12,16 @@ public abstract class OperatorBoard {
 
     public abstract int getBitfield();
     public int getBranch() {return branch;}
-    public int getClimb() {return climb;}
+    public abstract boolean getLeft();
+    public abstract boolean getCenter();
+    public abstract boolean getRight();
+    public Trigger left() { return new Trigger(this::getLeft);}
+    public Trigger center() { return new Trigger(this::getCenter);}
+    public Trigger right() { return new Trigger(this::getRight);}
     public int getLevel() {return level;}
     public void poll() {
         var bitfield = getBitfield();
         branch = bitfield & 0xf;
         level = (bitfield >> 4) & 0x3;
-        climb = (bitfield >> 6) & 0x3;
     }
 }
