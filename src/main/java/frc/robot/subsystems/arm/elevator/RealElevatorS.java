@@ -65,7 +65,7 @@ public class RealElevatorS extends Elevator {
     public static final double b = 1.32278 * 2;
     public static final Per<AngleUnit, DistanceUnit> MOTOR_ROTATIONS_PER_METER_UNIT =
         
-        Rotations.of(1).div(Inches.of(13.0/50.0 * (Math.PI*1.508) * 2));
+        Rotations.of(1).div(Inches.of(13.0/50.0 * (Math.PI*1.4397) * 2));
     public static final double MOTOR_ROTATIONS_PER_METER =
         MOTOR_ROTATIONS_PER_METER_UNIT.in(Rotations.per(Meter));
 
@@ -109,17 +109,17 @@ public class RealElevatorS extends Elevator {
     public static final PerUnit<VoltageUnit, AngularAccelerationUnit>
         VoltsPerRotationPerSecondSquared = Volts.per(RotationsPerSecond.per(Second));
     public static final Per<VoltageUnit, AngularVelocityUnit> K_V =
-        VoltsPerRotationPerSecond.ofNative(0.15);
+        VoltsPerRotationPerSecond.ofNative(0.15 * 1.508/1.4397);
 
     public static final Per<VoltageUnit, AngularAccelerationUnit> K_A =
-        VoltsPerRotationPerSecondSquared.ofNative(0.006);
+        VoltsPerRotationPerSecondSquared.ofNative(0.006 * 1.508/1.4397);
 
-    public static final double K_C = -0.17;
+    public static final double K_C = -0.17 * 1.508/1.4397;
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
             K_V.in(VoltsPerRotationPerSecond) * MOTOR_ROTATIONS_PER_METER,
             K_A.in(VoltsPerRotationPerSecondSquared) * MOTOR_ROTATIONS_PER_METER);
-    public static final double K_G = 0.4;
+    public static final double K_G = 0.4*1.508/1.4397;
     public static final InterpolatingDoubleTreeMap LENGTH_TO_MOI =
         InterpolatingDoubleTreeMap.ofEntries(
             Map.entry(ElevatorConstants.MIN_LENGTH.in(Meters), 0.7419),
