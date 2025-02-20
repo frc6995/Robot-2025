@@ -285,13 +285,24 @@ public class Autos {
     };
   }
 
+
   private POI selectedClimb() {
-    return switch (m_board.getClimb()) {
+    return switch (selectedClimbNumber()) {
       case 0 -> POI.CL1;
       case 1 -> POI.CL2;
       case 2 -> POI.CL3;
       default -> POI.CL1;
     };
+  }
+  @Logged
+  public int selectedClimbNumber() {
+    var poseTranslation = m_drivebase.getPose().getTranslation();
+    var CL1Dist = poseTranslation.getDistance(POI.CL1.flippedPose().getTranslation());
+    var CL2Dist = poseTranslation.getDistance(POI.CL2.flippedPose().getTranslation());
+    var CL3Dist = poseTranslation.getDistance(POI.CL3.flippedPose().getTranslation());
+    if (CL1Dist < CL2Dist && CL1Dist < CL3Dist) {return 0;}
+    if (CL2Dist < CL1Dist && CL2Dist < CL3Dist) {return 1;}
+    return 2;
   }
 
   public Command alignToClimb() {
