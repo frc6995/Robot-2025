@@ -82,30 +82,39 @@ public class Vision {
         Map.of(
             "OV9281-BL",
                 new Transform3d(
-                    Units.inchesToMeters(-14) + 0.097,
-                    Units.inchesToMeters(14.25) - 0.114,
+                  -(Units.inchesToMeters(14.25) - 0.102),
+                  (Units.inchesToMeters(14.25) - 0.066),
                     Units.inchesToMeters(8.5),
                     new Rotation3d(
                         Units.degreesToRadians(0),
-                        Units.degreesToRadians(-10),
+                        Units.degreesToRadians(-13.65),
                         Units.degreesToRadians(-170))),
             "OV9281-BR",
                 new Transform3d(
-                  Units.inchesToMeters(-14) + 0.098,
-                  -Units.inchesToMeters(14.25) + 0.127,
+                  -(Units.inchesToMeters(14.25) - 0.102),
+                  -(Units.inchesToMeters(14.25) - 0.072),
                     Units.inchesToMeters(8.5),
                     new Rotation3d(
                         Units.degreesToRadians(0),
-                        Units.degreesToRadians(-12),
+                        Units.degreesToRadians(-13.65),
                         Units.degreesToRadians(170))),
                 "OV9281-FR",
                 new Transform3d(
-                  Units.inchesToMeters(-14.25) + 0.075,
-                  -Units.inchesToMeters(14.25) + 0.126,
+                  -(Units.inchesToMeters(14.25) - 0.142),
+                  -(Units.inchesToMeters(14.25) - 0.112),
                     Units.inchesToMeters(8.5),
                     new Rotation3d(
-                        Units.degreesToRadians(90),
-                        Units.degreesToRadians(-40),
+                        Units.degreesToRadians(0),
+                        Units.degreesToRadians(-45),
+                        Units.degreesToRadians(0))),
+                "OV9281-FL",
+                new Transform3d(
+                  -(Units.inchesToMeters(14.25) - 0.150),
+                  (Units.inchesToMeters(14.25) - 0.116),
+                    Units.inchesToMeters(8.5),
+                    new Rotation3d(
+                        Units.degreesToRadians(0),
+                        Units.degreesToRadians(-45),
                         Units.degreesToRadians(0)))
         );
     public static final AprilTagFieldLayout FIELD_LAYOUT =
@@ -207,7 +216,7 @@ public class Vision {
       if (tdist < closestDistance) {
         closestDistance = tdist;
       }
-      if (tdist <= Units.feetToMeters(15)) {
+      if (tdist <= Units.feetToMeters(10)) {
         closeEnoughTgts++;
       }
       // ignore |= (tgt.getFiducialId() == 13);
