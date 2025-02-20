@@ -20,7 +20,7 @@ public class ArmBrakeS extends SubsystemBase {
   /** Creates a new ArmBreakS. */
   public ArmBrakeS() {
     motor.configure(ArmBrakeConstants.configureMotor(new SparkFlexConfig()), ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-    setDefaultCommand(start().andThen(end()));//.andThen(holdopen()));
+    setDefaultCommand(release());//.andThen(holdopen()));
   }
 
   @Override
@@ -32,6 +32,9 @@ public class ArmBrakeS extends SubsystemBase {
   }
   public Command brake() {
 return voltage(-1);
+  }
+  public Command release() {
+    return start().andThen(end());
   }
   public Command holdopen() {
 return voltage(0.2);

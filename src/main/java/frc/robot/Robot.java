@@ -61,6 +61,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import java.util.ArrayList;
@@ -108,7 +109,7 @@ public class Robot extends TimedRobot {
     m_driverDisplay.setAllHomedSupplier(() -> false)
         .setHasCoralSupplier(m_autos::hasCoral)
         .setBranchSupplier(m_operatorBoard::getBranch)
-        .setClimbSupplier(m_operatorBoard::getClimb)
+        .setClimbSupplier(m_autos::selectedClimbNumber)
         .setLevelSupplier(m_operatorBoard::getLevel);
     AlertsUtil.bind(
         new Alert("Driver Xbox Disconnect", AlertType.kError),
@@ -150,6 +151,13 @@ public class Robot extends TimedRobot {
     m_driverController.start().and(RobotModeTriggers.disabled())
         .onTrue(m_arm.elevatorS.home().alongWith(m_arm.wristS.home()));
         m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
+    
+      m_operatorBoard.left().onTrue(
+        m_arm.goToPosition(Arm.Positions.PRE_CLIMB)).onTrue(
+        m_climbHookS.release()
+      );
+      m_operatorBoard.center().onTrue(m_climbHookS.clamp()).whileTrue(waitSeconds(0.5).andThen(m_arm.mainPivotS.voltage(()->-1)));
+      m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
     DriverStation.silenceJoystickConnectionWarning(true);
     boolean doingSysId = false;
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());

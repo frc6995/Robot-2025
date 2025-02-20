@@ -88,7 +88,7 @@ public class MainPivotS extends SubsystemBase {
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(4);
 
-    public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375;
+    public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375 + 0.125;
 
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(40).withKD(0);
