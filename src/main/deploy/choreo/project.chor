@@ -91,8 +91,8 @@
    "MAX_VEL":{
     "dimension":"LinVel",
     "var":{
-     "exp":"1 m / s",
-     "val":1.0
+     "exp":"2 m / s",
+     "val":2.0
     }
    }
   },
@@ -548,29 +548,29 @@
    "STE":{
     "x":{
      "exp":"STJ.x",
-     "val":7.1
+     "val":7.2
     },
     "y":{
      "exp":"E.y",
      "val":2.7004309601825005
     },
     "heading":{
-     "exp":"E.heading",
-     "val":5.235987755982989
+     "exp":"0 deg",
+     "val":0.0
     }
    },
    "STF":{
     "x":{
      "exp":"STI.x",
-     "val":7.1
+     "val":7.2
     },
     "y":{
      "exp":"F.y",
      "val":2.864755243782354
     },
     "heading":{
-     "exp":"F.heading",
-     "val":5.235987755982989
+     "exp":"0 deg",
+     "val":0.0
     }
    },
    "STG":{
@@ -583,7 +583,7 @@
      "val":3.872436782836916
     },
     "heading":{
-     "exp":"G.heading",
+     "exp":"0 deg",
      "val":0.0
     }
    },
@@ -597,36 +597,36 @@
      "val":4.1804845123291
     },
     "heading":{
-     "exp":"H.heading",
+     "exp":"0 deg",
      "val":0.0
     }
    },
    "STI":{
     "x":{
-     "exp":"7.1 m",
-     "val":7.1
+     "exp":"7.2 m",
+     "val":7.2
     },
     "y":{
      "exp":"I.y",
      "val":5.187244756217646
     },
     "heading":{
-     "exp":"I.heading",
-     "val":-5.235987755982989
+     "exp":"0 deg",
+     "val":0.0
     }
    },
    "STJ":{
     "x":{
-     "exp":"7.1 m",
-     "val":7.1
+     "exp":"7.2 m",
+     "val":7.2
     },
     "y":{
      "exp":"J.y",
      "val":5.351569039817499
     },
     "heading":{
-     "exp":"J.heading",
-     "val":1.0471975511965976
+     "exp":"0 deg",
+     "val":0.0
     }
    }
   }
