@@ -33,7 +33,7 @@ public class ClimbHookS extends SubsystemBase {
     return voltage(-10);
   }
   public Command release(){
-    return voltage(3);
+    return voltage(10);
   }
   public Command stop(){
     return voltage(0);
