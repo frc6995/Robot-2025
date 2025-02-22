@@ -20,16 +20,16 @@ public class RealOperatorBoard extends OperatorBoard {
 
     @Override
     public boolean getLeft() {
-        return DriverStation.getStickButton(port, 6);
-    }
-
-    @Override
-    public boolean getCenter() {
         return DriverStation.getStickButton(port, 7);
     }
 
     @Override
-    public boolean getRight() {
+    public boolean getCenter() {
         return DriverStation.getStickButton(port, 8);
+    }
+
+    @Override
+    public boolean getRight() {
+        return DriverStation.getStickButton(port, 9);
     }
 }

@@ -21,6 +21,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -53,6 +54,8 @@ import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
+import frc.robot.subsystems.led.LightStripS;
+import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.subsystems.NoneHandS;
 import frc.robot.subsystems.Hand;
 import frc.robot.util.AlertsUtil;
@@ -92,12 +95,19 @@ public class Robot extends TimedRobot {
   // private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
   private final DriverDisplay m_driverDisplay = new DriverDisplay();
+  
   private Mechanism2d VISUALIZER;
 
   public Pose3d[] components() {
     return RobotVisualizer.getComponents();
   }
 
+  private boolean realRobotIsInWorkshop = true;
+  private Trigger inWorkshop = 
+    new Trigger(()->RobotBase.isReal() && realRobotIsInWorkshop)
+    .and(()->!DriverStation.isFMSAttached());
+
+  private DigitalInput coastButton = new DigitalInput(0);
   /**
    * This function is run when the robot is first started up and should be used
    * for any
@@ -138,43 +148,60 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("visualizer", VISUALIZER);
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
-    //configureDriverController();
+    configureDriverController();
 
-    m_driverController.rightTrigger().whileTrue(m_drivebaseS.driveToPoseSupC(m_autos.offsetSelectedReefPose));
-    m_driverController.a().whileTrue(m_drivebaseS.driveToPoseSupC(POI.SL3::flippedPose));
-    m_driverController.leftTrigger().whileTrue(m_arm.mainPivotS.voltage(m_arm.mainPivotS::getKgVolts));
-    m_driverController.y().onTrue(m_arm.goToPosition(Arm.Positions.L4.premove()));
-    m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.L4));
-    m_driverController.x().onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
-    m_driverController.leftBumper().whileTrue(m_hand.inCoral().until(m_autos::hasCoral));
-    m_driverController.rightBumper().whileTrue(m_hand.outCoral());
+    // m_driverController.rightTrigger().whileTrue(m_drivebaseS.driveToPoseSupC(m_autos.offsetSelectedReefPose));
+    // m_driverController.a().whileTrue(m_drivebaseS.driveToPoseSupC(POI.SL3::flippedPose));
+    // m_driverController.leftTrigger().whileTrue(m_arm.mainPivotS.voltage(m_arm.mainPivotS::getKgVolts));
+    // m_driverController.y().onTrue(m_arm.goToPosition(Arm.Positions.L3.premove()));
+    // m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.L3));
+    // m_driverController.x().onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
+    // m_driverController.leftBumper().whileTrue(m_hand.inCoral().until(m_autos::hasCoral));
+    // m_driverController.rightBumper().whileTrue(m_hand.outCoral());
+
+    m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
+      m_arm.mainPivotS.coast()
+    ).whileTrue(m_climbHookS.coast());
+    m_driverController.back().onTrue(m_climbHookS.release().withTimeout(5));
     m_driverController.start().and(RobotModeTriggers.disabled())
         .onTrue(m_arm.elevatorS.home().alongWith(m_arm.wristS.home()));
         m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
-    
-      m_operatorBoard.left().onTrue(
-        m_arm.goToPosition(Arm.Positions.PRE_CLIMB)).onTrue(
-        m_climbHookS.release()
-      );
-      m_operatorBoard.center().onTrue(m_climbHookS.clamp()).whileTrue(waitSeconds(0.5).andThen(m_arm.mainPivotS.voltage(()->-1)));
-      m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
+    configureOperatorController();
     DriverStation.silenceJoystickConnectionWarning(true);
     boolean doingSysId = false;
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
+  private void configureOperatorController() {
+    m_operatorBoard.left().onTrue(
+      m_arm.goToPosition(Arm.Positions.PRE_CLIMB)).onTrue(
+        m_climbHookS.release().withTimeout(5)
+    );
+    m_operatorBoard.center().onTrue(m_climbHookS.clamp())
+    .whileTrue(waitSeconds(3).andThen(
+      parallel(
+        m_arm.mainPivotS.voltage(()->-2),
+        waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(50))
+          .andThen(m_arm.wristS.goTo(()->0.0))))
+    );
+    m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
+  }
   public void configureDriverController() {
+    
     // TODO: assign buttons to functions specified in comments
 
-    // align to closest coral station
+    // align to closest coral station (or left station if in workshop)
     m_driverController.a().whileTrue(
-        Commands.defer(() -> m_autos.autoCoralIntake(m_autos.closestIntake()), Set.of(m_drivebaseS)));
+        Commands.defer(() -> m_autos.autoCoralIntake(inWorkshop.getAsBoolean() ? POI.SL3 : m_autos.closestIntake()), Set.of(m_drivebaseS)));
     // Drive and autoalign to processor
+    // If not in workshop, drive to processor.
     m_driverController.b()
+        .onTrue(m_hand.inAlgae())
         .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR))
+        .and(inWorkshop.negate())
         .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
     // Drive and autoalign to barge
-    m_driverController.y()
+    m_driverController.y().and(inWorkshop.negate())
         .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
         .whileTrue(
             parallel(
@@ -184,6 +211,8 @@ public class Robot extends TimedRobot {
               )
             )
             );
+      m_driverController.y().and(inWorkshop)
+      .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE));
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
     m_driverController.x().whileTrue(
         defer(() -> m_drivebaseS.driveToPoseSupC(m_autos.closestSide().algae::flippedPose), Set.of(m_drivebaseS))
@@ -198,8 +227,8 @@ public class Robot extends TimedRobot {
     m_driverController.leftBumper().whileTrue(
         m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
-    m_driverController.rightBumper().whileTrue(
-        m_hand.outCoral().withTimeout(0.5).andThen(m_arm.goToPosition(Arm.Positions.STOW)));
+    m_driverController.rightBumper().onTrue(
+        m_hand.outCoral().withTimeout(0.5).andThen(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)));
 
     // score algae
     m_driverController.leftTrigger().whileTrue(parallel(
@@ -213,10 +242,9 @@ public class Robot extends TimedRobot {
      */
 
     // autoalign to deep cage
-    m_driverController.back().onTrue(m_arm.goToPosition(Arm.Positions.PRE_CLIMB))
+    m_driverController.start().and(inWorkshop.negate())
         .whileTrue(m_autos.alignToClimb());
     // execute cage climb
-    m_driverController.start().whileTrue(m_autos.climb());
 
     m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
 
@@ -288,6 +316,8 @@ public class Robot extends TimedRobot {
     Epilogue.talonFXLogger.refreshAll();
     // pdh.update();
     CommandScheduler.getInstance().run();
+    LightStripS.periodic();
+    LightStripS.top.requestState(TopStates.Default);
   }
 
   private final Rotation3d coral_hand_rotation = new Rotation3d(0, Units.degreesToRadians(20), 0);

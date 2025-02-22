@@ -19,6 +19,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
@@ -91,6 +92,7 @@ public class RealWristS extends Wrist {
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
           .withReverseSoftLimitEnable(true);
+      config.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
       return config;
     }
 

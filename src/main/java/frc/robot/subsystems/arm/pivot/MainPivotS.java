@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import com.ctre.phoenix6.StatusSignal;
@@ -93,7 +94,7 @@ public class MainPivotS extends SubsystemBase {
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(40).withKD(0);
       //TEMP
-      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(1);
+      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(0.66);
       //config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.Feedback
@@ -103,7 +104,7 @@ public class MainPivotS extends SubsystemBase {
           .withRotorToSensorRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
-          .withReverseSoftLimitThreshold(CW_LIMIT.minus(Degrees.of(10)))
+          .withReverseSoftLimitThreshold(Rotations.of(0.066))
           .withReverseSoftLimitEnable(true);
       config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;
@@ -197,6 +198,12 @@ public class MainPivotS extends SubsystemBase {
     setDefaultCommand(hold());
     setNeutralMode(NeutralModeValue.Brake);
   }
+
+  public Command coast() {
+    return this.startEnd(
+      ()->setNeutralMode(NeutralModeValue.Coast), ()->setNeutralMode(NeutralModeValue.Brake)).ignoringDisable(true);
+  }
+
   public double getSetpoint() {
     m_angleSetpointSig.refresh();
     return m_angleSetpointSig.getValueAsDouble();

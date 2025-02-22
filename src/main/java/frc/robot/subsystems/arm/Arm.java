@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 
 import org.w3c.dom.Text;
 
@@ -63,21 +64,23 @@ public abstract class Arm {
         new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH, Radians.of(0.25));
     public static final ArmPosition STOW =
         new ArmPosition(Degrees.of(70), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
-    public static final ArmPosition INTAKE_CORAL =
+    public static final ArmPosition CLOSE_INTAKE_CORAL =
         new ArmPosition(Radians.of(0.957), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
+    public static final ArmPosition INTAKE_CORAL =
+        new ArmPosition(Radians.of(0.957), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), WristConstants.CW_LIMIT);
     public static final ArmPosition LOW_ALGAE = new ArmPosition(Degrees.of(55), ElevatorConstants.MIN_LENGTH.plus(Inches.of(8)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
     public static final ArmPosition HIGH_ALGAE = new ArmPosition(Degrees.of(60), ElevatorConstants.MIN_LENGTH.plus(Inches.of(24)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
     public static final ArmPosition GROUND_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
     public static final ArmPosition SCORE_BARGE = new ArmPosition(Degrees.of(80), ElevatorConstants.MAX_LENGTH, Radians.of(0));
     public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT.plus(Degrees.of(20)));
     public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
-    public static final ArmPosition POST_CLIMB = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
+    public static final ArmPosition POST_CLIMB = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Rotations.of(-0.096));
 
   }
 
   public Arm() {}
 
-  protected ArmPosition position;
+  public ArmPosition position;
   
 
   public Command goToPosition(ArmPosition position) {

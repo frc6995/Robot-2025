@@ -9,9 +9,11 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
+import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -40,6 +42,7 @@ import frc.robot.util.ChoreoVariables;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -95,9 +98,6 @@ public class Autos {
   }
 
   public void addAutos() {
-    autos.put("KK_SL3", () -> this.KK_SL3().cmd());
-    //autos.put("JKLA_FLEX", () -> flexAuto(POI.STJ, POI.SL3, POI.J, POI.K, POI.L, POI.A));
-    //autos.put("HIJKLA_FLEX", () -> flexAuto(POI.STH, POI.SL3, POI.H, POI.I, POI.J, POI.K, POI.L, POI.A));
     autos.put("IJKL_FLEX", () -> flexAuto(POI.STI, POI.SL3, POI.I, POI.J, POI.K, POI.L));
     // POI.J, POI.K, POI.L, POI.A));
 
@@ -134,19 +134,6 @@ public class Autos {
     return routine;
   }
 
-  public AutoRoutine JKL_SL3() {
-    var routine = m_autoFactory.newRoutine("JKL_SL3");
-    AutoTrajectory J_SL3 = routine.trajectory("SL3-J", 1);
-    AutoTrajectory SL3_K = routine.trajectory("SL3-K", 0);
-    AutoTrajectory K_SL3 = routine.trajectory("SL3-K", 1);
-    AutoTrajectory SL3_L = routine.trajectory("SL3-L", 0);
-
-    routine
-        .active()
-        .onTrue(
-            sequence(J_SL3.resetOdometry(), J_SL3.cmd(), SL3_K.cmd(), K_SL3.cmd(), SL3_L.cmd()));
-    return routine;
-  }
 
   /**
    * Requires: only drivetrain Runs: drivetrain and rollers
@@ -164,18 +151,21 @@ public class Autos {
 
   public Command alignAndDrop(
       Supplier<Pose2d> target, ArmPosition position, double outtakeSeconds) {
-    return race(
-        waitUntil(
-            m_drivebase.atPose(target)
-                .and(
-                    () -> {
-                      return m_arm.atPosition(position);
-                    }))
-            , // Proxy so hand isn't directly required
-        waitSeconds(4),
-        m_drivebase.driveToPoseSupC(target))
-        .andThen(deadline(
-          outtake().withTimeout(outtakeSeconds).asProxy(), m_drivebase.stop()));
+    return defer(() -> {
+      var cachedTarget = target.get();
+      Supplier<Pose2d> targetSup = () -> cachedTarget;
+      return race(
+          waitUntil(
+              m_drivebase.atPose(targetSup)
+                  .and(
+                      () -> {
+                        return m_arm.atPosition(position);
+                      })), // Proxy so hand isn't directly required
+          waitSeconds(4),
+          m_drivebase.driveToPoseSupC(targetSup))
+          .andThen(deadline(
+              waitSeconds(0.25).andThen(outtake().withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop()));
+    }, Set.of(m_drivebase));
   }
 
   @Logged
@@ -285,7 +275,6 @@ public class Autos {
     };
   }
 
-
   private POI selectedClimb() {
     return switch (selectedClimbNumber()) {
       case 0 -> POI.CL1;
@@ -294,14 +283,19 @@ public class Autos {
       default -> POI.CL1;
     };
   }
+
   @Logged
   public int selectedClimbNumber() {
     var poseTranslation = m_drivebase.getPose().getTranslation();
     var CL1Dist = poseTranslation.getDistance(POI.CL1.flippedPose().getTranslation());
     var CL2Dist = poseTranslation.getDistance(POI.CL2.flippedPose().getTranslation());
     var CL3Dist = poseTranslation.getDistance(POI.CL3.flippedPose().getTranslation());
-    if (CL1Dist < CL2Dist && CL1Dist < CL3Dist) {return 0;}
-    if (CL2Dist < CL1Dist && CL2Dist < CL3Dist) {return 1;}
+    if (CL1Dist < CL2Dist && CL1Dist < CL3Dist) {
+      return 0;
+    }
+    if (CL2Dist < CL1Dist && CL2Dist < CL3Dist) {
+      return 1;
+    }
     return 2;
   }
 
@@ -343,7 +337,7 @@ public class Autos {
                           () -> m_arm.atPosition(selectedBranch())))
           // .andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
               ,
-              m_drivebase.pidToPoseC(offsetSelectedReefPose).asProxy(),
+              m_drivebase.driveToPoseSupC(offsetSelectedReefPose).asProxy(),
               preMoveUntilTarget(target, selectedBranch()).asProxy()).andThen(
           // new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
           ).asProxy();
@@ -380,97 +374,78 @@ public class Autos {
     return m_hand.outCoral().alongWith(runOnce(() -> m_coralSensor.setHasCoral(false)));
   }
 
+  public AutoTrajectory bindScore(AutoTrajectory self, ArmPosition scoringPosition, Optional<AutoTrajectory> next) {
+    var finalPoseUnflipped = self.getRawTrajectory().getFinalPose(false).get();
+    var finalPoseFlipped = self.getFinalPose().get();
+    System.out.println(DriverStation.getAlliance());
+    System.out.println(finalPoseUnflipped);
+    self.atTranslation(
+       finalPoseUnflipped.getTranslation(), Units.inchesToMeters(24))
+        .onTrue(print("Inside Scoring Radius"))
+        .onTrue(m_arm.goToPosition(scoringPosition))
+        .onTrue(
+          sequence(
+            alignAndDrop(
+              sensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME
+            ),
+            Commands.waitSeconds(AUTO_OUTTAKE_TIME),
+            new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
+            next.map((Function<AutoTrajectory, Command>) (nextTraj)->
+              waitUntil(
+                  () -> m_arm.position.elevatorLength().lt(Arm.Positions.L3.elevatorLength()))
+                  .andThen(nextTraj.spawnCmd())).orElse(none())
+        ));
+    return self;
+  }
   public Command flexAuto(POI start, POI intake, POI firstScore, POI... rest)
       throws NoSuchElementException {
-    final ArmPosition scoringPosition = Arm.Positions.L3;
+    final ArmPosition scoringPosition = Arm.Positions.L4;
     var routine = m_autoFactory.newRoutine("JKLA_SL3");
-    var start_first = start.toChecked(firstScore, routine)
-      .map(this::bindL4)
-      .get();
-    var start_first_final = start_first.getFinalPose().get();
-    var first_intake = firstScore.toChecked(intake, routine)
-    .map(this::bindIntake)
-    .get();
-    // Set up the start->first score -> intake 
+    var toReef = start.toChecked(firstScore, routine)
+        .map(this::bindL4)
+        .get();
+    
+    // Set up the start->first score -> intake
     routine
         .active()
         .onTrue(
             sequence(
-                start_first.resetOdometry(),
-                start_first
-                    .cmd()
-                    .until(
-                        start_first.atTranslation(
-                            firstScore.bluePose.getTranslation(), Units.inchesToMeters(12))),
-                alignAndDrop(
-                        sensorOffsetPose(() -> start_first_final),
-                        scoringPosition,
-                        AUTO_OUTTAKE_TIME)
-                   .onlyWhile(routine.active()),
-                Commands.waitSeconds(AUTO_OUTTAKE_TIME),
-                first_intake.cmd()));
-    first_intake.atTime(0.1).onTrue(m_hand.inCoral());
-    var toIntake = first_intake;
-    for (POI poi : rest) {
-      if (RobotBase.isSimulation()) {
-        toIntake.done(10).onTrue(runOnce(()->m_coralSensor.setHasCoral(true)));
-      }
-      var toReef = intake.toChecked(poi, routine)
+                toReef.resetOdometry(),
+                toReef.cmd()));
+      
+    List<POI> scores = new LinkedList<POI>();
+    scores.add(firstScore);
+    scores.addAll(List.of(rest));
+    List<Pair<POI,POI>> scorePairs = new LinkedList<>();
+    for (int i = 0; i < scores.size()-1; i++) {
+      scorePairs.add(new Pair<POI,POI>(scores.get(i), scores.get(i+1)));
+    }
+
+    System.out.println(scorePairs);
+    // bind the prev->poi (toReef) followed by the poi->intake (toIntake), followed by starting the next score;
+    for (Pair<POI,POI> pair : scorePairs){
+      
+      var toIntake = pair.getFirst().toChecked(intake, routine)
+          .map(this::bindIntake)
+          .get();
+      bindScore(toReef, scoringPosition, Optional.of(toIntake));
+
+      var nextToReef = intake.toChecked(pair.getSecond(), routine)
       .map(this::bindL4)
-      .get();
-      var toReefFinal = toReef.getFinalPose().get();
-      var nextToIntake = poi.toChecked(intake, routine)
-      .map(this::bindIntake)
       .get();
       toIntake
           .done()
           .onTrue(
               sequence(
                   deadline(
-                    //waitUntil(this::hasCoral),
-                    waitSeconds(1),
-                    m_drivebase.driveToPoseC(toReef.getInitialPose())
-                  ),
-                  toReef.cmd()
-                  .until(
-                    toReef.atTranslation(
-                        poi.bluePose.getTranslation(), Units.inchesToMeters(12))),
-                  alignAndDrop(
-                          sensorOffsetPose(() -> toReefFinal), scoringPosition, AUTO_OUTTAKE_TIME)
-                      .onlyWhile(routine.active()),
-      
-                  nextToIntake.cmd()));
-      toIntake = nextToIntake;
+                      // waitUntil(this::hasCoral),
+                      waitSeconds(1),
+                      m_drivebase.driveToPoseSupC(intake::flippedPose)),
+                  nextToReef.spawnCmd()
+      ));
+      toReef = nextToReef;
     }
-    return routine.cmd();
-  }
-
-  public Command JKLA_SL3() {
-    var routine = m_autoFactory.newRoutine("JKLA_SL3");
-    var STJ_J = POI.STJ.to(POI.J, routine).map(this::bindL4).get();
-    var J_SL3 = POI.J.to(POI.SL3, routine).map(this::bindIntake).get();
-    var SL3_K = POI.SL3.to(POI.K, routine).map(this::bindL4).get();
-    var K_SL3 = POI.K.to(POI.SL3, routine).map(this::bindIntake).get();
-    var SL3_L = POI.SL3.to(POI.L, routine).map(this::bindL4).get();
-    var L_SL3 = POI.L.to(POI.SL3, routine).map(this::bindIntake).get();
-    var SL3_A = POI.SL3.to(POI.A, routine).map(this::bindL4).get();
-    routine
-        .active()
-        .onTrue(
-            sequence(
-                STJ_J.resetOdometry(),
-                STJ_J.cmd(),
-                alignAndDrop(STJ_J.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                J_SL3.cmd(),
-                SL3_K.cmd(),
-                alignAndDrop(SL3_K.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                K_SL3.cmd(),
-                SL3_L.cmd(),
-                alignAndDrop(SL3_L.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                L_SL3.cmd(),
-                SL3_A.cmd(),
-                alignAndDrop(SL3_A.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))));
+    bindScore(toReef, scoringPosition, Optional.empty());
     return routine.cmd();
   }
 
@@ -480,62 +455,15 @@ public class Autos {
   private AutoTrajectory bindL4(AutoTrajectory trajectory) {
     trajectory
         .atTime(Math.max(0, trajectory.getRawTrajectory().getTotalTime() - TIME_INTAKE_TO_L4))
-        .onTrue(m_arm.goToPosition(Arm.Positions.L3));
+        .onTrue(m_arm.goToPosition(Arm.Positions.L4.premove()));
     return trajectory;
   }
 
   private AutoTrajectory bindIntake(AutoTrajectory trajectory) {
     trajectory.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
-    trajectory.atTime(1).onTrue(m_hand.inCoral().until(new Trigger(this::hasCoral).debounce(0.5)));
+    trajectory.atTime(1)
+        .onTrue(m_hand.inCoral().until(new Trigger(this::hasCoral)).andThen(m_hand.inCoral().withTimeout(0.5)));
     return trajectory;
-  }
-
-  public AutoRoutine KK_SL3() {
-    var routine = m_autoFactory.newRoutine("KK_SL3");
-    AutoTrajectory K_SL3 = bindIntake(routine.trajectory("SL3-K", 1));
-    AutoTrajectory SL3_K = bindL4(routine.trajectory("SL3-K", 0));
-
-    routine.active().onTrue(sequence(K_SL3.resetOdometry(), K_SL3.cmd(), SL3_K.cmd()));
-    return routine;
-  }
-
-  public Command HIJKL_SL3() {
-    var routine = m_autoFactory.newRoutine("HIJKL_SL3");
-    var STH_H = bindL4(routine.trajectory("STH-H", 0));
-    var H_SL3 = bindIntake(routine.trajectory("SL3-H", 1));
-    var SL3_I = bindL4(routine.trajectory("SL3-I", 0));
-    var I_SL3 = bindIntake(routine.trajectory("SL3-I", 1));
-    AutoTrajectory SL3_J = bindL4(routine.trajectory("SL3-J", 0));
-    AutoTrajectory J_SL3 = bindIntake(routine.trajectory("SL3-J", 1));
-    AutoTrajectory SL3_K = bindL4(routine.trajectory("SL3-K", 0));
-    AutoTrajectory K_SL3 = bindIntake(routine.trajectory("SL3-K", 1));
-    AutoTrajectory SL3_L = bindL4(routine.trajectory("SL3-L", 0));
-    AutoTrajectory L_SL3 = bindIntake(routine.trajectory("SL3-L", 1));
-    AutoTrajectory SL3_A = bindL4(routine.trajectory("SL3-A", 0));
-    routine
-        .active()
-        .onTrue(
-            sequence(
-                STH_H.resetOdometry(),
-                STH_H.cmd(),
-                alignAndDrop(STH_H.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                H_SL3.cmd(),
-                SL3_I.cmd(),
-                alignAndDrop(SL3_I.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                I_SL3.cmd(),
-                SL3_J.cmd(),
-                alignAndDrop(SL3_J.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                J_SL3.cmd(),
-                SL3_K.cmd(),
-                alignAndDrop(SL3_K.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                K_SL3.cmd(),
-                SL3_L.cmd(),
-                alignAndDrop(SL3_L.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                L_SL3.cmd(),
-                SL3_A.cmd(),
-                alignAndDrop(SL3_A.getFinalPose(), Arm.Positions.L4, AUTO_OUTTAKE_TIME),
-                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))));
-    return routine.cmd();
   }
 
   public Command climb() {

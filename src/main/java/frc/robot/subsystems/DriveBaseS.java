@@ -205,7 +205,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
             .withWheelForceFeedforwardsY(sample.moduleForcesY()));
   }
 
-  SwerveRequest.ApplyRobotSpeeds idle = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds());
+  SwerveRequest.ApplyRobotSpeeds idle = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds()).withDriveRequestType(DriveRequestType.Velocity);
 
   public Command stop() {
     return applyRequest(() -> idle);

@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Volts;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -21,13 +22,15 @@ public class ClimbHookS extends SubsystemBase {
     public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){
       config.CurrentLimits
         .withStatorCurrentLimit(CURRENT_LIMIT)
-        .withStatorCurrentLimitEnable(true);
+        .withStatorCurrentLimitEnable(true)
+        ;
+      config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
       return config;
     }
   
   }
   public Command clamp(){
-    return voltage(-3);
+    return voltage(-10);
   }
   public Command release(){
     return voltage(3);
@@ -43,6 +46,15 @@ public class ClimbHookS extends SubsystemBase {
   public ClimbHookS() {
     motor.getConfigurator().apply(ClimbHookConstants.configuremotor(new TalonFXConfiguration()));
     setDefaultCommand(stop());
+  }
+
+  public Command coast() {
+    return this.startEnd(
+      ()->setNeutralMode(NeutralModeValue.Coast), ()->setNeutralMode(NeutralModeValue.Brake)).ignoringDisable(true);
+  }
+
+  private void setNeutralMode(NeutralModeValue value) {
+    motor.setNeutralMode(value);
   }
 
   @Override

@@ -31,7 +31,7 @@ public class RealHandS extends Hand {
 
   public static final int CAN_ID = 51;
 
-  public static final double IN_CORAL_VOLTAGE = 6;
+  public static final double IN_CORAL_VOLTAGE = 5;
 
   public static final double OUT_CORAL_VOLTAGE = -6;
 

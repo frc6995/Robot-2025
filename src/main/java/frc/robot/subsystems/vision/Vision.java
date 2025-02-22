@@ -164,7 +164,7 @@ public class Vision {
   }
 
   public boolean filterPose(Pose3d robotPose) {
-    if (Math.abs(robotPose.getZ()) > 0.5) {
+    if (Math.abs(robotPose.getZ()) > 0.25) {
       return false;
     }
     return true;
@@ -181,6 +181,9 @@ public class Vision {
     camera.setRawPose(robotPoseOpt.get().estimatedPose);
     var pose = robotPoseOpt.get();
     if (pose.timestampSeconds < lastPoseResetTimestamp) {
+      return;
+    }
+    if (!filterPose(pose.estimatedPose)) {
       return;
     }
     double xConfidence;
@@ -209,7 +212,7 @@ public class Vision {
           }
       } 
       double tdist = tgt.getBestCameraToTarget().getTranslation().getNorm();
-      if (pose.targetsUsed.size() < 2 && tdist > Units.feetToMeters(4)){
+      if (pose.targetsUsed.size() < 2 && tdist > Units.feetToMeters(8)){
         return;
       }
       avgDistance += tdist;
