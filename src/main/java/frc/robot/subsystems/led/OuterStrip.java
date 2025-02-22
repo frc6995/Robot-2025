@@ -29,6 +29,8 @@ import java.util.function.Supplier;
 public class OuterStrip {
 
     public enum OuterStates {
+        BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(0.25))),
+        RedAlliance(solid(Color.kRed).atBrightness(Value.of(0.25))),
         Default(solid(Color.kGreen).atBrightness(Value.of(0.25)));
     
         public LEDPattern applier;
@@ -38,7 +40,15 @@ public class OuterStrip {
         }
     }
     public AddressableLEDBufferView led;
-
+    // public AddressableLEDBufferView in_right_back;
+    // public AddressableLEDBufferView in_right_side;
+    // public AddressableLEDBufferView in_center;
+    // public AddressableLEDBufferView in_left_side;
+    // public AddressableLEDBufferView in_left_back;
+    // public AddressableLEDBufferView out_left_side;
+    // public AddressableLEDBufferView out_left_corner;
+    // public AddressableLEDBufferView out_front;
+    // public AddressableLEDBufferView out_right_corner;
     private TreeSet<OuterStates> m_states = new TreeSet<>();
 
     /**

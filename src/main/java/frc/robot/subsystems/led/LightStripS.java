@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 public class LightStripS {
 
     private static final int OUTER_STRIP_LENGTH = 138;
-    private static final int TOP_STRIP_LENGTH = 192 - 138;
+    private static final int TOP_STRIP_LENGTH = 192 - 138+6;
     private static AddressableLED led = new AddressableLED(5);
     private static AddressableLEDBuffer buffer = new AddressableLEDBuffer(OUTER_STRIP_LENGTH + TOP_STRIP_LENGTH);
     public static final TopStrip top;
@@ -42,8 +42,8 @@ public class LightStripS {
 
         led.setData(buffer);
         led.start();
-        top = new TopStrip(buffer.createView(OUTER_STRIP_LENGTH, OUTER_STRIP_LENGTH + TOP_STRIP_LENGTH -1));
-        outer = new OuterStrip(buffer.createView(0, OUTER_STRIP_LENGTH - 1));
+        top = new TopStrip(buffer.createView(0, TOP_STRIP_LENGTH -1));
+        outer = new OuterStrip(buffer.createView(TOP_STRIP_LENGTH, TOP_STRIP_LENGTH+OUTER_STRIP_LENGTH - 1));
     }
     public static void periodic() {
         top.periodic();
