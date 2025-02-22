@@ -35,8 +35,15 @@ public class LightStripS {
     private static final int TOP_STRIP_LENGTH = 192 - 138+6;
     private static AddressableLED led = new AddressableLED(5);
     private static AddressableLEDBuffer buffer = new AddressableLEDBuffer(OUTER_STRIP_LENGTH + TOP_STRIP_LENGTH);
+    /**
+     * The LED strip section on the top of the sponsor panel
+     */
     public static final TopStrip top;
+    /**
+     * The LED strip section along the outer edge of the sponsor panel
+     */
     public static final OuterStrip outer;
+    
     static {
         led.setLength(buffer.getLength());
 

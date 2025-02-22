@@ -27,6 +27,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 public class TopStrip {
+
+    /**Enumerator of states for the top LED strip. States higher in the list have priority */
     public enum TopStates {
         Default(
                 solid(Color.kBlue).atBrightness(Value.of(0.75)));
@@ -53,6 +55,11 @@ public class TopStrip {
         m_states.add(state);
     }
 
+    /**
+     * 
+     * @param state The requested state of the top led strip when the method is called
+     * @return a run Command that calls the {@code requestState()} method
+     */
     public Command stateC(Supplier<TopStates> state) {
         return Commands.run(() -> requestState(state.get())).ignoringDisable(true);
     }
