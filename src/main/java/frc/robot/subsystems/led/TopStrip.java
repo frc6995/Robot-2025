@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 public class TopStrip {
     public enum TopStates {
         Default(
-                solid(Color.kBlue).atBrightness(Value.of(0.75)));
+                solid(Color.kBlue).atBrightness(Value.of(1)));
     
         public LEDPattern applier;
     

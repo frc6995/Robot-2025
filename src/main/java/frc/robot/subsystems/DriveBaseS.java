@@ -384,7 +384,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
   @NotLogged
   public ChassisSpeeds getFieldRelativeLinearSpeedsMPS() {
-    return state().Speeds;
+    return ChassisSpeeds.fromRobotRelativeSpeeds(state().Speeds,state().Pose.getRotation());
   }
 
   private double[] emptyFeedForwards = new double[] { 0, 0, 0, 0 };
@@ -413,7 +413,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     return pidToPoseC(() -> poseSup);
   }
 
-  private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(new Constraints(1, 4));
+  private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(new Constraints(1, 1));
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(new Constraints(3, 6));
 
   private class Capture<T> {
@@ -452,12 +452,11 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           // initial velocity: component of velocity straight towards end
 
           state.position = dist.inner;
-          state.velocity = Math.min(
-              0,
-              -Pathing.velocityTowards(
+          state.velocity = 
+              Pathing.velocityTowards(
                   start.inner,
                   getFieldRelativeLinearSpeedsMPS(),
-                  end.inner.getTranslation()));
+                  end.inner.getTranslation());
           // Initial state of rotation
           dtheta.inner = end.inner.getRotation().minus(start.inner.getRotation()).getRadians();
           rotationState.position = dtheta.inner;

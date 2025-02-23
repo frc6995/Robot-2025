@@ -31,7 +31,7 @@ public class OuterStrip {
     public enum OuterStates {
         BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(0.25))),
         RedAlliance(solid(Color.kRed).atBrightness(Value.of(0.25))),
-        Default(solid(Color.kGreen).atBrightness(Value.of(0.25)));
+        Default(solid(Color.kGreen).atBrightness(Value.of(1)));
     
         public LEDPattern applier;
     
