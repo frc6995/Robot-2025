@@ -542,4 +542,13 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   public Trigger safeToMoveArm(Supplier<Pose2d> poseSup) {
     return atPose(poseSup, Units.inchesToMeters(36), 2*Math.PI);
   }
+
+  public Trigger safeToReefAlign(Supplier<Pose2d> poseSup) {
+    return atPose(poseSup, Units.inchesToMeters(36), 2*Math.PI);
+  }
+
+public Command goToPosition(Supplier<Pose2d> target) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'goToPosition'");
+}
 }
