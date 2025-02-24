@@ -92,6 +92,7 @@ public class Autos {
     new Trigger(() -> DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
     drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
     drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
+    drivetrainSafeToAllignTrig = m_drivebase.safeToReefAlign(this.offsetSelectedReefPose);
     m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
     // m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
 
@@ -315,16 +316,32 @@ public class Autos {
 
   private Command preMoveUntilTarget(Supplier<Pose2d> target, ArmPosition finalPosition) {
     return sequence(
+
         m_arm.goToPosition(finalPosition.premove())
             .until(m_drivebase.safeToMoveArm(target))
             .onlyIf(m_drivebase.safeToMoveArm(target).negate()),
         m_arm.goToPosition(finalPosition));
   }
 
+  private Command safeToReefAlign(Supplier<Pose2d> target) {
+    return sequence(
+
+        m_drivebase.goToPosition(target)
+            .until(m_drivebase.safeToReefAlign(target))
+            .onlyIf(m_drivebase.safeToReefAlign(target).negate()));
+  }
+
+public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
+  m_drivebase.safeToReefAlign(this::selectedReefPose);
+  return frc.robot.Autos.safeToReefAlign();
+}
+
   @Logged
   private Trigger drivetrainAtReefTargetTrig;
   @Logged
   private Trigger drivetrainCloseMoveArmTrig;
+  @Logged
+  public Trigger drivetrainSafeToAllignTrig;
 
   public Command autoScore() {
     var target = offsetSelectedReefPose;
