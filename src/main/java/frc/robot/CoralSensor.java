@@ -45,7 +45,7 @@ public class CoralSensor {
     public class CoralSensorConstants {
         public static final int CAN_ID = 52;
         public static final double MAX_DISTANCE = 0.39;
-        public static final double CENTER_DISTANCE = 0.179;
+        public static final double CENTER_DISTANCE = 0.179 - Units.inchesToMeters(0.7);
     }
     public boolean hasCoral(){
         return rawDistanceMeter() < CoralSensorConstants.MAX_DISTANCE - Units.inchesToMeters(3);

@@ -92,7 +92,7 @@ public class Autos {
     new Trigger(() -> DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
     drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
     drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
-    drivetrainSafeToAllignTrig = m_drivebase.safeToReefAlign(this.offsetSelectedReefPose);
+    drivetrainSafeToAlignTrig = m_drivebase.safeToReefAlign(this.offsetSelectedReefPose);
     m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
     // m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
 
@@ -331,9 +331,9 @@ public class Autos {
             .onlyIf(m_drivebase.safeToReefAlign(target).negate()));
   }
 
-public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
-  m_drivebase.safeToReefAlign(this::selectedReefPose);
-  return frc.robot.Autos.safeToReefAlign();
+
+public Trigger safeToReefAlign(){
+  return m_drivebase.safeToReefAlign(this::selectedReefPose);
 }
 
   @Logged
@@ -341,7 +341,7 @@ public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
   @Logged
   private Trigger drivetrainCloseMoveArmTrig;
   @Logged
-  public Trigger drivetrainSafeToAllignTrig;
+  public Trigger drivetrainSafeToAlignTrig;
 
   public Command autoScore() {
     var target = offsetSelectedReefPose;
@@ -372,7 +372,7 @@ public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
   }
 
   private double bargeTargetX() {
-    final double blueX = 8;
+    final double blueX = 7.1;
     return AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(blueX) : blueX;
   }
 

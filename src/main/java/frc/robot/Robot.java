@@ -157,15 +157,6 @@ public class Robot extends TimedRobot {
 
     configureDriverController();
 
-    // m_driverController.rightTrigger().whileTrue(m_drivebaseS.driveToPoseSupC(m_autos.offsetSelectedReefPose));
-    // m_driverController.a().whileTrue(m_drivebaseS.driveToPoseSupC(POI.SL3::flippedPose));
-    // m_driverController.leftTrigger().whileTrue(m_arm.mainPivotS.voltage(m_arm.mainPivotS::getKgVolts));
-    // m_driverController.y().onTrue(m_arm.goToPosition(Arm.Positions.L3.premove()));
-    // m_driverController.b().whileTrue(m_arm.goToPosition(Arm.Positions.L3));
-    // m_driverController.x().onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
-    // m_driverController.leftBumper().whileTrue(m_hand.inCoral().until(m_autos::hasCoral));
-    // m_driverController.rightBumper().whileTrue(m_hand.outCoral());
-
     m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
       m_arm.mainPivotS.coast()
     ).whileTrue(m_climbHookS.coast());
@@ -178,7 +169,6 @@ public class Robot extends TimedRobot {
         m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
     configureOperatorController();
     DriverStation.silenceJoystickConnectionWarning(true);
-    boolean doingSysId = false;
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
@@ -188,7 +178,7 @@ public class Robot extends TimedRobot {
         m_climbHookS.release().withTimeout(5)
     );
     m_operatorBoard.center().onTrue(m_climbHookS.clamp())
-    .whileTrue(waitSeconds(3).andThen(
+    .whileTrue(waitSeconds(2).andThen(
       parallel(
         m_arm.mainPivotS.voltage(()->-2),
         waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(50))

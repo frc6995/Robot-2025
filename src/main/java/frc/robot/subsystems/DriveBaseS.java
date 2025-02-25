@@ -16,18 +16,20 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import frc.robot.util.TrapezoidProfile;
+import frc.robot.util.TrapezoidProfile.Constraints;
+import frc.robot.util.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
@@ -74,7 +76,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private final PIDController m_pathYController = new PIDController(10, 0, 0);
   private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
   public final ProfiledPIDController m_profiledThetaController = new ProfiledPIDController(7, 0, 0,
-      new TrapezoidProfile.Constraints(8, 12));
+      new edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints(8, 12));
   private final Vision m_vision = new Vision(this::addVisionMeasurement, () -> state().Pose);
 
   public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
@@ -413,7 +415,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     return pidToPoseC(() -> poseSup);
   }
 
-  private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(new Constraints(1, 1));
+  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 1);
+  private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(new Constraints(2, 1));
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(new Constraints(3, 6));
 
   private class Capture<T> {
@@ -430,6 +433,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   public Command driveToPoseSupC(Supplier<Pose2d> poseSupplier) {
     TrapezoidProfile.State state = new State(0, 0);
     TrapezoidProfile.State rotationState = new State(0, 0);
+    TrapezoidProfile.State rotationSetpoint = new State(0,0);
     Capture<Pose2d> start = new Capture<Pose2d>(new Pose2d());
     Capture<Pose2d> end = new Capture<Pose2d>(new Pose2d());
     Capture<Double> dist = new Capture<Double>(1.0);
@@ -453,23 +457,36 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
           state.position = dist.inner;
           state.velocity = 
+          MathUtil.clamp(
               Pathing.velocityTowards(
                   start.inner,
                   getFieldRelativeLinearSpeedsMPS(),
-                  end.inner.getTranslation());
+                  end.inner.getTranslation()), -driveToPoseConstraints.maxVelocity, driveToPoseConstraints.maxVelocity);
           // Initial state of rotation
           dtheta.inner = end.inner.getRotation().minus(start.inner.getRotation()).getRadians();
           rotationState.position = dtheta.inner;
           rotationState.velocity = state().Speeds.omegaRadiansPerSecond;
           time.reset();
           time.start();
+          SmartDashboard.putNumber("driveToPoseTransInterp", state.position);
+          SmartDashboard.putNumber("driveToPoseRotationInterp", state.position);
+          SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
+          SmartDashboard.putNumber("driveToPoseRotationDist", dtheta.inner);
         })
         .andThen(
             run(
                 () -> {
-                  var setpoint = driveToPoseProfile.calculate(time.get(), state, driveToPoseState);
+                  var setpoint = driveToPoseProfile.calculate(0.02, state, driveToPoseState);
+                  state.position = setpoint.position;
+                  state.velocity = setpoint.velocity;
                   var rotSetpoint = driveToPoseRotationProfile.calculate(
-                      time.get(), rotationState, driveToPoseRotationState);
+                      0.02, rotationState, driveToPoseRotationState);
+                  rotationState.position = rotSetpoint.position;
+                  rotationState.velocity = rotSetpoint.velocity;
+                  SmartDashboard.putNumber("driveToPoseTransInterp", setpoint.position);
+                  SmartDashboard.putNumber("driveToPoseRotationInterp", rotSetpoint.position);
+                  SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
+                  SmartDashboard.putNumber("driveToPoseRotationDist", dtheta.inner);
                   var startPose = start.inner;
 
                   var interpTrans = end.inner
