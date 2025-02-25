@@ -27,9 +27,17 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 public class TopStrip {
+
+    public TopStates previousState = TopStates.Default;
+
+    /**Enumerator of states for the top LED strip. States higher in the list have priority */
     public enum TopStates {
+        CoastMode(solid(Color.kAquamarine).atBrightness(Value.of(0.75))),
+        Intaked(solid(Color.kWhite).blink(Seconds.of(0.125))),
+        ReadyToIntake(solid(Color.kWhite).atBrightness(Value.of(0.75))),
+        Climbing(rainbow(255, 255)),
         Default(
-                solid(Color.kBlue).atBrightness(Value.of(1)));
+                solid(Color.kGreen).atBrightness(Value.of(1)));
     
         public LEDPattern applier;
     
@@ -53,6 +61,11 @@ public class TopStrip {
         m_states.add(state);
     }
 
+    /**
+     * 
+     * @param state The requested state of the top led strip when the method is called
+     * @return a run Command that calls the {@code requestState()} method
+     */
     public Command stateC(Supplier<TopStates> state) {
         return Commands.run(() -> requestState(state.get())).ignoringDisable(true);
     }
@@ -70,6 +83,8 @@ public class TopStrip {
         TopStates state = m_states.first();
         // spark.set(m_states.first().lightSpeed);
         state.applier.applyTo(led);
+
+        previousState = state;
         // Do other things with the buffer
         m_states.removeAll(Set.of(TopStates.values()));
     }
@@ -77,4 +92,5 @@ public class TopStrip {
     public TopStrip(AddressableLEDBufferView view) {
         led = view;
     }
+
 }

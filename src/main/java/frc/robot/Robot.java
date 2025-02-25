@@ -23,6 +23,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -55,6 +56,7 @@ import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 import frc.robot.subsystems.led.LightStripS;
+import frc.robot.subsystems.led.OuterStrip.OuterStates;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.subsystems.NoneHandS;
 import frc.robot.subsystems.Hand;
@@ -167,7 +169,7 @@ public class Robot extends TimedRobot {
     // m_driverController.rightBumper().whileTrue(m_hand.outCoral());
 
     m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
-      m_arm.mainPivotS.coast()
+      parallel(m_arm.mainPivotS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
     ).whileTrue(m_climbHookS.coast());
     m_driverController.back().onTrue(m_climbHookS.release().withTimeout(5));
     m_driverController.start().and(RobotModeTriggers.disabled())
@@ -216,6 +218,7 @@ public class Robot extends TimedRobot {
           )))
         .and(inWorkshop.negate())
         .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
+
     // Drive and autoalign to barge
     m_driverController.y().and(inWorkshop.negate())
         .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
@@ -264,7 +267,6 @@ public class Robot extends TimedRobot {
     // autoalign to deep cage
     m_driverController.start().and(inWorkshop.negate())
         .whileTrue(m_autos.alignToClimb());
-    // execute cage climb
 
     m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
 
@@ -337,7 +339,16 @@ public class Robot extends TimedRobot {
     // pdh.update();
     CommandScheduler.getInstance().run();
     LightStripS.periodic();
-    LightStripS.top.requestState(TopStates.Default);
+    DriverStation.getAlliance().ifPresent(alliance->{
+      if (alliance == Alliance.Red) {
+        LightStripS.outer.requestState(
+            
+        OuterStates.RedAlliance);
+      } else {
+        LightStripS.outer.requestState(OuterStates.BlueAlliance);
+      }
+    });
+
   }
 
   private final Rotation3d coral_hand_rotation = new Rotation3d(0, Units.degreesToRadians(20), 0);

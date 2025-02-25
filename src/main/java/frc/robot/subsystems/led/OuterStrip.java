@@ -28,9 +28,13 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 public class OuterStrip {
 
+    /**Enumerator of states for the Outer LED strip. States higher in the list have priority */
     public enum OuterStates {
-        BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(0.25))),
-        RedAlliance(solid(Color.kRed).atBrightness(Value.of(0.25))),
+        Climbing(rainbow(255, 255)),
+        /**solid blue */
+        BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(1))),
+        /**solid red */
+        RedAlliance(solid(Color.kRed).atBrightness(Value.of(1))),
         Default(solid(Color.kGreen).atBrightness(Value.of(1)));
     
         public LEDPattern applier;
@@ -63,6 +67,11 @@ public class OuterStrip {
         m_states.add(state);
     }
 
+    /**
+     * 
+     * @param state The requested state of the outer led strip when the method is called
+     * @return a run Command that calls the {@code requestState()} method
+     */
     public Command stateC(Supplier<OuterStates> state) {
         return Commands.run(() -> requestState(state.get())).ignoringDisable(true);
     }

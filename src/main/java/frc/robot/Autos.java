@@ -36,6 +36,9 @@ import frc.robot.subsystems.Hand;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
+import frc.robot.subsystems.led.LightStripS;
+import frc.robot.subsystems.led.OuterStrip.OuterStates;
+import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
 
@@ -368,7 +371,9 @@ public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
         new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
         new ScheduleCommand(
             m_hand.inCoral().until(this::hasCoral).andThen(
-                m_hand.inCoral().withTimeout(0.5))));
+                m_hand.inCoral().withTimeout(0.5)).andThen(
+                  LightStripS.top.stateC(()->TopStates.Intaked)).withTimeout(1).andThen(
+                    LightStripS.top.stateC(()->LightStripS.top.previousState))));
   }
 
   private double bargeTargetX() {
@@ -487,8 +492,13 @@ public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
   }
 
   public Command climb() {
-    return parallel(m_ClimbHookS.clamp(), m_arm.Climb(),
-        sequence(waitUntil(m_arm::readyToClimb),
-            m_ArmBrakeS.brake()));
+    return parallel(
+      m_ClimbHookS.clamp(), m_arm.Climb(),
+      LightStripS.top.stateC(()->TopStates.Climbing),
+      LightStripS.outer.stateC(()->OuterStates.Climbing),
+        sequence(
+          waitUntil(m_arm::readyToClimb),
+            m_ArmBrakeS.brake())
+    );
   }
 }

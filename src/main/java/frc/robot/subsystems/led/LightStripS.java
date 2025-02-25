@@ -4,30 +4,8 @@
 
 package frc.robot.subsystems.led;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.AddressableLEDBufferView;
-import edu.wpi.first.wpilibj.LEDPattern;
-import static edu.wpi.first.wpilibj.LEDPattern.*;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Value;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
-
 
 public class LightStripS {
 
@@ -35,8 +13,15 @@ public class LightStripS {
     private static final int TOP_STRIP_LENGTH = 192 - 138+6;
     private static AddressableLED led = new AddressableLED(5);
     private static AddressableLEDBuffer buffer = new AddressableLEDBuffer(OUTER_STRIP_LENGTH + TOP_STRIP_LENGTH);
+    /**
+     * The LED strip section on the top of the sponsor panel
+     */
     public static final TopStrip top;
+    /**
+     * The LED strip section along the outer edge of the sponsor panel
+     */
     public static final OuterStrip outer;
+    
     static {
         led.setLength(buffer.getLength());
 
