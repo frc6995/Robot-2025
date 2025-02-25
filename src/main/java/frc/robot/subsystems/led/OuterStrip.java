@@ -30,6 +30,7 @@ public class OuterStrip {
 
     /**Enumerator of states for the Outer LED strip. States higher in the list have priority */
     public enum OuterStates {
+        Climbing(rainbow(255, 255)),
         /**solid blue */
         BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(0.25))),
         /**solid red */

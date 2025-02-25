@@ -200,6 +200,7 @@ public class Robot extends TimedRobot {
         .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR))
         .and(inWorkshop.negate())
         .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
+        
     // Drive and autoalign to barge
     m_driverController.y().and(inWorkshop.negate())
         .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
@@ -213,6 +214,7 @@ public class Robot extends TimedRobot {
             );
       m_driverController.y().and(inWorkshop)
       .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE));
+
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
     m_driverController.x().whileTrue(
         defer(() -> m_drivebaseS.driveToPoseSupC(m_autos.closestSide().algae::flippedPose), Set.of(m_drivebaseS))
@@ -244,7 +246,6 @@ public class Robot extends TimedRobot {
     // autoalign to deep cage
     m_driverController.start().and(inWorkshop.negate())
         .whileTrue(m_autos.alignToClimb());
-    // execute cage climb
 
     m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
 
