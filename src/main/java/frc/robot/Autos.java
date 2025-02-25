@@ -190,7 +190,7 @@ public class Autos {
         .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
   }
 
-  private POI selectedReefPOI() {
+  public POI selectedReefPOI() {
     return switch (m_board.getBranch()) {
       case 0 -> POI.A;
       case 1 -> POI.B;
@@ -333,11 +333,11 @@ public class Autos {
             .until(m_drivebase.safeToReefAlign(target))
             .onlyIf(m_drivebase.safeToReefAlign(target).negate()));
   }
-
-public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
+// TODO: implement safetoreefalign
+/*public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
   m_drivebase.safeToReefAlign(this::selectedReefPose);
   return frc.robot.Autos.safeToReefAlign();
-}
+}*/
 
   @Logged
   private Trigger drivetrainAtReefTargetTrig;
