@@ -66,6 +66,8 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
@@ -86,14 +88,14 @@ public class Robot extends TimedRobot {
   private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
-  private final Hand m_hand = new RealHandS();
+  private final RealHandS m_hand = new RealHandS();
   private final ClimbHookS m_climbHookS = new ClimbHookS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
   private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_climbHookS, m_armBrakeS,
       (traj, isStarting) -> {
       });
-  private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
-
+  private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric().withDriveRequestType(DriveRequestType.Velocity);
+  private boolean allHomed = false;
   // private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
   private final DriverDisplay m_driverDisplay = new DriverDisplay();
@@ -102,6 +104,10 @@ public class Robot extends TimedRobot {
 
   public Pose3d[] components() {
     return RobotVisualizer.getComponents();
+  }
+
+  private void setAllHomed(boolean homed) {
+    this.allHomed = homed;
   }
 
   private boolean realRobotIsInWorkshop = true;
@@ -122,7 +128,8 @@ public class Robot extends TimedRobot {
         .setHasCoralSupplier(m_autos::hasCoral)
         .setBranchSupplier(m_operatorBoard::getBranch)
         .setClimbSupplier(m_autos::selectedClimbNumber)
-        .setLevelSupplier(m_operatorBoard::getLevel);
+        .setLevelSupplier(m_operatorBoard::getLevel)
+        .setAllHomedSupplier(()->this.allHomed);
     AlertsUtil.bind(
         new Alert("Driver Xbox Disconnect", AlertType.kError),
         () -> !m_driverController.isConnected());
@@ -166,7 +173,10 @@ public class Robot extends TimedRobot {
     ).whileTrue(m_climbHookS.coast());
     m_driverController.back().onTrue(m_climbHookS.release().withTimeout(5));
     m_driverController.start().and(RobotModeTriggers.disabled())
-        .onTrue(m_arm.elevatorS.home().alongWith(m_arm.wristS.home()));
+        .onTrue(parallel(
+          m_arm.elevatorS.home(),
+          m_arm.wristS.home(),
+          runOnce(()->this.setAllHomed(true)).ignoringDisable(true)).ignoringDisable(true));
         m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
     configureOperatorController();
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -199,13 +209,20 @@ public class Robot extends TimedRobot {
     // If not in workshop, drive to processor.
     m_driverController.b()
         .onTrue(m_hand.inAlgae())
-        .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR))
+        .onTrue(sequence(
+          m_arm.goToPosition(Arm.Positions.PRE_SCORE_PROCESSOR)
+            .until(()->m_arm.atPosition(Arm.Positions.PRE_SCORE_PROCESSOR))
+            .withTimeout(2)
+          .andThen(
+            m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR)
+          )))
         .and(inWorkshop.negate())
         .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
 
     // Drive and autoalign to barge
     m_driverController.y().and(inWorkshop.negate())
         .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
+        .onTrue(m_hand.inAlgae())
         .whileTrue(
             parallel(
               m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4),
@@ -215,13 +232,15 @@ public class Robot extends TimedRobot {
             )
             );
       m_driverController.y().and(inWorkshop)
-      .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE));
-
+      .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE))
+      .onTrue(m_hand.inAlgae());
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
-    m_driverController.x().whileTrue(
-        defer(() -> m_drivebaseS.driveToPoseSupC(m_autos.closestSide().algae::flippedPose), Set.of(m_drivebaseS))
+    m_driverController.x()
+    // .whileTrue(
+    //     defer(() -> m_drivebaseS.driveToPoseSupC(m_autos.closestSide().algae::flippedPose), Set.of(m_drivebaseS))
 
-    ).whileTrue(
+    // )
+    .whileTrue(
         defer(() -> new ScheduleCommand(
             m_arm.goToPosition(m_autos.closestSide().algaeArm)),
             Set.of(m_arm.mainPivotS, m_arm.elevatorS, m_arm.wristS)))
@@ -232,7 +251,7 @@ public class Robot extends TimedRobot {
         m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
     m_driverController.rightBumper().onTrue(
-        m_hand.outCoral().withTimeout(0.5).andThen(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)));
+        m_hand.outCoral().withTimeout(0.5).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))));
 
     // score algae
     m_driverController.leftTrigger().whileTrue(parallel(

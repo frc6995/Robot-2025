@@ -95,6 +95,7 @@ public class Autos {
     new Trigger(() -> DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
     drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
     drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
+    drivetrainSafeToAllignTrig = m_drivebase.safeToReefAlign(this.offsetSelectedReefPose);
     m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
     // m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
 
@@ -318,16 +319,32 @@ public class Autos {
 
   private Command preMoveUntilTarget(Supplier<Pose2d> target, ArmPosition finalPosition) {
     return sequence(
+
         m_arm.goToPosition(finalPosition.premove())
             .until(m_drivebase.safeToMoveArm(target))
             .onlyIf(m_drivebase.safeToMoveArm(target).negate()),
         m_arm.goToPosition(finalPosition));
   }
 
+  private Command safeToReefAlign(Supplier<Pose2d> target) {
+    return sequence(
+
+        m_drivebase.goToPosition(target)
+            .until(m_drivebase.safeToReefAlign(target))
+            .onlyIf(m_drivebase.safeToReefAlign(target).negate()));
+  }
+
+public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
+  m_drivebase.safeToReefAlign(this::selectedReefPose);
+  return frc.robot.Autos.safeToReefAlign();
+}
+
   @Logged
   private Trigger drivetrainAtReefTargetTrig;
   @Logged
   private Trigger drivetrainCloseMoveArmTrig;
+  @Logged
+  public Trigger drivetrainSafeToAllignTrig;
 
   public Command autoScore() {
     var target = offsetSelectedReefPose;
@@ -404,10 +421,10 @@ public class Autos {
   }
   public Command flexAuto(POI start, POI intake, POI firstScore, POI... rest)
       throws NoSuchElementException {
-    final ArmPosition scoringPosition = Arm.Positions.L4;
+    final ArmPosition scoringPosition = autoScoringPosition;
     var routine = m_autoFactory.newRoutine("JKLA_SL3");
     var toReef = start.toChecked(firstScore, routine)
-        .map(this::bindL4)
+        .map(this::bindAutoScorePremove)
         .get();
     
     // Set up the start->first score -> intake
@@ -436,15 +453,17 @@ public class Autos {
       bindScore(toReef, scoringPosition, Optional.of(toIntake));
 
       var nextToReef = intake.toChecked(pair.getSecond(), routine)
-      .map(this::bindL4)
+      .map(this::bindAutoScorePremove)
       .get();
+      var intakeFinalPose = toIntake.getRawTrajectory().getFinalPose(false).get();
+      var recieveCoral= RobotBase.isSimulation() ? sequence(waitSeconds(1), runOnce(()->m_coralSensor.setHasCoral(true))) : waitUntil(this::hasCoral);
       toIntake
-          .done()
+      .atTranslation(
+        intakeFinalPose.getTranslation(), Units.inchesToMeters(24))
           .onTrue(
               sequence(
                   deadline(
-                      // waitUntil(this::hasCoral),
-                      waitSeconds(1),
+                      recieveCoral,
                       m_drivebase.driveToPoseSupC(intake::flippedPose)),
                   nextToReef.spawnCmd()
       ));
@@ -457,10 +476,11 @@ public class Autos {
   private final double TIME_INTAKE_TO_L4 = 1.4;
   private final double AUTO_OUTTAKE_TIME = 0.25;
 
-  private AutoTrajectory bindL4(AutoTrajectory trajectory) {
+  private final ArmPosition autoScoringPosition = Arm.Positions.L4;
+  private AutoTrajectory bindAutoScorePremove(AutoTrajectory trajectory) {
     trajectory
         .atTime(Math.max(0, trajectory.getRawTrajectory().getTotalTime() - TIME_INTAKE_TO_L4))
-        .onTrue(m_arm.goToPosition(Arm.Positions.L4.premove()));
+        .onTrue(m_arm.goToPosition(autoScoringPosition.premove()));
     return trajectory;
   }
 

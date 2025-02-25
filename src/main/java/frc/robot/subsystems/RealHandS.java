@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -20,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.AlgaePivotS.AlgaePivotConstants;
 
+@Logged
 public class RealHandS extends Hand {
     public final MechanismLigament2d TOP_ROLLER =
       new MechanismLigament2d(
@@ -35,12 +37,12 @@ public class RealHandS extends Hand {
 
   public static final double OUT_CORAL_VOLTAGE = -6;
 
-  public static final double IN_ALGAE_VOLTAGE = -6;
+  public static final double IN_ALGAE_VOLTAGE = -8;
 
-  public static final double OUT_ALGAE_VOLTAGE = 6;
+  public static final double OUT_ALGAE_VOLTAGE = 10;
 
   public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
-    config.CurrentLimits.withStatorCurrentLimit(25);
+    config.CurrentLimits.withStatorCurrentLimit(70);
     return config;
   }
   }

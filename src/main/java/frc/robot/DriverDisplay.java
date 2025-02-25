@@ -16,7 +16,7 @@ public class DriverDisplay {
     private DoublePublisher maxTimeEntry =
         NetworkTableInstance.getDefault().getDoubleTopic("/DriverDisplay/maxTime").publish();
     private BooleanPublisher hasCoralEntry =
-        NetworkTableInstance.getDefault().getBooleanTopic("/DriverDisplay/hasCoral").publish();
+        NetworkTableInstance.getDefault().getBooleanTopic("/DriverDisplay/hasNote").publish();
     private BooleanSupplier hasCoralSupplier = ()->false;
     public DriverDisplay setHasCoralSupplier(BooleanSupplier hasCoralSupplier) {
         this.hasCoralSupplier = hasCoralSupplier;
@@ -24,7 +24,7 @@ public class DriverDisplay {
     }
 
     private BooleanPublisher allHomed =
-        NetworkTableInstance.getDefault().getBooleanTopic("/DriverDisplay/allHomed").publish();
+        NetworkTableInstance.getDefault().getBooleanTopic("/DriverDisplay/intakeHomed").publish();
     private BooleanSupplier allHomedSupplier = ()->false;
     public DriverDisplay setAllHomedSupplier(BooleanSupplier allHomed) {
         this.allHomedSupplier = allHomed;
