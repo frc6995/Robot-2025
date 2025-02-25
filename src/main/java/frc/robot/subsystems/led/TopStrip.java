@@ -37,7 +37,7 @@ public class TopStrip {
         ReadyToIntake(solid(Color.kWhite).atBrightness(Value.of(0.75))),
         Climbing(rainbow(255, 255)),
         Default(
-                solid(Color.kBlue).atBrightness(Value.of(0.75)));
+                solid(Color.kGreen).atBrightness(Value.of(0.75)));
     
         public LEDPattern applier;
     
