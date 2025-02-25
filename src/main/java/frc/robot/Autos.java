@@ -485,7 +485,7 @@ public Trigger safeToReefAlign(){
   }
 
   private AutoTrajectory bindIntake(AutoTrajectory trajectory) {
-    trajectory.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
+    //trajectory.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
     trajectory.atTime(1)
         .onTrue(m_hand.inCoral().until(new Trigger(this::hasCoral)).andThen(m_hand.inCoral().withTimeout(0.5)));
     return trajectory;

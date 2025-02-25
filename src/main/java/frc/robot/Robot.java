@@ -382,15 +382,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    // if (RobotBase.isSimulation()) {
-    //   Commands.waitSeconds(15.3)
-    //       .andThen(
-    //           () -> {
-    //             DriverStationSim.setEnabled(false);
-    //             DriverStationSim.notifyNewData();
-    //           })
-    //       .schedule();
-    // }
+    if (RobotBase.isSimulation()) {
+      Commands.waitSeconds(15.3)
+          .andThen(
+              () -> {
+                DriverStationSim.setEnabled(false);
+                DriverStationSim.notifyNewData();
+              }).onlyWhile(DriverStation::isAutonomousEnabled)
+          .schedule();
+    }
   }
 
   /** This function is called periodically during autonomous. */

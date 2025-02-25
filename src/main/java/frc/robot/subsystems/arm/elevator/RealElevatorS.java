@@ -90,7 +90,7 @@ public class RealElevatorS extends Elevator {
           .withKA(K_A.in(VoltsPerRotationPerSecondSquared))
           .withKP(1)
           .withKD(0.25);
-      config.MotionMagic.withMotionMagicAcceleration(60)
+      config.MotionMagic.withMotionMagicAcceleration(120)
           .withMotionMagicCruiseVelocity(24);
       return config;
     }
