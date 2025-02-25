@@ -356,7 +356,7 @@ public class Autos {
             m_hand.inCoral().until(this::hasCoral).andThen(
                 m_hand.inCoral().withTimeout(0.5)).andThen(
                   LightStripS.top.stateC(()->TopStates.Intaked)).withTimeout(1).andThen(
-                    LightStripS.top.stateC(()->LightStripS.top.previouState))));
+                    LightStripS.top.stateC(()->LightStripS.top.previousState))));
   }
 
   private double bargeTargetX() {

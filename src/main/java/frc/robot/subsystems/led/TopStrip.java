@@ -28,10 +28,11 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 public class TopStrip {
 
-    public TopStates previouState = TopStates.Default;
+    public TopStates previousState = TopStates.Default;
 
     /**Enumerator of states for the top LED strip. States higher in the list have priority */
     public enum TopStates {
+        CoastMode(solid(Color.kAquamarine).atBrightness(Value.of(0.75))),
         Intaked(solid(Color.kWhite).blink(Seconds.of(0.125))),
         ReadyToIntake(solid(Color.kWhite).atBrightness(Value.of(0.75))),
         Climbing(rainbow(255, 255)),
@@ -57,7 +58,6 @@ public class TopStrip {
      * @param state The requested state of the robot when the method is called
      */
     public void requestState(TopStates state) {
-        previouState = m_states.first();
         m_states.add(state);
     }
 
@@ -83,6 +83,8 @@ public class TopStrip {
         TopStates state = m_states.first();
         // spark.set(m_states.first().lightSpeed);
         state.applier.applyTo(led);
+
+        previousState = state;
         // Do other things with the buffer
         m_states.removeAll(Set.of(TopStates.values()));
     }

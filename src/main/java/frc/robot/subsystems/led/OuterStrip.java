@@ -32,10 +32,10 @@ public class OuterStrip {
     public enum OuterStates {
         Climbing(rainbow(255, 255)),
         /**solid blue */
-        BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(0.25))),
+        BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(0.75))),
         /**solid red */
-        RedAlliance(solid(Color.kRed).atBrightness(Value.of(0.25))),
-        Default(solid(Color.kGreen).atBrightness(Value.of(0.25)));
+        RedAlliance(solid(Color.kRed).atBrightness(Value.of(0.75))),
+        Default(solid(Color.kGreen).atBrightness(Value.of(0.75)));
     
         public LEDPattern applier;
     
