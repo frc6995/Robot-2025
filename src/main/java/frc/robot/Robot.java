@@ -416,29 +416,29 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     switch (m_autos.selectedReefPOI()) {
       case A:
-        LightStripS.outer.requestState(OuterStates.AB);
       case B:
         LightStripS.outer.requestState(OuterStates.AB);
+        break;
       case C:
-        LightStripS.outer.requestState(OuterStates.CD);
       case D:
         LightStripS.outer.requestState(OuterStates.CD);
+        break;
       case E:
-        LightStripS.outer.requestState(OuterStates.EF);
       case F:
         LightStripS.outer.requestState(OuterStates.EF);
+        break;
       case G:
-        LightStripS.outer.requestState(OuterStates.GH);
       case H:
         LightStripS.outer.requestState(OuterStates.GH);
+        break;
       case I:
-        LightStripS.outer.requestState(OuterStates.IJ);
       case J:
         LightStripS.outer.requestState(OuterStates.IJ);
+        break;
       case K:
-        LightStripS.outer.requestState(OuterStates.KL);
       case L:
         LightStripS.outer.requestState(OuterStates.KL);
+        break;
       default:
         LightStripS.outer.requestState(OuterStates.Default);
     }
