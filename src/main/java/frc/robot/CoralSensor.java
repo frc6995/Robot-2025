@@ -15,7 +15,7 @@ public class CoralSensor {
     private final TimeOfFlight tof = new TimeOfFlight(CoralSensorConstants.CAN_ID);
     private double simDistance = CoralSensorConstants.MAX_DISTANCE;
     public CoralSensor(){
-        tof.setRangingMode(RangingMode.Short, 500);
+        tof.setRangingMode(RangingMode.Short, 24);
         tof.setRangeOfInterest(8,8,12,12);
         new Trigger(()->DriverStation.getStickButton(4,1))
             .onTrue(Commands.runOnce(()->this.setHasCoral(true)).ignoringDisable(true));
@@ -36,7 +36,7 @@ public class CoralSensor {
     }
     public void setHasCoral(boolean hasCoral) {
         if (hasCoral) {
-            simDistance = CoralSensorConstants.CENTER_DISTANCE;
+            simDistance = CoralSensorConstants.CENTER_DISTANCE + 0.1;
         }
         else {
             simDistance = CoralSensorConstants.MAX_DISTANCE;
@@ -45,7 +45,7 @@ public class CoralSensor {
     public class CoralSensorConstants {
         public static final int CAN_ID = 52;
         public static final double MAX_DISTANCE = 0.39;
-        public static final double CENTER_DISTANCE = 0.179 - Units.inchesToMeters(0.7);
+        public static final double CENTER_DISTANCE = 0.179 - Units.inchesToMeters(0.7-0.6);
     }
     public boolean hasCoral(){
         return rawDistanceMeter() < CoralSensorConstants.MAX_DISTANCE - Units.inchesToMeters(3);

@@ -18,8 +18,7 @@
         },
         {
           "decKey": 87,
-          "incKey": 83,
-          "maxAbsValue": 0.5
+          "incKey": 83
         },
         {
           "decayRate": 0.0,

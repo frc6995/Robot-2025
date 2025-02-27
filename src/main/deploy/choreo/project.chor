@@ -88,11 +88,18 @@
      "val":5.355
     }
    },
+   "MAX_INTAKE_VEL":{
+    "dimension":"LinVel",
+    "var":{
+     "exp":"4 m / s",
+     "val":4.0
+    }
+   },
    "MAX_VEL":{
     "dimension":"LinVel",
     "var":{
-     "exp":"1 m / s",
-     "val":1.0
+     "exp":"2.5 m / s",
+     "val":2.5
     }
    }
   },

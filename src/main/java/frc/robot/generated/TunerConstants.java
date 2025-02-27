@@ -6,6 +6,7 @@ import static frc.robot.subsystems.DrivetrainSysId.*;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.hardware.*;
+import com.ctre.phoenix6.mechanisms.swerve.LegacySimSwerveDrivetrain.LegacySimSwerveModule;
 import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;

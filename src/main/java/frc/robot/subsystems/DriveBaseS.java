@@ -72,8 +72,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
       .withDriveRequestType(DriveRequestType.Velocity);
 
-  private final PIDController m_pathXController = new PIDController(10, 0, 0);
-  private final PIDController m_pathYController = new PIDController(10, 0, 0);
+  private final PIDController m_pathXController = new PIDController(14, 0, 0.2);
+  private final PIDController m_pathYController = new PIDController(14, 0, 0.2);
   private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
   public final ProfiledPIDController m_profiledThetaController = new ProfiledPIDController(7, 0, 0,
       new edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints(8, 12));
@@ -416,7 +416,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   /* DRIVE TO POSE using Trapezoid Profiles */
-  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 3);
+  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 1.5);
   private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(driveToPoseConstraints);
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(new Constraints(3, 6));
 

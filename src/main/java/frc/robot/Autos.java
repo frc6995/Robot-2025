@@ -96,14 +96,14 @@ public class Autos {
     drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
     drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
     drivetrainSafeToAlignTrig = m_drivebase.safeToReefAlign(this.offsetSelectedReefPose);
-    m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
-    // m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
+    // m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
+    // // m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
 
   }
 
   public void addAutos() {
-    autos.put("IJKL_FLEX", () -> flexAuto(POI.STI, POI.SL3, POI.I, POI.J, POI.K, POI.L));
-    // POI.J, POI.K, POI.L, POI.A));
+    autos.put("Left 3p (Home)", () -> flexAuto(POI.STI, POI.SL3, POI.I, POI.J, POI.K));
+    autos.put("Right 3p", () -> flexAuto(POI.STF, POI.SR3, POI.F, POI.E, POI.D));
 
     for (Entry<String, Supplier<Command>> entry : autos.entrySet()) {
       m_autoChooser.addCmd(entry.getKey(), entry.getValue());
@@ -347,18 +347,21 @@ public Trigger safeToReefAlign(){
   public Trigger drivetrainSafeToAlignTrig;
 
   public Command autoScore() {
-    var target = offsetSelectedReefPose;
+    
     return defer(
         () -> {
-          return deadline(
+          Pose2d target = offsetSelectedReefPose.get();
+          Supplier<Pose2d> targetSup = ()->target;
+          return parallel(
               waitUntil(
                   m_drivebase.atPose(target)
                       .and(
                           () -> m_arm.atPosition(selectedBranch())))
           // .andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
               ,
-              m_drivebase.driveToPoseSupC(offsetSelectedReefPose).asProxy(),
-              preMoveUntilTarget(target, selectedBranch()).asProxy()).andThen(
+              Commands.defer(()->{
+                return m_drivebase.driveToPoseSupC(targetSup);}, Set.of(m_drivebase)).asProxy(),
+              preMoveUntilTarget(targetSup, selectedBranch()).asProxy()).andThen(
           // new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
           ).asProxy();
         }, Set.of());
@@ -401,8 +404,11 @@ public Trigger safeToReefAlign(){
     var finalPoseFlipped = self.getFinalPose().get();
     System.out.println(DriverStation.getAlliance());
     System.out.println(finalPoseUnflipped);
+    // self.atTranslation(
+    //    finalPoseUnflipped.getTranslation(), Units.inchesToMeters(6))
+    //   .onTrue(m_arm.goToPosition(scoringPosition))
     self.atTranslation(
-       finalPoseUnflipped.getTranslation(), Units.inchesToMeters(24))
+       finalPoseUnflipped.getTranslation(), Units.inchesToMeters(6))
         .onTrue(print("Inside Scoring Radius"))
         .onTrue(m_arm.goToPosition(scoringPosition))
         .onTrue(
@@ -410,7 +416,7 @@ public Trigger safeToReefAlign(){
             alignAndDrop(
               sensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME
             ),
-            Commands.waitSeconds(AUTO_OUTTAKE_TIME),
+            //Commands.waitSeconds(AUTO_OUTTAKE_TIME),
             new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
             next.map((Function<AutoTrajectory, Command>) (nextTraj)->
               waitUntil(
@@ -458,8 +464,7 @@ public Trigger safeToReefAlign(){
       var intakeFinalPose = toIntake.getRawTrajectory().getFinalPose(false).get();
       var recieveCoral= RobotBase.isSimulation() ? sequence(waitSeconds(1), runOnce(()->m_coralSensor.setHasCoral(true))) : waitUntil(this::hasCoral);
       toIntake
-      .atTranslation(
-        intakeFinalPose.getTranslation(), Units.inchesToMeters(24))
+      .done()
           .onTrue(
               sequence(
                   deadline(
