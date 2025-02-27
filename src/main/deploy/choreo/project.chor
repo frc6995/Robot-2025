@@ -491,12 +491,12 @@
    },
    "SL3":{
     "x":{
-     "exp":"1.645925521850586 m - cos(SL3.heading) * CS_BACKUP",
-     "val":1.7131093761876155
+     "exp":"1.645925521850586 m - cos(SL3.heading) * CS_BACKUP - (2 in * sin(SL3.heading))",
+     "val":1.6720113128733682
     },
     "y":{
-     "exp":"7.444474220275879 m - sin(SL3.heading) * CS_BACKUP",
-     "val":7.352003577818822
+     "exp":"7.444474220275879 m - sin(SL3.heading) * CS_BACKUP + (2 in * cos(SL3.heading))",
+     "val":7.322144087002364
     },
     "heading":{
      "exp":"A_CS + 90 deg",
@@ -534,11 +534,11 @@
    "SR3":{
     "x":{
      "exp":"SL3.x",
-     "val":1.7131093761876155
+     "val":1.6720113128733682
     },
     "y":{
      "exp":"FieldWidth - SL3.y",
-     "val":0.6999964221811776
+     "val":0.7298559129976354
     },
     "heading":{
      "exp":"-SL3.heading",

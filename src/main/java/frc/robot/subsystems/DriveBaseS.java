@@ -16,18 +16,20 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import frc.robot.util.TrapezoidProfile;
+import frc.robot.util.TrapezoidProfile.Constraints;
+import frc.robot.util.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
@@ -74,7 +76,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private final PIDController m_pathYController = new PIDController(10, 0, 0);
   private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
   public final ProfiledPIDController m_profiledThetaController = new ProfiledPIDController(7, 0, 0,
-      new TrapezoidProfile.Constraints(8, 12));
+      new edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints(8, 12));
   private final Vision m_vision = new Vision(this::addVisionMeasurement, () -> state().Pose);
 
   public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
@@ -413,9 +415,12 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     return pidToPoseC(() -> poseSup);
   }
 
-  private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(new Constraints(1, 1));
+  /* DRIVE TO POSE using Trapezoid Profiles */
+  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 3);
+  private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(driveToPoseConstraints);
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(new Constraints(3, 6));
 
+  // For modifying goals from within a lambda
   private class Capture<T> {
     public T inner;
 
@@ -424,23 +429,34 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     }
   }
 
-  private TrapezoidProfile.State driveToPoseState = new State(0, 0);
-  private TrapezoidProfile.State driveToPoseRotationState = new State(0, 0);
+  private TrapezoidProfile.State driveToPoseGoal = new State(0, 0);
+  private TrapezoidProfile.State driveToPoseRotationGoal = new State(0, 0);
 
+  /**
+   * Drives to a pose with motion profiles on translation and rotation.
+   * The translation profile starts at dist(start,end) and drives toward 0. This state is then interpolated 
+   * between poses.
+   * 
+   * The rotation profile starts at start.heading and ends at end.heading, just like a profiled continuous heading controller.
+   * @param poseSupplier
+   * @return
+   */
   public Command driveToPoseSupC(Supplier<Pose2d> poseSupplier) {
     TrapezoidProfile.State state = new State(0, 0);
     TrapezoidProfile.State rotationState = new State(0, 0);
+
+    // The pose as of command start
     Capture<Pose2d> start = new Capture<Pose2d>(new Pose2d());
+    // The goal (populated from poseSupplier at command start)
     Capture<Pose2d> end = new Capture<Pose2d>(new Pose2d());
+    // Distance start-end in meters
     Capture<Double> dist = new Capture<Double>(1.0);
-    Capture<Double> dtheta = new Capture<Double>(0.0);
+    // Unit vector start->end
     Capture<Translation2d> normDirStartToEnd = new Capture<>(Translation2d.kZero);
-    Timer time = new Timer();
-    Trigger atPose = atPose(poseSupplier, Units.inchesToMeters(0.5), Units.degreesToRadians(1));
+    // Threshold for "close enough" to avoid microadjustments
+    Trigger atPose = atPose(()->end.inner, Units.inchesToMeters(0.5), Units.degreesToRadians(1));
     return runOnce(
         () -> {
-          // Reset controller
-          m_profiledThetaController.reset(getPoseHeading().getRadians());
           // save the start pose and target pose
           start.inner = getPose();
           end.inner = poseSupplier.get();
@@ -449,49 +465,76 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           dist.inner = normDirStartToEnd.inner.getNorm();
           normDirStartToEnd.inner = normDirStartToEnd.inner.div(dist.inner + 0.001);
           // initial position: distance from end
-          // initial velocity: component of velocity straight towards end
+          // initial velocity: component of velocity straight towards end (as a negative number)
 
           state.position = dist.inner;
+          // Pathing.velocityTowards is negative if approaching the target
           state.velocity = 
+          MathUtil.clamp(
               Pathing.velocityTowards(
                   start.inner,
                   getFieldRelativeLinearSpeedsMPS(),
-                  end.inner.getTranslation());
+                  end.inner.getTranslation()), -driveToPoseConstraints.maxVelocity, 0);
           // Initial state of rotation
-          dtheta.inner = end.inner.getRotation().minus(start.inner.getRotation()).getRadians();
-          rotationState.position = dtheta.inner;
+          driveToPoseRotationGoal.position = end.inner.getRotation().getRadians();
+          
+          rotationState.position = start.inner.getRotation().getRadians();
           rotationState.velocity = state().Speeds.omegaRadiansPerSecond;
-          time.reset();
-          time.start();
+          SmartDashboard.putNumber("driveToPoseTransInterp", state.position);
+          SmartDashboard.putNumber("driveToPoseRotationInterp", rotationState.position);
+          SmartDashboard.putNumber("driveToPoseTransInterpVel", state.velocity);
+          SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
+          SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
+
         })
         .andThen(
             run(
                 () -> {
-                  var setpoint = driveToPoseProfile.calculate(time.get(), state, driveToPoseState);
+                  var setpoint = driveToPoseProfile.calculate(0.02, state, driveToPoseGoal);
+                  state.position = setpoint.position;
+                  state.velocity = setpoint.velocity;
+                  // Rotation continuous input
+                  // Get error which is the smallest distance between goal and measurement
+                  double errorBound = Math.PI;
+                  var measurement = state().Pose.getRotation().getRadians();
+                  double goalMinDistance =
+                      MathUtil.inputModulus(driveToPoseRotationGoal.position-measurement, -errorBound, errorBound);
+                  double setpointMinDistance =
+                      MathUtil.inputModulus(rotationState.position - measurement, -errorBound, errorBound);
+
+                  // Recompute the profile goal with the smallest error, thus giving the shortest path. The goal
+                  // may be outside the input range after this operation, but that's OK because the controller
+                  // will still go there and report an error of zero. In other words, the setpoint only needs to
+                  // be offset from the measurement by the input range modulus; they don't need to be equal.
+                  driveToPoseRotationGoal.position = goalMinDistance + measurement;
+                  rotationState.position = setpointMinDistance + measurement;
+
                   var rotSetpoint = driveToPoseRotationProfile.calculate(
-                      time.get(), rotationState, driveToPoseRotationState);
+                      0.02, rotationState, driveToPoseRotationGoal);
+                  rotationState.position = rotSetpoint.position;
+                  rotationState.velocity = rotSetpoint.velocity;
+                  SmartDashboard.putNumber("driveToPoseTransInterp", setpoint.position);
+                  SmartDashboard.putNumber("driveToPoseRotationInterp", rotSetpoint.position);
+                  SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
+                  SmartDashboard.putNumber("driveToPoseTransInterpVel", state.velocity);
+                  SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
                   var startPose = start.inner;
 
                   var interpTrans = end.inner
                       .getTranslation()
                       .interpolate(startPose.getTranslation(), setpoint.position / dist.inner);
-                  var interpRot = end.inner
-                      .getRotation()
-                      .interpolate(
-                          startPose.getRotation(), rotSetpoint.position / dtheta.inner);
                   if (atPose.getAsBoolean()) {
                     this.setControl(idle);
                   } else {
                   followPath(
                       RepulsorFieldPlanner.sample(
                           interpTrans,
-                          interpRot,
+                          new Rotation2d(rotationState.position),
                           normDirStartToEnd.inner.getX() * -setpoint.velocity,
                           normDirStartToEnd.inner.getY() * -setpoint.velocity,
-                          -rotSetpoint.velocity)); // rotSetpoint.velocity));
+                          rotationState.velocity));
                   }
                 }))
-        .finallyDo(time::stop)
 ;
   }
 
@@ -502,6 +545,9 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   public Command driveToPoseC(Pose2d poseSup) {
     return driveToPoseSupC(() -> poseSup);
   }
+
+  // END DriveToPose 
+
 
   public double toleranceMeters = Units.inchesToMeters(0.5);
   public double toleranceRadians = Units.degreesToRadians(1);
