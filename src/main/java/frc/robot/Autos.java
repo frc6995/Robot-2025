@@ -381,10 +381,15 @@ public class Autos {
   }
 
   public Command alignToBarge(DoubleSupplier lateralSpeed) {
-    return m_drivebase.driveToX(
-        this::bargeTargetX,
-        lateralSpeed,
-        () -> (AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
+    return m_drivebase.driveToPoseSupC(()->{
+      var start = m_drivebase.getPose();
+      var target = new Pose2d(bargeTargetX(), start.getY(), AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg);
+      return target;
+    });
+    // m_drivebase.driveToX(
+    //     this::bargeTargetX,
+    //     lateralSpeed,
+    //     () -> (AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
   }
 
   public boolean atBargeLine() {
