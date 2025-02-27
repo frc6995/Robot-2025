@@ -336,6 +336,9 @@ public class Robot extends TimedRobot {
         LightStripS.top.requestState(TopStates.BlueAlliance);
       }
     });
+    if (m_autos.drivetrainSafeToAlignTrig.getAsBoolean()) {
+      LightStripS.outer.requestSafeToAlign();
+    }
 
   }
 

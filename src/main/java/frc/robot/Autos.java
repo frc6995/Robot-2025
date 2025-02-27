@@ -1,5 +1,6 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import choreo.Choreo;
@@ -326,13 +327,6 @@ public class Autos {
         m_arm.goToPosition(finalPosition));
   }
 
-  private Command safeToReefAlign(Supplier<Pose2d> target) {
-    return sequence(
-
-        m_drivebase.goToPosition(target)
-            .until(m_drivebase.safeToReefAlign(target))
-            .onlyIf(m_drivebase.safeToReefAlign(target).negate()));
-  }
 
 // TODO: implement safetoreefalign
 /*public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
@@ -422,7 +416,7 @@ public class Autos {
             new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
             next.map((Function<AutoTrajectory, Command>) (nextTraj)->
               waitUntil(
-                  () -> m_arm.position.elevatorLength().lt(Arm.Positions.L3.elevatorLength()))
+                  () -> m_arm.position.elevatorLength().lt(Arm.Positions.L3.elevatorLength().plus(Inches.of(1))))
                   .andThen(nextTraj.spawnCmd())).orElse(none())
         ));
     return self;

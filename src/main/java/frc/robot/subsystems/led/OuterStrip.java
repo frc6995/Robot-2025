@@ -78,6 +78,16 @@ public class OuterStrip {
     public Command stateC(Supplier<OuterStates> state) {
         return Commands.run(() -> requestState(state.get())).ignoringDisable(true);
     }
+    private LEDPattern safeToReefAlignPattern = (reader, writer) -> {
+        reader.forEach((i, r, g, b)->{
+            if (i % 2 == 0) {
+                writer.setRGB(i, 32, 32, 32);
+            } else {
+
+                writer.setRGB(i, 0, 0, 0);
+            }
+        });
+    };
 
     /**
      * Periodically checks the current state of the robot and sets the LEDs to the
@@ -91,11 +101,21 @@ public class OuterStrip {
         // }
         OuterStates state = m_states.first();
         // spark.set(m_states.first().lightSpeed);
-        state.applier.applyTo(led);
+        
+        var pattern = state.applier;
+        if (safeToReefAlign) {
+            pattern = safeToReefAlignPattern.overlayOn(pattern);
+        }
+        pattern.applyTo(led);
         // Do other things with the buffer
+
+        safeToReefAlign = false;
         m_states.removeAll(Set.of(OuterStates.values()));
     }
-
+    private boolean safeToReefAlign = false;
+    public void requestSafeToAlign() {
+        safeToReefAlign = true;
+    }
     public OuterStrip(AddressableLEDBufferView view) {
         led = view;
     }

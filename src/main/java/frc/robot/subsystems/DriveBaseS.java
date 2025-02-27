@@ -589,8 +589,14 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     return atPose(poseSup, Units.inchesToMeters(36), 2*Math.PI);
   }
 
-  public Trigger safeToReefAlign(Supplier<Pose2d> poseSup) {
-    return atPose(poseSup, Units.inchesToMeters(36), 2*Math.PI);
+  public Trigger safeToReefAlign(Supplier<Pose2d> reefTargetSup) {
+    return new Trigger(()->{
+      var target = reefTargetSup.get();
+      var pose = getPose();
+      var distance = target.getTranslation().getDistance(pose.getTranslation());
+      var rightSide = pose.relativeTo(target).getX()>0;
+      return distance<2 && rightSide;
+    });
   }
 
 public Command goToPosition(Supplier<Pose2d> target) {
