@@ -331,11 +331,9 @@ public class Robot extends TimedRobot {
     LightStripS.periodic();
     DriverStation.getAlliance().ifPresent(alliance->{
       if (alliance == Alliance.Red) {
-        LightStripS.outer.requestState(
-            
-        OuterStates.RedAlliance);
+        LightStripS.top.requestState(TopStates.RedAlliance);
       } else {
-        LightStripS.outer.requestState(OuterStates.BlueAlliance);
+        LightStripS.top.requestState(TopStates.BlueAlliance);
       }
     });
 
@@ -406,6 +404,34 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    switch (m_autos.selectedReefPOI()) {
+      case A:
+      case B:
+        LightStripS.outer.requestState(OuterStates.AB);
+        break;
+      case C:
+      case D:
+        LightStripS.outer.requestState(OuterStates.CD);
+        break;
+      case E:
+      case F:
+        LightStripS.outer.requestState(OuterStates.EF);
+        break;
+      case G:
+      case H:
+        LightStripS.outer.requestState(OuterStates.GH);
+        break;
+      case I:
+      case J:
+        LightStripS.outer.requestState(OuterStates.IJ);
+        break;
+      case K:
+      case L:
+        LightStripS.outer.requestState(OuterStates.KL);
+        break;
+      default:
+        LightStripS.outer.requestState(OuterStates.Default);
+    }
   }
 
   /** This function is called once when the robot is disabled. */

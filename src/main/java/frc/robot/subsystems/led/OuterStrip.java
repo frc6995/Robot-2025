@@ -30,11 +30,14 @@ public class OuterStrip {
 
     /**Enumerator of states for the Outer LED strip. States higher in the list have priority */
     public enum OuterStates {
+        AB(solid(Color.kIndigo).atBrightness(Value.of(1))),
+        CD(solid(Color.kBlue).atBrightness(Value.of(1))),
+        EF(solid(Color.kGreen).atBrightness(Value.of(1))),
+        GH(solid(Color.kYellow).atBrightness(Value.of(1))),
+        IJ(solid(Color.kOrange).atBrightness(Value.of(1))),
+        KL(solid(Color.kRed).atBrightness(Value.of(1))),
         Climbing(rainbow(255, 255)),
-        /**solid blue */
-        BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(1))),
-        /**solid red */
-        RedAlliance(solid(Color.kRed).atBrightness(Value.of(1))),
+        
         Default(solid(Color.kGreen).atBrightness(Value.of(1)));
     
         public LEDPattern applier;
