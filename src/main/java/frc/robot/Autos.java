@@ -57,6 +57,8 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 @Logged(strategy = Strategy.OPT_IN)
 public class Autos {
   private final DriveBaseS m_drivebase;
@@ -105,8 +107,12 @@ public class Autos {
   public void addAutos() {
     autos.put("Left 3p (Home)", () -> flexAuto(POI.STI, POI.SL3, POI.I, POI.J, POI.K));
     autos.put("Right 3p", () -> flexAuto(POI.STF, POI.SR3, POI.F, POI.E, POI.D));
-
-    for (Entry<String, Supplier<Command>> entry : autos.entrySet()) {
+    autos.put("CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, POI.H));
+    autos.put("CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, POI.G));
+    autos.put("MoveOffLine", ()->{
+      var move = new SwerveRequest.RobotCentric();
+      return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
+    for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
       m_autoChooser.addCmd(entry.getKey(), entry.getValue());
     }
   }

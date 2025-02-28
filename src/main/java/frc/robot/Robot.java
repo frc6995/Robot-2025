@@ -52,6 +52,7 @@ import frc.robot.subsystems.RealHandS;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.NoneArm;
 import frc.robot.subsystems.arm.RealArm;
+import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
@@ -141,9 +142,9 @@ public class Robot extends TimedRobot {
                 : m_driveRequest
                     .withVelocityX(
                         -m_driverController.getLeftY()
-                            * 4) // Drive forward with negative Y (forward)
+                            * 5) // Drive forward with negative Y (forward)
                     .withVelocityY(
-                        -m_driverController.getLeftX() * 4) // Drive left with negative X (left)
+                        -m_driverController.getLeftX() * 5) // Drive left with negative X (left)
                     .withRotationalRate(
                         -m_driverController.getRightX()
                             * 2
@@ -241,11 +242,17 @@ public class Robot extends TimedRobot {
         m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
     m_driverController.rightBumper().onTrue(
-        m_hand.outCoral().withTimeout(0.5).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))));
+        m_hand.outCoral().withTimeout(0.5).andThen(
+          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))
+            )
+    )
+        ;
 
     // score algae
-    m_driverController.leftTrigger().whileTrue(parallel(
-        m_hand.outAlgae().withTimeout(0.5)));
+    m_driverController.leftTrigger().onTrue(parallel(
+        m_hand.outAlgae().withTimeout(0.5)).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
+        .onlyIf(()->
+            m_arm.getPosition().elevatorMeters()>Arm.Positions.L3.elevatorMeters())));
     // Auto align to operator selected position on reef for coral scoring
     m_driverController.rightTrigger().whileTrue(m_autos.autoScore());
 
@@ -257,6 +264,9 @@ public class Robot extends TimedRobot {
     // autoalign to deep cage
     m_driverController.start().and(inWorkshop.negate())
         .whileTrue(m_autos.alignToClimb());
+    m_driverController.leftStick().and(m_driverController.rightStick()).and(RobotModeTriggers.disabled())
+        .onTrue(m_armBrakeS.home())
+        .onTrue(LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(0.5));
 
     m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
 
