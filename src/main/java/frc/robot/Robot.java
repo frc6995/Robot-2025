@@ -65,6 +65,7 @@ import frc.robot.util.AlertsUtil;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
@@ -184,8 +185,15 @@ public class Robot extends TimedRobot {
     .whileTrue(waitSeconds(2).andThen(
       parallel(
         m_arm.mainPivotS.voltage(()->-2),
-        waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(50))
-          .andThen(m_arm.wristS.goTo(()->0.0))))
+        waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(60))
+          .andThen(
+            m_arm.wristS.goTo(()->WristConstants.CW_LIMIT.in(Radians)+Units.degreesToRadians(70)).alongWith(
+            m_arm.elevatorS.voltage(()->2).until(()->m_arm.elevatorS.getLengthMeters() >
+              Arm.Positions.L3.elevatorMeters())
+              .andThen(
+                m_arm.elevatorS.voltage(m_arm.elevatorS::getKGVolts)
+              )
+          ))))
     );
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
   }
@@ -218,13 +226,13 @@ public class Robot extends TimedRobot {
             parallel(
               m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4),
               waitUntil(m_autos::atBargeLine).andThen(
-                m_arm.goToPosition(Arm.Positions.SCORE_BARGE)
+                m_autos.bargeUpAndOut()
               )
             )
             );
       m_driverController.y().and(inWorkshop)
-      .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE))
-      .onTrue(m_hand.inAlgae());
+      .onTrue(m_autos.bargeUpAndOut());
+      //.onTrue(m_hand.inAlgae());
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
     m_driverController.x()
     // .whileTrue(

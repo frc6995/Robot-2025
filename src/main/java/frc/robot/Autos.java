@@ -381,8 +381,22 @@ public class Autos {
                     LightStripS.top.stateC(()->LightStripS.top.previousState))));
   }
 
+  public Command bargeUpAndOut() {
+    return deadline(
+      m_hand.inAlgae().until(()-> m_arm.position.elevatorMeters() > 
+        Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(6))
+          .andThen(m_hand.outAlgae().withTimeout(0.5)),
+      m_arm.goToPosition(Arm.Positions.SCORE_BARGE).asProxy()
+      
+    ).andThen(
+      parallel(
+        new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
+        new ScheduleCommand(m_hand.inAlgae())
+      )
+    );
+  }
   private double bargeTargetX() {
-    final double blueX = 7.1;
+    final double blueX = 8.21 - Units.inchesToMeters(33);
     return AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(blueX) : blueX;
   }
 
@@ -399,7 +413,7 @@ public class Autos {
   }
 
   public boolean atBargeLine() {
-    return MathUtil.isNear(bargeTargetX(), m_drivebase.getPose().getX(), 1);
+    return MathUtil.isNear(bargeTargetX(), m_drivebase.getPose().getX(), 0.1);
   }
 
   public Command outtake() {
