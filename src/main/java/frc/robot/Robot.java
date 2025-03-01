@@ -21,6 +21,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -124,6 +125,7 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+    DriverStation.startDataLog(DataLogManager.getLog());
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
     Epilogue.bind(this);
     m_driverDisplay.setAllHomedSupplier(() -> false)
@@ -177,7 +179,7 @@ public class Robot extends TimedRobot {
   }
 
   private void configureOperatorController() {
-    m_operatorBoard.left().onTrue(
+    m_operatorBoard.left().or(m_driverController.start()).onTrue(
       m_arm.goToPosition(Arm.Positions.PRE_CLIMB)).onTrue(
         m_climbHookS.release().withTimeout(5)
     );
@@ -187,13 +189,8 @@ public class Robot extends TimedRobot {
         m_arm.mainPivotS.voltage(()->-2),
         waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(60))
           .andThen(
-            m_arm.wristS.goTo(()->WristConstants.CW_LIMIT.in(Radians)+Units.degreesToRadians(70)).alongWith(
-            m_arm.elevatorS.voltage(()->2).until(()->m_arm.elevatorS.getLengthMeters() >
-              Arm.Positions.L3.elevatorMeters())
-              .andThen(
-                m_arm.elevatorS.voltage(m_arm.elevatorS::getKGVolts)
-              )
-          ))))
+            m_arm.wristS.goTo(()->0.0)
+          )))
     );
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
   }
@@ -269,9 +266,7 @@ public class Robot extends TimedRobot {
      * m_driverController.rightStick().whileTrue(Commands.none());
      */
 
-    // autoalign to deep cage
-    m_driverController.start().and(inWorkshop.negate())
-        .whileTrue(m_autos.alignToClimb());
+    // HOME arm brake
     m_driverController.leftStick().and(m_driverController.rightStick()).and(RobotModeTriggers.disabled())
         .onTrue(m_armBrakeS.home())
         .onTrue(LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(0.5));

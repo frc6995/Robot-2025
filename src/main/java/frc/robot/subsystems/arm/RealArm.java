@@ -88,10 +88,10 @@ public class RealArm extends Arm {
             return sequence(
                 // TODO: if position is unsafe to fully retract, move to safe position first
                 // retract wrist
-                goDirectlyTo(startMainPivot, startElevator, retractWristTarget)
-                .until(
-                        () ->
-                        wristS.getAngleRadians() > SAFE_WRIST_MIN.in(Radians) && wristS.getAngleRadians() < SAFE_WRIST_MAX.in(Radians)),
+                // goDirectlyTo(startMainPivot, startElevator, retractWristTarget)
+                // .until(
+                //         () ->
+                //         wristS.getAngleRadians() > SAFE_WRIST_MIN.in(Radians) && wristS.getAngleRadians() < SAFE_WRIST_MAX.in(Radians)),
                 // Retract elevator
                 goDirectlyTo(startMainPivot, prePivotElevator, retractWristTarget)
                     .until(
