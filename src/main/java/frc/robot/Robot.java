@@ -243,8 +243,8 @@ public class Robot extends TimedRobot {
     .onTrue(m_hand.inAlgae());
 
     // Stow
-    m_driverController.leftBumper().onTrue(
-        m_arm.goToPosition(Arm.Positions.STOW));
+    m_driverController.leftBumper().onTrue(m_arm.algaeStowWithHome());
+       // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
     m_driverController.rightBumper().onTrue(
         m_hand.outCoral().withTimeout(0.5).andThen(

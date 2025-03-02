@@ -377,8 +377,11 @@ public class Autos {
         new ScheduleCommand(
             m_hand.inCoral().until(this::hasCoral).andThen(
                 m_hand.inCoral().withTimeout(0.5)).andThen(
-                  LightStripS.top.stateC(()->TopStates.Intaked)).withTimeout(1).andThen(
-                    LightStripS.top.stateC(()->LightStripS.top.previousState))));
+                  new ScheduleCommand(
+
+                  LightStripS.top.stateC(()->TopStates.Intaked)).withTimeout(1))
+                    
+                    ));
   }
 
   public Command bargeUpAndOut() {

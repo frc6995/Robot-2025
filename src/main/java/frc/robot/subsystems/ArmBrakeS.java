@@ -40,7 +40,7 @@ public class ArmBrakeS extends SubsystemBase {
     return this.run(()->motor.getClosedLoopController().setReference(position, ControlType.kPosition));
   }
   public Command brake() {
-  return this.goTo(-0.5);//return voltage(-1);
+  return this.goTo(-5);//return voltage(-1);
   }
   public Command release() {
     return goTo(1); //start().andThen(end());

@@ -16,6 +16,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import frc.robot.subsystems.arm.elevator.RealElevatorS;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS;
@@ -134,6 +135,18 @@ public class RealArm extends Arm {
 
   public boolean readyToClimb(){
     return position.mainPivotAngle().lt(MainPivotConstants.climbAngle);
+  }
+
+  @Override
+  public Command algaeStowWithHome() {
+    return sequence(
+      goToPosition(Arm.Positions.STOW).until(
+        ()->this.position.withinTolerance(Arm.Positions.STOW, Units.degreesToRadians(2), Units.inchesToMeters(0.5), Units.degreesToRadians(360)
+      )),
+      new ScheduleCommand(
+        wristS.driveToHome()
+      )
+    );
   }
 
 }
