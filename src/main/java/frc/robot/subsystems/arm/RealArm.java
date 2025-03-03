@@ -85,14 +85,8 @@ public class RealArm extends Arm {
             double postPivotElevator =MathUtil.clamp(position.elevatorMeters(), MIN_ELEVATOR_LENGTH.in(Meters), SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
             double retractWrist = MathUtil.clamp(startWrist, SAFE_WRIST_MIN.in(Radians), SAFE_WRIST_MAX.in(Radians));
             double retractWristTarget = MathUtil.clamp(position.wristRadians(), SAFE_WRIST_MIN.in(Radians), SAFE_WRIST_MAX.in(Radians));
-            //double retractWristTarget = MathUtil.clamp(position.wristRadians(), SAFE_WRIST_MIN.in(Radians)+Units.degreesToRadians(5), SAFE_WRIST_MAX.in(Radians)-Units.degreesToRadians(5));
             return sequence(
                 // TODO: if position is unsafe to fully retract, move to safe position first
-                // retract wrist
-                // goDirectlyTo(startMainPivot, startElevator, retractWristTarget)
-                // .until(
-                //         () ->
-                //         wristS.getAngleRadians() > SAFE_WRIST_MIN.in(Radians) && wristS.getAngleRadians() < SAFE_WRIST_MAX.in(Radians)),
                 // Retract elevator
                 goDirectlyTo(startMainPivot, prePivotElevator, retractWristTarget)
                     .until(
