@@ -13,6 +13,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -32,6 +33,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.simulation.VariableLengthArmSim;
@@ -39,8 +41,12 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
+import frc.robot.subsystems.led.LightStripS;
+import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.NomadMathUtil;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
@@ -110,8 +116,10 @@ public class RealWristS extends Wrist {
   private TalonFX m_leader = new TalonFX(WristConstants.LEADER_CAN_ID);
   private MotionMagicVoltage m_profileReq = new MotionMagicVoltage(0);
   private VoltageOut m_voltageReq = new VoltageOut(0);
+  private VoltageOut m_voltageReqHome = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();
   private StatusSignal<Double> m_setpointSig = m_leader.getClosedLoopReference();
+  private StatusSignal<Current> m_currentSig = m_leader.getStatorCurrent();
   private double m_goalRotations;
 
   private DoubleSupplier m_mainAngleSupplier = () -> 0;
@@ -126,6 +134,7 @@ public class RealWristS extends Wrist {
     m_leader.getSimState().Orientation = ChassisReference.Clockwise_Positive;
     m_pivotSim.setState(VecBuilder.fill(WristConstants.CCW_LIMIT.in(Radians), 0));
     m_setpointSig.setUpdateFrequency(50);
+    m_currentSig.setUpdateFrequency(50);
     setDefaultCommand(hold());
   }
 
@@ -205,5 +214,38 @@ public class RealWristS extends Wrist {
 
   public Command hold() {
     return sequence(runOnce(() -> setAngleRadians(getAngleRadians())), Commands.idle());
+  }
+
+  public Trigger currentHomed = new Trigger(
+    ()->{
+      m_currentSig.refresh();
+      return m_currentSig.getValueAsDouble() > 7;
+    }
+  ).debounce(0.25);
+
+  public Command driveToHome() {
+    var existingConfig = new SoftwareLimitSwitchConfigs();
+    return sequence(
+      runOnce(()-> {
+    
+      m_leader.getConfigurator().refresh(existingConfig);
+      existingConfig.withForwardSoftLimitEnable(false);
+      var statusCode = m_leader.getConfigurator().apply(existingConfig);
+      }
+      ),
+      voltage(()->1).until(currentHomed),
+      runOnce(()-> {
+        m_leader.getConfigurator().refresh(existingConfig);
+        existingConfig.withForwardSoftLimitEnable(true);
+        var statusCode = m_leader.getConfigurator().apply(existingConfig);
+        }
+        ),
+      home(),
+      waitSeconds(0.5),
+      new ScheduleCommand(
+        LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(0.5)
+      )
+      
+    );
   }
 }

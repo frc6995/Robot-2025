@@ -6,15 +6,19 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+@Logged
 public class ArmBrakeS extends SubsystemBase {
   public final SparkFlex motor = new SparkFlex(ArmBrakeConstants.CAN_ID, MotorType.kBrushless); 
   /** Creates a new ArmBreakS. */
@@ -22,7 +26,9 @@ public class ArmBrakeS extends SubsystemBase {
     motor.configure(ArmBrakeConstants.configureMotor(new SparkFlexConfig()), ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     setDefaultCommand(release());//.andThen(holdopen()));
   }
-
+  public double getPosition() {
+    return motor.getEncoder().getPosition();
+  }
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
@@ -30,11 +36,14 @@ public class ArmBrakeS extends SubsystemBase {
   public Command start() {
     return voltage (10).withTimeout(0.06);
   }
+  public Command goTo(double position) {
+    return this.run(()->motor.getClosedLoopController().setReference(position, ControlType.kPosition));
+  }
   public Command brake() {
-return voltage(-1);
+  return this.goTo(-5);//return voltage(-1);
   }
   public Command release() {
-    return start().andThen(end());
+    return goTo(1); //start().andThen(end());
   }
   public Command holdopen() {
 return voltage(0.2);
@@ -47,11 +56,17 @@ return this.run(()-> motor.setVoltage(volts));
 
   }
 
+  public Command home () {
+    return this.runOnce(()->motor.getEncoder().setPosition(0)).ignoringDisable(true);
+  }
 public class ArmBrakeConstants {
   public static final int CAN_ID = 35;
   public static final int CURRENT_LIMIT =25;
   public static SparkFlexConfig configureMotor(SparkFlexConfig config) {
     config.smartCurrentLimit(CURRENT_LIMIT);
+    config.softLimit.forwardSoftLimit(1).forwardSoftLimitEnabled(true);
+    config.idleMode(IdleMode.kBrake);
+    config.closedLoop.p(10);
     return config;
   }
 }

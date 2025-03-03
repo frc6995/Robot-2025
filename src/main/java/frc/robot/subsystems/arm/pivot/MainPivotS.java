@@ -105,7 +105,7 @@ public class MainPivotS extends SubsystemBase {
           .withRotorToSensorRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
-          .withReverseSoftLimitThreshold(Rotations.of(0.066))
+          .withReverseSoftLimitThreshold(Rotations.of(0.038*2))
           .withReverseSoftLimitEnable(true);
       config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;
@@ -140,7 +140,7 @@ public class MainPivotS extends SubsystemBase {
           MainPivotConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION,
           ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters)),
           ElevatorConstants.MIN_LENGTH.in(Meters),
-          MainPivotConstants.CW_LIMIT.minus(Degrees.of(10)).in(Radians),
+          0,
           MainPivotConstants.CCW_LIMIT.in(Radians),
           MainPivotConstants.ARM_MASS.in(Kilograms),
           false);

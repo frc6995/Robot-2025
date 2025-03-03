@@ -1,5 +1,6 @@
 package frc.robot.subsystems.arm;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
@@ -15,6 +16,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import frc.robot.subsystems.arm.elevator.RealElevatorS;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS;
@@ -84,11 +86,7 @@ public class RealArm extends Arm {
             double retractWrist = MathUtil.clamp(startWrist, SAFE_WRIST_MIN.in(Radians), SAFE_WRIST_MAX.in(Radians));
             double retractWristTarget = MathUtil.clamp(position.wristRadians(), SAFE_WRIST_MIN.in(Radians), SAFE_WRIST_MAX.in(Radians));
             return sequence(
-                // retract wrist
-                goDirectlyTo(startMainPivot, startElevator, retractWristTarget)
-                .until(
-                        () ->
-                        wristS.getAngleRadians() > SAFE_WRIST_MIN.in(Radians) && wristS.getAngleRadians() < SAFE_WRIST_MAX.in(Radians)),
+                // TODO: if position is unsafe to fully retract, move to safe position first
                 // Retract elevator
                 goDirectlyTo(startMainPivot, prePivotElevator, retractWristTarget)
                     .until(
@@ -131,6 +129,18 @@ public class RealArm extends Arm {
 
   public boolean readyToClimb(){
     return position.mainPivotAngle().lt(MainPivotConstants.climbAngle);
+  }
+
+  @Override
+  public Command algaeStowWithHome() {
+    return sequence(
+      goToPosition(Arm.Positions.STOW).until(
+        ()->this.position.withinTolerance(Arm.Positions.STOW, Units.degreesToRadians(2), Units.inchesToMeters(0.5), Units.degreesToRadians(360)
+      )),
+      new ScheduleCommand(
+        wristS.driveToHome()
+      )
+    );
   }
 
 }

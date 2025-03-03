@@ -21,6 +21,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -52,6 +53,7 @@ import frc.robot.subsystems.RealHandS;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.NoneArm;
 import frc.robot.subsystems.arm.RealArm;
+import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
@@ -64,6 +66,7 @@ import frc.robot.util.AlertsUtil;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
@@ -122,6 +125,7 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+    DriverStation.startDataLog(DataLogManager.getLog());
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
     Epilogue.bind(this);
     m_driverDisplay.setAllHomedSupplier(() -> false)
@@ -141,9 +145,9 @@ public class Robot extends TimedRobot {
                 : m_driveRequest
                     .withVelocityX(
                         -m_driverController.getLeftY()
-                            * 4) // Drive forward with negative Y (forward)
+                            * 5) // Drive forward with negative Y (forward)
                     .withVelocityY(
-                        -m_driverController.getLeftX() * 4) // Drive left with negative X (left)
+                        -m_driverController.getLeftX() * 5) // Drive left with negative X (left)
                     .withRotationalRate(
                         -m_driverController.getRightX()
                             * 2
@@ -175,7 +179,7 @@ public class Robot extends TimedRobot {
   }
 
   private void configureOperatorController() {
-    m_operatorBoard.left().onTrue(
+    m_operatorBoard.left().or(m_driverController.start()).onTrue(
       m_arm.goToPosition(Arm.Positions.PRE_CLIMB)).onTrue(
         m_climbHookS.release().withTimeout(5)
     );
@@ -183,8 +187,10 @@ public class Robot extends TimedRobot {
     .whileTrue(waitSeconds(2).andThen(
       parallel(
         m_arm.mainPivotS.voltage(()->-2),
-        waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(50))
-          .andThen(m_arm.wristS.goTo(()->0.0))))
+        waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(60))
+          .andThen(
+            m_arm.wristS.goTo(()->0.0)
+          )))
     );
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
   }
@@ -217,13 +223,13 @@ public class Robot extends TimedRobot {
             parallel(
               m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4),
               waitUntil(m_autos::atBargeLine).andThen(
-                m_arm.goToPosition(Arm.Positions.SCORE_BARGE)
+                m_autos.bargeUpAndOut()
               )
             )
             );
       m_driverController.y().and(inWorkshop)
-      .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE))
-      .onTrue(m_hand.inAlgae());
+      .onTrue(m_autos.bargeUpAndOut());
+      //.onTrue(m_hand.inAlgae());
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
     m_driverController.x()
     // .whileTrue(
@@ -237,15 +243,21 @@ public class Robot extends TimedRobot {
     .onTrue(m_hand.inAlgae());
 
     // Stow
-    m_driverController.leftBumper().whileTrue(
-        m_arm.goToPosition(Arm.Positions.STOW));
+    m_driverController.leftBumper().onTrue(m_arm.algaeStowWithHome());
+       // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
     m_driverController.rightBumper().onTrue(
-        m_hand.outCoral().withTimeout(0.5).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))));
+        m_hand.outCoral().withTimeout(0.5).andThen(
+          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))
+            )
+    )
+        ;
 
     // score algae
-    m_driverController.leftTrigger().whileTrue(parallel(
-        m_hand.outAlgae().withTimeout(0.5)));
+    m_driverController.leftTrigger().onTrue(parallel(
+        m_hand.outAlgae().withTimeout(0.5)).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
+        .onlyIf(()->
+            m_arm.getPosition().elevatorMeters()>Arm.Positions.L3.elevatorMeters())));
     // Auto align to operator selected position on reef for coral scoring
     m_driverController.rightTrigger().whileTrue(m_autos.autoScore());
 
@@ -254,9 +266,10 @@ public class Robot extends TimedRobot {
      * m_driverController.rightStick().whileTrue(Commands.none());
      */
 
-    // autoalign to deep cage
-    m_driverController.start().and(inWorkshop.negate())
-        .whileTrue(m_autos.alignToClimb());
+    // HOME arm brake
+    m_driverController.leftStick().and(m_driverController.rightStick()).and(RobotModeTriggers.disabled())
+        .onTrue(m_armBrakeS.home())
+        .onTrue(LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(0.5));
 
     m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
 
