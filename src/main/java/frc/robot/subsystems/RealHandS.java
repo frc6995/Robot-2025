@@ -4,9 +4,11 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -19,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.AlgaePivotS.AlgaePivotConstants;
 
+@Logged
 public class RealHandS extends Hand {
     public final MechanismLigament2d TOP_ROLLER =
       new MechanismLigament2d(
@@ -30,10 +33,18 @@ public class RealHandS extends Hand {
 
   public static final int CAN_ID = 51;
 
-  public static final double IN_VOLTAGE = 6;
+  public static final double IN_CORAL_VOLTAGE = 5;
 
-  public static final double OUT_VOLTAGE = -6;
+  public static final double OUT_CORAL_VOLTAGE = -4.5; //worked with -6 but coral bounced
 
+  public static final double IN_ALGAE_VOLTAGE = -8;
+
+  public static final double OUT_ALGAE_VOLTAGE = 10;
+
+  public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
+    config.CurrentLimits.withStatorCurrentLimit(70);
+    return config;
+  }
   }
   private final TalonFX motor = new TalonFX(HandConstants.CAN_ID);
 
@@ -61,6 +72,9 @@ public class RealHandS extends Hand {
   /** Creates a new HandRollerS. */
   public RealHandS() {
    super();
+   motor.getConfigurator().apply(HandConstants.configureMotor(new TalonFXConfiguration()));
+   setDefaultCommand(stop());
+
   }
 
   @Override
@@ -69,15 +83,32 @@ public class RealHandS extends Hand {
     BOTTOM_ROLLER.setAngle(BOTTOM_ROLLER.getAngle() - 4 * voltageRequest.Output);
     // This method will be called once per scheduler run
   }
+  private Command voltage(double voltage) {
+    return this.run(()->motor.setControl(voltageRequest.withOutput(voltage)));
+  }
   public Command stop(){
-    return this.run(()->motor.setControl(voltageRequest.withOutput(0)));
+    return voltage(0);
   }
-  public Command in(){
-    return this.run(()->motor.setControl(voltageRequest.withOutput(HandConstants.IN_VOLTAGE)));
+  public Command inCoral(){
+    return voltage(HandConstants.IN_CORAL_VOLTAGE);
   }
-  public Command out(){
-    return this.run(()->motor.setControl(voltageRequest.withOutput(HandConstants.OUT_VOLTAGE)));
+  public Command outCoral(){
+    return voltage(HandConstants.OUT_CORAL_VOLTAGE);
 
+  }
+
+  @Override
+  public Command inAlgae() {
+    return voltage(HandConstants.IN_ALGAE_VOLTAGE);
+  }
+
+
+
+
+
+  @Override
+  public Command outAlgae() {
+    return voltage(HandConstants.OUT_ALGAE_VOLTAGE);
   }
 
 }

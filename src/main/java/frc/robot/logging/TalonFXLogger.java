@@ -18,6 +18,7 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
   public record Signals(
       StatusSignal<Current> torqueCurrent,
       StatusSignal<Current> statorCurrent,
+      StatusSignal<Current> supplyCurrent,
       StatusSignal<Angle> position,
       StatusSignal<Voltage> voltage) {}
   ;
@@ -32,7 +33,7 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
     for (Integer i : talons.keySet()) {
       var object = talons.get(i);
       BaseStatusSignal.refreshAll(
-          object.statorCurrent(), object.torqueCurrent(), object.position(), object.voltage());
+          object.statorCurrent(), object.torqueCurrent(), object.supplyCurrent, object.position(), object.voltage());
     }
   }
 
@@ -44,12 +45,15 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
           new Signals(
               object.getTorqueCurrent(),
               object.getStatorCurrent(),
+              object.getSupplyCurrent(),
               object.getPosition(),
               object.getMotorVoltage());
+      signals.statorCurrent.setUpdateFrequency(50);
       talons.put(object.getDeviceID(), signals);
     }
     dataLogger.log("statorCurrent", signals.statorCurrent.getValue().baseUnitMagnitude());
     dataLogger.log("torqueCurrent", signals.torqueCurrent.getValue().baseUnitMagnitude());
+    dataLogger.log("supplyCurrent", signals.supplyCurrent.getValue().baseUnitMagnitude());
     dataLogger.log("position", signals.position.getValue().in(Rotation));
     dataLogger.log("voltage", signals.voltage.getValueAsDouble());
   }

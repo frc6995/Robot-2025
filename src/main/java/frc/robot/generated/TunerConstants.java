@@ -6,6 +6,7 @@ import static frc.robot.subsystems.DrivetrainSysId.*;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.hardware.*;
+import com.ctre.phoenix6.mechanisms.swerve.LegacySimSwerveDrivetrain.LegacySimSwerveModule;
 import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
@@ -32,7 +33,7 @@ public class TunerConstants {
       new Slot0Configs()
           .withKP(100)
           .withKI(0)
-          .withKD(0.05)
+          .withKD(0.2)
           .withKS(sysid.STEER_KS().in(Volts))
           .withKV(sysid.STEER_KV().in(VoltsPerRotationPerSecond))
           .withKA(sysid.STEER_KA().in(VoltsPerRotationPerSecondSquared))
@@ -41,18 +42,18 @@ public class TunerConstants {
   // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
   private static final Slot0Configs driveGains =
       new Slot0Configs()
-          .withKP(0.3)
+          .withKP(6)
           .withKI(0)
           .withKD(0)
-          .withKS(sysid.LINEAR_KS().in(Volts))
-          .withKV(sysid.LINEAR_KV().in(VoltsPerRotationPerSecond));
+          .withKS(5)
+          .withKV(0);
 
   // The closed-loop output type to use for the steer motors;
   // This affects the PID/FF gains for the steer motors
   private static final ClosedLoopOutputType kSteerClosedLoopOutput = ClosedLoopOutputType.Voltage;
   // The closed-loop output type to use for the drive motors;
   // This affects the PID/FF gains for the drive motors
-  private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.Voltage;
+  private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.TorqueCurrentFOC;
 
   // The type of motor used for the drive motor
   private static final DriveMotorArrangement kDriveMotorType =

@@ -11,14 +11,24 @@ public class NoneHandS extends Hand {
     }
 
     @Override
-    public Command in() {
+    public Command inCoral() {
        return Commands.idle(this);
     }
 
     @Override
-    public Command out() {
+    public Command outCoral() {
         return Commands.idle(this);
         
+    }
+
+    @Override
+    public Command inAlgae() {
+        return Commands.idle(this);
+    }
+
+    @Override
+    public Command outAlgae() {
+        return Commands.idle(this);
     }
     
 }

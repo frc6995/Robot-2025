@@ -36,9 +36,13 @@ class Selector:
 
 
 branch_pins = [board.GP0, board.GP1, board.GP2, board.GP3, board.GP4, board.GP5, board.GP6, board.GP7, board.GP8, board.GP9, board.GP10, board.GP11]
-level_pins = [board.GP19, board.GP18, board.GP17,board.GP16]
-climb_pins = [board.GP22, board.GP21,board.GP20]
+level_pins = [board.GP19, board.GP18, board.GP15,board.GP16]
+climb_pins = [board.GP21, board.GP22, board.GP20]
 
+climb_buttons = [digitalio.DigitalInOut(pin) for pin in climb_pins]
+for button in climb_buttons:
+    button.direction = digitalio.Direction.INPUT
+    button.pull = digitalio.Pull.UP
 # pixel_pin = board.GP20
 
 # PIXEL_PIN = board.GP20  # pin that the NeoPixel is connected to
@@ -55,7 +59,7 @@ climb_pins = [board.GP22, board.GP21,board.GP20]
 #1 = A, 12 = L
 branch_selector = Selector(branch_pins)
 level_selector = Selector(level_pins)
-climb_selector = Selector(climb_pins)
+
 
 
 print('start')
@@ -64,22 +68,25 @@ gp.release_buttons(1)
 while True:
     branch_selector.update ()
     level_selector.update ()
-    climb_selector.update ()
     branch_button = branch_selector.selected
     level_button = level_selector.selected
-    climb_button = climb_selector.selected
 
     #8 bits
     # button 1 = bit 0
     # MSB | climb (2 bits) | level (2 bits) | branch (4 bits) | LSB
-    bitfield = (branch_button & 0xf) + ((level_button & 0x3) << 4) + ((climb_button & 0x3) << 6)
+    bitfield = (branch_button & 0xf) + ((level_button & 0x3) << 4)
    # send the current state
-    for i in range(1,8):
+    for i in range(1,7):
         # 0 is invalid button id
 
         if bitfield & (1 << (i-1)):
             gp.press_buttons(i)
         else:
             gp.release_buttons(i)
+    for j in range(3):
+        if not climb_buttons[j].value:
+            gp.press_buttons(7+j)
+        else:
+            gp.release_buttons(7+j)
 
                 

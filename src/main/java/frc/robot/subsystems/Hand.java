@@ -5,13 +5,15 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.ElevatorS.ElevatorConstants;
+import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 
 public abstract class Hand extends SubsystemBase{
   public Hand() {
     setDefaultCommand(stop());
   }
   public abstract Command stop();
-  public abstract Command in();
-  public abstract Command out();
+  public abstract Command inCoral();
+  public abstract Command outCoral();
+  public abstract Command inAlgae();
+  public abstract Command outAlgae();
 }

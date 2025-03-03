@@ -13,9 +13,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import frc.robot.Arm.ArmPosition;
-import frc.robot.subsystems.ElevatorS.ElevatorConstants;
-import frc.robot.subsystems.WristS.WristConstants;
+import frc.robot.subsystems.arm.Arm.ArmPosition;
+import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
+import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 
 public class RobotVisualizer {
   private static final double BASE_X = Units.feetToMeters(3);
@@ -59,7 +59,7 @@ public class RobotVisualizer {
     components[0] = PIVOT_BASE.transformBy(new Transform3d(Translation3d.kZero, new Rotation3d(0,-position.pivotRadians(),0)));
     components[1] = components[0].transformBy(new Transform3d(new Translation3d(
       (position.elevatorMeters()-ElevatorConstants.MIN_LENGTH.in(Meters))/2  + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
-    components[2] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters() - ElevatorConstants.MIN_LENGTH.in(Meters) + Units.inchesToMeters(0.4), 0,0), Rotation3d.kZero));
-    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-(position.wristRadians() - Units.degreesToRadians(140)),0)));
+    components[2] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters() - ElevatorConstants.MIN_LENGTH.in(Meters) + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
+    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-(position.wristRadians()-Units.degreesToRadians(40)),0)));
   }
 }

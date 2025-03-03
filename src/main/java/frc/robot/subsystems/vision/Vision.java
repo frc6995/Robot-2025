@@ -3,6 +3,7 @@ package frc.robot.subsystems.vision;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -79,24 +80,43 @@ public class Vision {
 
     public static final Map<String, Transform3d> CAMERAS =
         Map.of(
-            "OV9281-FL",
+            "OV9281-BL",
                 new Transform3d(
-                    Units.inchesToMeters(4.875),
-                    Units.inchesToMeters(0),
-                    Units.inchesToMeters(7.25) - 0.02,
-                    new Rotation3d(
-                        Units.degreesToRadians(180),
-                        Units.degreesToRadians(-34),
-                        Units.degreesToRadians(0))),
-            "OV9281-FR",
-                new Transform3d(
-                    Units.inchesToMeters(-(13 - 3.375)),
-                    Units.inchesToMeters(-(13 - 2.625)),
-                    Units.inchesToMeters(9.25),
+                  -(Units.inchesToMeters(14.25) - 0.102),
+                  (Units.inchesToMeters(14.25) - 0.066),
+                    Units.inchesToMeters(8.5),
                     new Rotation3d(
                         Units.degreesToRadians(0),
-                        Units.degreesToRadians(-10),
-                        Units.degreesToRadians(180))));
+                        Units.degreesToRadians(-13.65),
+                        Units.degreesToRadians(-170))),
+            "OV9281-BR",
+                new Transform3d(
+                  -(Units.inchesToMeters(14.25) - 0.102),
+                  -(Units.inchesToMeters(14.25) - 0.072),
+                    Units.inchesToMeters(8.5),
+                    new Rotation3d(
+                        Units.degreesToRadians(0),
+                        Units.degreesToRadians(-13.65),
+                        Units.degreesToRadians(170))),
+                "OV9281-FR",
+                new Transform3d(
+                  -(Units.inchesToMeters(14.25) - 0.142),
+                  -(Units.inchesToMeters(14.25) - 0.112),
+                    Units.inchesToMeters(8.5),
+                    new Rotation3d(
+                        Units.degreesToRadians(0),
+                        Units.degreesToRadians(-45),
+                        Units.degreesToRadians(0))),
+                "OV9281-FL",
+                new Transform3d(
+                  -(Units.inchesToMeters(14.25) - 0.150),
+                  (Units.inchesToMeters(14.25) - 0.116),
+                    Units.inchesToMeters(8.5),
+                    new Rotation3d(
+                        Units.degreesToRadians(0),
+                        Units.degreesToRadians(-45),
+                        Units.degreesToRadians(0)))
+        );
     public static final AprilTagFieldLayout FIELD_LAYOUT =
         AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
   }
@@ -133,7 +153,7 @@ public class Vision {
                       VisionConstants.FIELD_LAYOUT,
                       PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                       translation);
-              estimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
+              estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
               PhotonCameraSim simCam = null;
               if (RobotBase.isSimulation()) {
                 simCam = new PhotonCameraSim(cam, VisionConstants.SIM_CAMERA_PROPERTIES);
@@ -144,7 +164,7 @@ public class Vision {
   }
 
   public boolean filterPose(Pose3d robotPose) {
-    if (Math.abs(robotPose.getZ()) > 0.5) {
+    if (Math.abs(robotPose.getZ()) > 0.25) {
       return false;
     }
     return true;
@@ -163,6 +183,9 @@ public class Vision {
     if (pose.timestampSeconds < lastPoseResetTimestamp) {
       return;
     }
+    if (!filterPose(pose.estimatedPose)) {
+      return;
+    }
     double xConfidence;
     double yConfidence;
     double angleConfidence;
@@ -173,13 +196,30 @@ public class Vision {
     double avgDistance = 0;
     double closeEnoughTgts = 0;
     boolean ignore = false;
+
+    final double border = 15;
     for (var tgt : pose.targetsUsed) {
+      
+      // rule out 
+      for (var corner : tgt.detectedCorners) {
+        if (MathUtil.isNear(0, corner.x, border) ||
+          MathUtil.isNear(
+          VisionConstants.SIM_CAMERA_PROPERTIES.getResWidth(), corner.x, border) ||
+          MathUtil.isNear(0, corner.y, border) ||
+          MathUtil.isNear(
+          VisionConstants.SIM_CAMERA_PROPERTIES.getResHeight(), corner.y, border)) {
+            return;
+          }
+      } 
       double tdist = tgt.getBestCameraToTarget().getTranslation().getNorm();
+      if (pose.targetsUsed.size() < 2 && tdist > Units.feetToMeters(8)){
+        return;
+      }
       avgDistance += tdist;
       if (tdist < closestDistance) {
         closestDistance = tdist;
       }
-      if (tdist <= Units.feetToMeters(15)) {
+      if (tdist <= Units.feetToMeters(10)) {
         closeEnoughTgts++;
       }
       // ignore |= (tgt.getFiducialId() == 13);
@@ -198,9 +238,9 @@ public class Vision {
       yConfidence = 0.5 * distance / 4.0;
       angleConfidence = 1;
     } else {
-      xConfidence = 0.02 * distance;
-      yConfidence = 0.02 * distance;
-      angleConfidence = 0.3 * distance;
+      xConfidence = 0.02 * distance * distance;
+      yConfidence = 0.02 * distance * distance;
+      angleConfidence = 0.3 * distance * distance;
     }
     this.addVisionMeasurement.accept(
         pose.estimatedPose.toPose2d(),
