@@ -162,11 +162,12 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
     configureDriverController();
-
+// Coast mode when disabled
     m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
       parallel(m_arm.mainPivotS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
     ).whileTrue(m_climbHookS.coast());
     m_driverController.back().onTrue(m_climbHookS.release().withTimeout(5));
+    //Home wrist when disabled
     m_driverController.start().and(RobotModeTriggers.disabled())
         .onTrue(parallel(
           m_arm.elevatorS.home(),
@@ -202,7 +203,7 @@ public class Robot extends TimedRobot {
     m_driverController.a().whileTrue(
         Commands.defer(() -> m_autos.autoCoralIntake(inWorkshop.getAsBoolean() ? POI.SL3 : m_autos.closestIntake()), Set.of(m_drivebaseS)));
     // Drive and autoalign to processor
-    // If not in workshop, drive to processor.
+    // If in workshop, drive to processor.
     m_driverController.b()
         .onTrue(m_hand.inAlgae())
         .onTrue(sequence(
@@ -215,7 +216,7 @@ public class Robot extends TimedRobot {
         .and(inWorkshop.negate())
         .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
 
-    // Drive and autoalign to barge
+    // Align and score in barge; stow
     m_driverController.y().and(inWorkshop.negate())
         .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
         .onTrue(m_hand.inAlgae())
@@ -253,7 +254,7 @@ public class Robot extends TimedRobot {
     )
         ;
 
-    // score algae
+    // Score algae and stow if at barge position
     m_driverController.leftTrigger().onTrue(parallel(
         m_hand.outAlgae().withTimeout(0.5)).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
         .onlyIf(()->
