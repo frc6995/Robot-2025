@@ -1,6 +1,9 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.wpilibj2.command.Commands.*;
 
 import choreo.Choreo;
@@ -327,10 +330,19 @@ public class Autos {
   private Command preMoveUntilTarget(Supplier<Pose2d> target, ArmPosition finalPosition) {
     return sequence(
 
-        m_arm.goToPosition(finalPosition.premove())
+        m_arm.goToPosition(finalPosition.premove().safeWrist())
             .until(m_drivebase.safeToMoveArm(target))
             .onlyIf(m_drivebase.safeToMoveArm(target).negate()),
-        m_arm.goToPosition(finalPosition));
+            goToPositionWristLast(finalPosition)
+        );
+  }
+
+  private Command goToPositionWristLast(ArmPosition finalPosition) {
+    return sequence(m_arm.goToPosition(finalPosition.safeWrist()).until(
+      ()->m_arm.getPosition().withinTolerance(finalPosition.safeWrist(),
+        Degrees.of(10).in(Radians), Inches.of(12).in(Meters), Degrees.of(360).in(Radians))
+    ),
+    m_arm.goToPosition(finalPosition));
   }
 
 
@@ -434,7 +446,7 @@ public class Autos {
     self.atTranslation(
        finalPoseUnflipped.getTranslation(), Units.inchesToMeters(6))
         .onTrue(print("Inside Scoring Radius"))
-        .onTrue(m_arm.goToPosition(scoringPosition))
+        .onTrue(goToPositionWristLast(scoringPosition))
         .onTrue(
           sequence(
             alignAndDrop(
@@ -486,7 +498,7 @@ public class Autos {
       .map(this::bindAutoScorePremove)
       .get();
       var intakeFinalPose = toIntake.getRawTrajectory().getFinalPose(false).get();
-      var recieveCoral= RobotBase.isSimulation() ? sequence(waitSeconds(1), runOnce(()->m_coralSensor.setHasCoral(true))) : waitUntil(this::hasCoral);
+      var recieveCoral= RobotBase.isSimulation() ? sequence(waitSeconds(0.6), runOnce(()->m_coralSensor.setHasCoral(true))) : waitUntil(this::hasCoral);
       toIntake
       .done()
           .onTrue(
@@ -509,7 +521,7 @@ public class Autos {
   private AutoTrajectory bindAutoScorePremove(AutoTrajectory trajectory) {
     trajectory
         .atTime(Math.max(0, trajectory.getRawTrajectory().getTotalTime() - TIME_INTAKE_TO_L4))
-        .onTrue(m_arm.goToPosition(autoScoringPosition.premove()));
+        .onTrue(m_arm.goToPosition(autoScoringPosition.premove().safeWrist()));
     return trajectory;
   }
 

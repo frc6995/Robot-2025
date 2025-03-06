@@ -398,7 +398,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     if (RobotBase.isSimulation()) {
-      Commands.waitSeconds(15.3)
+      Commands.waitSeconds(15)
           .andThen(
               () -> {
                 DriverStationSim.setEnabled(false);

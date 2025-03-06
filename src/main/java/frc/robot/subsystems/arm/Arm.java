@@ -52,6 +52,12 @@ public abstract class Arm {
         elevatorLength.gt(SAFE_PIVOT_ELEVATOR_LENGTH) ? SAFE_PIVOT_ELEVATOR_LENGTH : elevatorLength,
         wristAngle);
     }
+
+    public ArmPosition safeWrist() {
+      return new ArmPosition(mainPivotAngle,
+        elevatorLength,
+        wristAngle.lt(Rotations.of(0))? wristAngle : Rotations.of(-0.3));
+    }
   }
   ;
 
@@ -100,6 +106,9 @@ public abstract class Arm {
 
   public abstract void update();
 
+  public ArmPosition getPosition() {
+    return this.position;
+  }
   public boolean atPosition(ArmPosition position) {
     return this.position.withinTolerance(
         position, Units.degreesToRadians(2), Units.inchesToMeters(0.5), Units.degreesToRadians(5));
