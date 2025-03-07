@@ -88,25 +88,25 @@ public class RealArm extends Arm {
             return sequence(
                 // TODO: if position is unsafe to fully retract, move to safe position first
                 // Retract elevator
-                goDirectlyTo(startMainPivot, prePivotElevator, retractWristTarget)
+                goDirectlyTo(startMainPivot, postPivotElevator, retractWristTarget)
                     .until(
                         () ->
-                            Math.abs(elevatorS.getLengthMeters() - prePivotElevator)
-                                < Units.inchesToMeters(1)),
+                            elevatorS.getLengthMeters() < SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters) + Units.inchesToMeters(1)),
                 // pivot
                 goDirectlyTo(position.pivotRadians(), postPivotElevator, retractWristTarget)
                     .until(
                         () ->
-                            Math.abs(elevatorS.getLengthMeters() - postPivotElevator)
-                                < Units.inchesToMeters(1)
-                            && Math.abs(mainPivotS.getAngleRadians() - position.pivotRadians()) < Units.degreesToRadians(10)),
+                            // Math.abs(elevatorS.getLengthMeters() - postPivotElevator)
+                            //     < Units.inchesToMeters(1)
+                            //&& 
+                            Math.abs(mainPivotS.getAngleRadians() - position.pivotRadians()) < Units.degreesToRadians(10)),
                 // extend
-                goDirectlyTo(
-                    position.pivotRadians(), position.elevatorMeters(), retractWristTarget)
-                    .until(
-                      () ->
-                          Math.abs(elevatorS.getLengthMeters() - position.elevatorMeters())
-                              < Units.inchesToMeters(1)),
+                // goDirectlyTo(
+                //     position.pivotRadians(), position.elevatorMeters(), retractWristTarget)
+                //     .until(
+                //       () ->
+                //           Math.abs(elevatorS.getLengthMeters() - position.elevatorMeters())
+                //               < Units.inchesToMeters(1)),
                 goDirectlyTo(
                   position.pivotRadians(), position.elevatorMeters(), position.wristRadians())
                     );
@@ -118,7 +118,20 @@ public class RealArm extends Arm {
   private Command goDirectlyTo(
       double mainPivotRadians, double elevatorMeters, double wristRadians) {
     return parallel(
-        mainPivotS.goTo(() -> mainPivotRadians), elevatorS.goToLength(() -> elevatorMeters), wristS.goTo(()->wristRadians));
+        mainPivotS.goTo(() -> mainPivotRadians),
+        elevatorS.goToLength(
+          ()-> {
+            var dontHitDrivetrain = (mainPivotS.getAngleRadians() < Units.degreesToRadians(30)) ? 
+            Math.max(elevatorMeters, Arm.Positions.GROUND_ALGAE.elevatorMeters()) : elevatorMeters;
+            // don't put the wrist axis more than a few inches outside fp
+            return Math.min(dontHitDrivetrain,Units.inchesToMeters(35)/Math.cos(mainPivotS.getAngleRadians()));
+          }
+          //() -> Math.min(elevatorMeters,Units.inchesToMeters(29)/Math.cos(mainPivotS.getAngleRadians()))
+        ),
+        
+        wristS.goTo(
+          ()->mainPivotS.getAngleRadians() < Units.degreesToRadians(30) ? Math.min(wristRadians, Units.degreesToRadians(-30)) : wristRadians
+          ));
   }
 
   @Override

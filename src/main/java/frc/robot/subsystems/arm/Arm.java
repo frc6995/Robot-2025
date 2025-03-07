@@ -56,14 +56,13 @@ public abstract class Arm {
     public ArmPosition safeWrist() {
       return new ArmPosition(mainPivotAngle,
         elevatorLength,
-        wristAngle.lt(Rotations.of(0))? wristAngle : Rotations.of(-0.3));
+        wristAngle.lt(Rotations.of(0))? wristAngle : Rotations.of(-0.1));
     }
   }
   ;
 
   public class Positions {
-    public static final ArmPosition L1 =
-        new ArmPosition(MainPivotConstants.CW_LIMIT.minus(Degrees.of(10)), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
+
     public static final ArmPosition L2 =
     new ArmPosition(Degrees.of(95), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0.35));
     public static final ArmPosition L3 =
@@ -76,10 +75,12 @@ public abstract class Arm {
         new ArmPosition(Radians.of(0.957), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition INTAKE_CORAL =
         new ArmPosition(Radians.of(0.957), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), WristConstants.CW_LIMIT);
+    public static final ArmPosition L1 =
+        INTAKE_CORAL;
     public static final ArmPosition LOW_ALGAE = new ArmPosition(Degrees.of(55), ElevatorConstants.MIN_LENGTH.plus(Inches.of(8)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
     public static final ArmPosition HIGH_ALGAE = new ArmPosition(Degrees.of(60), ElevatorConstants.MIN_LENGTH.plus(Inches.of(22)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
-    public static final ArmPosition GROUND_ALGAE = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
-    public static final ArmPosition SCORE_BARGE = new ArmPosition(Degrees.of(95), ElevatorConstants.MAX_LENGTH, Radians.of(0));
+    public static final ArmPosition GROUND_ALGAE = new ArmPosition(Degrees.of(16), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(6)), WristConstants.CW_LIMIT.plus(Degrees.of(4)));
+    public static final ArmPosition SCORE_BARGE = new ArmPosition(Degrees.of(85), ElevatorConstants.MAX_LENGTH, Radians.of(-0.5));
     public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT.plus(Degrees.of(20)));
     public static final ArmPosition PRE_SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
     public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);

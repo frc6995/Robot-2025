@@ -105,7 +105,7 @@ public class MainPivotS extends SubsystemBase {
           .withRotorToSensorRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
-          .withReverseSoftLimitThreshold(Rotations.of(0.038*2))
+          .withReverseSoftLimitThreshold(Degrees.of(1))
           .withReverseSoftLimitEnable(true);
       config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;

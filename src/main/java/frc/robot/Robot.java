@@ -180,14 +180,15 @@ public class Robot extends TimedRobot {
   }
 
   private void configureOperatorController() {
-    m_operatorBoard.left().or(m_driverController.start()).onTrue(
+    m_operatorBoard.left().onTrue(
       m_arm.goToPosition(Arm.Positions.PRE_CLIMB)).onTrue(
         m_climbHookS.release().withTimeout(5)
     );
     m_operatorBoard.center().onTrue(m_climbHookS.clamp())
     .whileTrue(waitSeconds(2).andThen(
       parallel(
-        m_arm.mainPivotS.voltage(()->-2),
+        m_arm.mainPivotS.voltage(()->
+          (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(30)) ? 0 : -2),
         waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(60))
           .andThen(
             m_arm.wristS.goTo(()->0.0)
@@ -203,16 +204,12 @@ public class Robot extends TimedRobot {
     m_driverController.a().whileTrue(
         Commands.defer(() -> m_autos.autoCoralIntake(inWorkshop.getAsBoolean() ? POI.SL3 : m_autos.closestIntake()), Set.of(m_drivebaseS)));
     // Drive and autoalign to processor
-    // If in workshop, drive to processor.
-    m_driverController.b()
+    // If NOT in workshop, drive to processor.
+    m_driverController.start()
         .onTrue(m_hand.inAlgae())
         .onTrue(sequence(
-          m_arm.goToPosition(Arm.Positions.PRE_SCORE_PROCESSOR)
-            .until(()->m_arm.atPosition(Arm.Positions.PRE_SCORE_PROCESSOR))
-            .withTimeout(2)
-          .andThen(
             m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR)
-          )))
+        ))
         .and(inWorkshop.negate())
         .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
 
@@ -244,6 +241,7 @@ public class Robot extends TimedRobot {
     .onTrue(m_hand.inAlgae());
 
     // Stow
+    m_driverController.b().onTrue(m_arm.goToPosition(Arm.Positions.GROUND_ALGAE));
     m_driverController.leftBumper().onTrue(m_arm.algaeStowWithHome());
        // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow

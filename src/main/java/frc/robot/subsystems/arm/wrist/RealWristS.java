@@ -87,8 +87,10 @@ public class RealWristS extends Wrist {
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
     public static final double MOI = 0.10829;
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
+      config.CurrentLimits.withStatorCurrentLimitEnable(true).withStatorCurrentLimit(120)
+      .withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(60);
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(50).withKD(0);
-      config.MotionMagic.withMotionMagicCruiseVelocity(4).withMotionMagicAcceleration(6);
+      config.MotionMagic.withMotionMagicCruiseVelocity(4).withMotionMagicAcceleration(10);
       config.Feedback
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)

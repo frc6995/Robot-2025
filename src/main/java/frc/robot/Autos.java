@@ -391,9 +391,9 @@ public class Autos {
                 m_hand.inCoral().withTimeout(0.5)).andThen(
                   new ScheduleCommand(
 
-                  LightStripS.top.stateC(()->TopStates.Intaked)).withTimeout(1))
+                  LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(1)
                     
-                    ));
+        ))));
   }
 
   public Command bargeUpAndOut() {
@@ -411,24 +411,24 @@ public class Autos {
     );
   }
   private double bargeTargetX() {
-    final double blueX = 8.21 - Units.inchesToMeters(33);
+    final double blueX = 8.21 - Units.inchesToMeters(18);
     return AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(blueX) : blueX;
   }
 
+  public Rotation2d bargeTargetHeading() {
+    return AllianceFlipUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero;
+  }
   public Command alignToBarge(DoubleSupplier lateralSpeed) {
     return m_drivebase.driveToPoseSupC(()->{
       var start = m_drivebase.getPose();
-      var target = new Pose2d(bargeTargetX(), start.getY(), AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg);
+      var target = new Pose2d(bargeTargetX(), start.getY(), bargeTargetHeading());
       return target;
     });
-    // m_drivebase.driveToX(
-    //     this::bargeTargetX,
-    //     lateralSpeed,
-    //     () -> (AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg));
   }
 
   public boolean atBargeLine() {
-    return MathUtil.isNear(bargeTargetX(), m_drivebase.getPose().getX(), 0.1);
+    return MathUtil.isNear(bargeTargetX(), m_drivebase.getPose().getX(), Units.inchesToMeters(2)) && 
+      MathUtil.isNear(0, m_drivebase.getPoseHeading().minus(bargeTargetHeading()).getRadians(), Units.degreesToRadians(10));
   }
 
   public Command outtake() {
