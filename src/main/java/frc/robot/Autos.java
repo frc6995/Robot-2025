@@ -10,6 +10,7 @@ import choreo.Choreo;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
+import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.util.ChoreoAllianceFlipUtil;
@@ -101,15 +102,46 @@ public class Autos {
     drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
     drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
     drivetrainSafeToAlignTrig = m_drivebase.safeToReefAlign(this.offsetSelectedReefPose);
+    //m_autoChooser.addRoutine("jeremyRoutine", this::splitPathAutoRoutine);
     // // m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
 
   }
 
+ public Command jeremyRoutine() {
+    AutoRoutine routine = m_autoFactory.newRoutine("jeremyRoutine");
+
+    AutoTrajectory start = routine.trajectory("move", 0);
+    AutoTrajectory secondMove = routine.trajectory("move", 1);
+    AutoTrajectory thridMove = routine.trajectory("move",2);
+    AutoTrajectory fourthMove = routine.trajectory("move",3);
+
+    // When the routine begins, reset odometry and start the first trajectory
+    routine
+    .active()
+    .onTrue(
+        sequence(
+            start.resetOdometry(),
+            start.cmd(),
+            m_drivebase.stop().withTimeout(1),
+            secondMove.cmd(),
+            m_drivebase.stop().withTimeout(1),
+            thridMove.cmd(),
+            m_drivebase.stop().withTimeout(1),
+            fourthMove.cmd()
+            ));
+
+    return routine.cmd();
+  }
+
+
   public void addAutos() {
     autos.put("Left 3p (Home)", () -> flexAuto(POI.STI, POI.SL3, POI.I, POI.J, POI.K));
+    autos.put("Jeremy Scoring Routine 3p L", () ->flexAuto(POI.STI, POI.SL3, POI.I, POI.B));
+    autos.put("Jeremy Scoring Routine 3p R", () ->flexAuto(POI.STG, POI.SR3, POI.G, POI.K));
     autos.put("Right 3p", () -> flexAuto(POI.STF, POI.SR3, POI.F, POI.E, POI.D));
     autos.put("CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, POI.H));
     autos.put("CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, POI.G));
+    autos.put("jeremyRoutine", ()->jeremyRoutine());
     autos.put("MoveOffLine", ()->{
       var move = new SwerveRequest.RobotCentric();
       return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
