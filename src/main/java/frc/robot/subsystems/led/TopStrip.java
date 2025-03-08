@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 import java.util.Map;
@@ -35,13 +37,12 @@ public class TopStrip {
         CoastMode(solid(Color.kAquamarine).atBrightness(Value.of(0.75))),
         Intaked(solid(Color.kWhite).blink(Seconds.of(0.125))),
         ReadyToIntake(solid(Color.kWhite).atBrightness(Value.of(0.75))),
-        Climbing(rainbow(255, 255)),
+        Climbing(rainbow(255, 255).scrollAtAbsoluteSpeed(InchesPerSecond.of(10), Inches.of(0.6))),
         /**solid blue*/
         BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(1))),
         /**solid red */
         RedAlliance(solid(Color.kRed).atBrightness(Value.of(1))),
-        Default(
-                solid(Color.kGreen).atBrightness(Value.of(1)));
+        Default(solid(Color.kGreen).atBrightness(Value.of(1)).breathe(Seconds.of(1.6995)));
     
         public LEDPattern applier;
     

@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.InchesPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 import java.util.Map;
@@ -36,9 +38,10 @@ public class OuterStrip {
         GH(solid(Color.kYellow).atBrightness(Value.of(1))),
         IJ(solid(Color.kOrange).atBrightness(Value.of(1))),
         KL(solid(Color.kRed).atBrightness(Value.of(1))),
-        Climbing(rainbow(255, 255)),
-        
-        Default(solid(Color.kGreen).atBrightness(Value.of(1)));
+        Climbing(rainbow(255, 255).scrollAtAbsoluteSpeed(InchesPerSecond.of(10), Inches.of(0.6))),
+        BlueAlliance(solid(Color.kBlue).atBrightness(Value.of(1))),
+        RedAlliance(solid(Color.kRed).atBrightness(Value.of(1))),
+        Default(solid(Color.kGreen).atBrightness(Value.of(1)).breathe(Seconds.of(1.6995)));
     
         public LEDPattern applier;
     
