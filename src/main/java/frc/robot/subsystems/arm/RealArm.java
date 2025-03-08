@@ -114,17 +114,23 @@ public class RealArm extends Arm {
         },
         Set.of(mainPivotS, elevatorS, wristS));
   }
-
+  
   private Command goDirectlyTo(
       double mainPivotRadians, double elevatorMeters, double wristRadians) {
     return parallel(
         mainPivotS.goTo(() -> mainPivotRadians),
         elevatorS.goToLength(
           ()-> {
-            var dontHitDrivetrain = (mainPivotS.getAngleRadians() < Units.degreesToRadians(30)) ? 
+            var dontHitDrivetrainTarget = (mainPivotS.getAngleRadians() < Units.degreesToRadians(30)) ? 
             Math.max(elevatorMeters, Arm.Positions.GROUND_ALGAE.elevatorMeters()) : elevatorMeters;
             // don't put the wrist axis more than a few inches outside fp
-            return Math.min(dontHitDrivetrain,Units.inchesToMeters(35)/Math.cos(mainPivotS.getAngleRadians()));
+            return MathUtil.clamp(
+              dontHitDrivetrainTarget,
+              ElevatorConstants.MIN_LENGTH.in(Meters),
+              
+              ElevatorConstants.MAX_LENGTH.in(Meters));
+              // ,
+              // Units.inchesToMeters(35)/Math.cos(mainPivotS.getAngleRadians())));
           }
           //() -> Math.min(elevatorMeters,Units.inchesToMeters(29)/Math.cos(mainPivotS.getAngleRadians()))
         ),
@@ -147,12 +153,13 @@ public class RealArm extends Arm {
   @Override
   public Command algaeStowWithHome() {
     return sequence(
-      goToPosition(Arm.Positions.STOW).until(
-        ()->this.position.withinTolerance(Arm.Positions.STOW, Units.degreesToRadians(2), Units.inchesToMeters(0.5), Units.degreesToRadians(360)
-      )),
-      new ScheduleCommand(
-        wristS.driveToHome()
-      )
+      goToPosition(Arm.Positions.STOW)
+      //.until(
+      //  ()->this.position.withinTolerance(Arm.Positions.STOW, Units.degreesToRadians(2), Units.inchesToMeters(0.5), Units.degreesToRadians(360)
+      //)),
+      // new ScheduleCommand(
+      //   wristS.driveToHome()
+      // )
     );
   }
 

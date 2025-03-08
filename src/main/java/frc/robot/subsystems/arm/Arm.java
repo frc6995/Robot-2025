@@ -70,7 +70,7 @@ public abstract class Arm {
     public static final ArmPosition L4 =
         new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH, Radians.of(0.29));
     public static final ArmPosition STOW =
-        new ArmPosition(Degrees.of(70), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
+        new ArmPosition(Degrees.of(70), ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(-0.5));
     public static final ArmPosition CLOSE_INTAKE_CORAL =
         new ArmPosition(Radians.of(0.957), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition INTAKE_CORAL =
@@ -79,7 +79,7 @@ public abstract class Arm {
         INTAKE_CORAL;
     public static final ArmPosition LOW_ALGAE = new ArmPosition(Degrees.of(55), ElevatorConstants.MIN_LENGTH.plus(Inches.of(8)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
     public static final ArmPosition HIGH_ALGAE = new ArmPosition(Degrees.of(60), ElevatorConstants.MIN_LENGTH.plus(Inches.of(22)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
-    public static final ArmPosition GROUND_ALGAE = new ArmPosition(Degrees.of(16), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(6)), WristConstants.CW_LIMIT.plus(Degrees.of(4)));
+    public static final ArmPosition GROUND_ALGAE = new ArmPosition(Degrees.of(17), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(6)), WristConstants.CW_LIMIT.plus(Degrees.of(7)));
     public static final ArmPosition SCORE_BARGE = new ArmPosition(Degrees.of(85), ElevatorConstants.MAX_LENGTH, Radians.of(-0.5));
     public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT.plus(Degrees.of(20)));
     public static final ArmPosition PRE_SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));

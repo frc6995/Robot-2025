@@ -13,6 +13,11 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.util.DriveFeedforwards;
+import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
@@ -23,10 +28,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
 import frc.robot.util.TrapezoidProfile;
 import frc.robot.util.TrapezoidProfile.Constraints;
 import frc.robot.util.TrapezoidProfile.State;
+import wpilibExt.DCMotorExt;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -39,6 +47,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.logging.Module;
 import frc.robot.logging.TalonFXPDHChannel;
@@ -57,6 +66,19 @@ import java.util.function.Supplier;
  */
 @Logged
 public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
+  private RobotConfig m_robotConfig = new RobotConfig(
+    Pounds.of(111 + 10 + 13), KilogramSquareMeters.of(6.0),
+    new ModuleConfig(
+      
+      TunerConstants.kWheelRadius.in(Meters),
+      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond), 1.5,
+      DCMotor.getKrakenX60Foc(1).withReduction(TunerConstants.BackLeft.DriveMotorGearRatio),
+      120.0, 1),
+      getModuleLocations()
+    );
+  public com.pathplanner.lib.util.swerve.SwerveSetpointGenerator m_pathPlannerGenerator =
+    new com.pathplanner.lib.util.swerve.SwerveSetpointGenerator(m_robotConfig,
+      TunerConstants.FrontLeft.SteerMotorGains.kV * 12*2*Math.PI);
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
@@ -79,6 +101,14 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
       new edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints(8, 12));
   private final Vision m_vision = new Vision(this::addVisionMeasurement, () -> state().Pose);
 
+  // public SwerveSetpointGenerator m_setpointGenerator = new SwerveSetpointGenerator(
+  //   getModuleLocations(),
+  //   new DCMotorExt(DCMotor.getKrakenX60Foc(1).withReduction(TunerConstants.BackLeft.DriveMotorGearRatio), 1),
+  //         DCMotor.getKrakenX60(1).withReduction(TunerConstants.BackLeft.SteerMotorGearRatio),
+  //   TunerConstants.kSlipCurrent.in(Amps),
+  //   TunerConstants.kSlipCurrent.in(Amps),
+  //   Units.lbsToKilograms(111 + 10 + 13),
+  //   6.0, TunerConstants.kWheelRadius.in(Meters) * 2, 1.5, 0.0);
   public RepulsorFieldPlanner m_repulsor = new RepulsorFieldPlanner();
   // For logging
   public Module fl;
@@ -417,8 +447,9 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
   /* DRIVE TO POSE using Trapezoid Profiles */
   private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 1.5);
+  private TrapezoidProfile.Constraints driveToPoseRotationConstraints = new Constraints(3, 6);
   private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(driveToPoseConstraints);
-  private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(new Constraints(3, 6));
+  private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(driveToPoseRotationConstraints);
 
   // For modifying goals from within a lambda
   private class Capture<T> {
@@ -432,6 +463,35 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private TrapezoidProfile.State driveToPoseGoal = new State(0, 0);
   private TrapezoidProfile.State driveToPoseRotationGoal = new State(0, 0);
 
+
+  private SwerveSetpoint m_previousSwerveSetpoint;
+  private ApplyRobotSpeeds m_pathApplyRobotSpeeds = new ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
+  private PathConstraints m_autoAlignPathConstraints = new PathConstraints(
+    driveToPoseConstraints.maxVelocity, driveToPoseConstraints.maxAcceleration,
+    driveToPoseRotationConstraints.maxVelocity, driveToPoseRotationConstraints.maxAcceleration);
+
+  public SwerveRequest calculateFollowRequest(SwerveSetpoint previous, SwerveSample sample) {
+    m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+    var pose = state().Pose;
+    var targetSpeeds = sample.getChassisSpeeds();
+    targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(pose.getX(), sample.x);
+    targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(pose.getY(), sample.y);
+    targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(pose.getRotation().getRadians(),
+        sample.heading);
+    var targetSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
+    var swerveSetpoint = m_pathPlannerGenerator.generateSetpoint(
+      previous,
+      targetSpeedsRobotRelative, null, 0.02);
+    m_previousSwerveSetpoint = swerveSetpoint;
+    return
+
+        m_pathApplyRobotSpeeds
+            
+            .withSpeeds(targetSpeedsRobotRelative)
+            // .withWheelForceFeedforwardsX(swerveSetpoint.feedforwards().robotRelativeForcesXNewtons())
+            // .withWheelForceFeedforwardsY(swerveSetpoint.feedforwards().robotRelativeForcesYNewtons())
+            ;
+  }
   /**
    * Drives to a pose with motion profiles on translation and rotation.
    * The translation profile starts at dist(start,end) and drives toward 0. This state is then interpolated 
@@ -485,12 +545,15 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           SmartDashboard.putNumber("driveToPoseTransInterpVel", state.velocity);
           SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
           SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
+          // TODO reset previous swerve setpoint
+          m_previousSwerveSetpoint = new SwerveSetpoint(state().Speeds, state().ModuleStates, DriveFeedforwards.zeros(4));
 
         })
         .andThen(
             run(
                 () -> {
                   var setpoint = driveToPoseProfile.calculate(0.02, state, driveToPoseGoal);
+                  var nextSetpoint = driveToPoseProfile.calculate(0.04, state, driveToPoseGoal);
                   state.position = setpoint.position;
                   state.velocity = setpoint.velocity;
                   // Rotation continuous input
@@ -523,16 +586,16 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                   var interpTrans = end.inner
                       .getTranslation()
                       .interpolate(startPose.getTranslation(), setpoint.position / dist.inner);
+                  var request = calculateFollowRequest(m_previousSwerveSetpoint, RepulsorFieldPlanner.sample(
+                    interpTrans,
+                    new Rotation2d(rotationState.position),
+                    normDirStartToEnd.inner.getX() * -setpoint.velocity,
+                    normDirStartToEnd.inner.getY() * -setpoint.velocity,
+                    rotationState.velocity));
                   if (atPose.getAsBoolean()) {
                     this.setControl(idle);
                   } else {
-                  followPath(
-                      RepulsorFieldPlanner.sample(
-                          interpTrans,
-                          new Rotation2d(rotationState.position),
-                          normDirStartToEnd.inner.getX() * -setpoint.velocity,
-                          normDirStartToEnd.inner.getY() * -setpoint.velocity,
-                          rotationState.velocity));
+                    this.setControl(request);
                   }
                 }))
 ;

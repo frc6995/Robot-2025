@@ -42,7 +42,7 @@ public class RealHandS extends Hand {
   public static final double OUT_ALGAE_VOLTAGE = 10;
 
   public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
-    config.CurrentLimits.withStatorCurrentLimit(70);
+    config.CurrentLimits.withStatorCurrentLimit(60).withStatorCurrentLimitEnable(true);
     return config;
   }
   }

@@ -214,12 +214,14 @@ public class Vision {
       double tdist = tgt.getBestCameraToTarget().getTranslation().getNorm();
       if (pose.targetsUsed.size() < 2 && tdist > Units.feetToMeters(8)){
         return;
+      } else {
+        closeEnoughTgts = 1;
       }
       avgDistance += tdist;
       if (tdist < closestDistance) {
         closestDistance = tdist;
       }
-      if (tdist <= Units.feetToMeters(10)) {
+      if (pose.targetsUsed.size() >= 2 && tdist <= Units.feetToMeters(6)) {
         closeEnoughTgts++;
       }
       // ignore |= (tgt.getFiducialId() == 13);
