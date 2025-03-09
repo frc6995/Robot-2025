@@ -22,6 +22,7 @@ from __future__ import annotations
 
 try:
     from typing import Sequence
+
     import usb_hid
 except ImportError:
     pass

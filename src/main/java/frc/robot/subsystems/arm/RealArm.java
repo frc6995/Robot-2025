@@ -1,13 +1,12 @@
 package frc.robot.subsystems.arm;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
+
+import java.util.Set;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
@@ -16,17 +15,12 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import frc.robot.subsystems.arm.elevator.RealElevatorS;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.pivot.MainPivotS;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
-import frc.robot.subsystems.arm.wrist.NoneWristS;
-import frc.robot.subsystems.arm.wrist.Wrist;
 import frc.robot.subsystems.arm.wrist.RealWristS;
 import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
-
-import java.util.Set;
 
 @Logged
 public class RealArm extends Arm {

@@ -14,6 +14,10 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.Map;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -25,6 +29,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -48,12 +53,7 @@ import edu.wpi.first.wpilibj.simulation.TiltedElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
-
-import java.util.Map;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 @Logged
 public class RealElevatorS extends Elevator {

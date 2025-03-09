@@ -14,7 +14,7 @@ It is based on the work in neopixel.py and adafruit_dotstar.py.
 """
 
 try:
-    from typing import Optional, Tuple, Union, Sequence
+    from typing import Optional, Sequence, Tuple, Union
 
     ColorUnion = Union[int, Tuple[int, int, int], Tuple[int, int, int, int]]
 except ImportError:

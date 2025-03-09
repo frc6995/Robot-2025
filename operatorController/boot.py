@@ -1,6 +1,5 @@
 import usb_hid
 
-
 # This is only one example of a gamepad descriptor, and may not suit your needs.
 GAMEPAD_REPORT_DESCRIPTOR = bytes((
     0x05, 0x01,  # Usage Page (Generic Desktop Ctrls)

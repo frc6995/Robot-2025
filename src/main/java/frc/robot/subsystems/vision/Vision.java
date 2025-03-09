@@ -1,6 +1,20 @@
 package frc.robot.subsystems.vision;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonPipelineResult;
+
 import com.ctre.phoenix6.Utils;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
@@ -18,17 +32,6 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.util.TriConsumer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.simulation.PhotonCameraSim;
-import org.photonvision.simulation.SimCameraProperties;
-import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.PhotonPipelineResult;
 
 public class Vision {
   public interface VisionConsumer extends TriConsumer<Pose2d, Double, Vector<N3>> {}

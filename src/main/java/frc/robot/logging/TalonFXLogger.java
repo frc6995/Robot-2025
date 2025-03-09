@@ -2,16 +2,18 @@ package frc.robot.logging;
 
 import static edu.wpi.first.units.Units.Rotation;
 
+import java.util.HashMap;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.epilogue.CustomLoggerFor;
 import edu.wpi.first.epilogue.logging.ClassSpecificLogger;
 import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import java.util.HashMap;
 
 @CustomLoggerFor(TalonFX.class)
 public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
@@ -30,11 +32,11 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
   }
 
   public void refreshAll() {
-    // for (Integer i : talons.keySet()) {
-    //   var object = talons.get(i);
-    //   BaseStatusSignal.refreshAll(
-    //       object.statorCurrent(), object.torqueCurrent(), object.supplyCurrent, object.position(), object.voltage());
-    // }
+    for (Integer i : talons.keySet()) {
+      var object = talons.get(i);
+      BaseStatusSignal.refreshAll(
+          object.statorCurrent(), object.torqueCurrent(), object.supplyCurrent, object.position(), object.voltage());
+    }
   }
 
   @Override
@@ -51,10 +53,10 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
       signals.statorCurrent.setUpdateFrequency(50);
       talons.put(object.getDeviceID(), signals);
     }
-    // dataLogger.log("statorCurrent", signals.statorCurrent.getValue().baseUnitMagnitude());
-    // dataLogger.log("torqueCurrent", signals.torqueCurrent.getValue().baseUnitMagnitude());
-    // dataLogger.log("supplyCurrent", signals.supplyCurrent.getValue().baseUnitMagnitude());
-    // dataLogger.log("position", signals.position.getValue().in(Rotation));
-    // dataLogger.log("voltage", signals.voltage.getValueAsDouble());
+    dataLogger.log("statorCurrent", signals.statorCurrent.getValue().baseUnitMagnitude());
+    dataLogger.log("torqueCurrent", signals.torqueCurrent.getValue().baseUnitMagnitude());
+    dataLogger.log("supplyCurrent", signals.supplyCurrent.getValue().baseUnitMagnitude());
+    dataLogger.log("position", signals.position.getValue().in(Rotation));
+    dataLogger.log("voltage", signals.voltage.getValueAsDouble());
   }
 }

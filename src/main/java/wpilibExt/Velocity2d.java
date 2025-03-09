@@ -2,7 +2,11 @@ package wpilibExt;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
+import java.nio.ByteBuffer;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -13,8 +17,6 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
-import java.nio.ByteBuffer;
-import java.util.Objects;
 
 public class Velocity2d implements Interpolatable<Velocity2d>, StructSerializable {
   private final double m_vx;

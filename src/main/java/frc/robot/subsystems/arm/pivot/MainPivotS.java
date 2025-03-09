@@ -9,8 +9,10 @@ import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.wpilibj2.command.Commands.*;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
+
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -26,10 +28,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.ctre.phoenix6.sim.ChassisReference;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
@@ -42,13 +44,9 @@ import edu.wpi.first.wpilibj.simulation.VariableLengthArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.util.NomadMathUtil;
-import java.util.Map;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 @Logged
 public class MainPivotS extends SubsystemBase {

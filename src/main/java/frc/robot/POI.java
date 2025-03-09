@@ -1,16 +1,16 @@
 
 package frc.robot;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
 import choreo.Choreo;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
-
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 public enum POI {
     REEF(false),

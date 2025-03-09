@@ -1,25 +1,38 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
-import static frc.robot.logging.PowerDistributionSim.Channel.*;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.logging.PowerDistributionSim.Channel.c04_FL_Drive;
+import static frc.robot.logging.PowerDistributionSim.Channel.c05_FL_Steer;
+import static frc.robot.logging.PowerDistributionSim.Channel.c08_FR_Steer;
+import static frc.robot.logging.PowerDistributionSim.Channel.c09_FR_Drive;
+import static frc.robot.logging.PowerDistributionSim.Channel.c10_BR_Steer;
+import static frc.robot.logging.PowerDistributionSim.Channel.c11_BR_Drive;
+import static frc.robot.logging.PowerDistributionSim.Channel.c12_BR_Steer;
+import static frc.robot.logging.PowerDistributionSim.Channel.c15_BL_Drive;
 
-import choreo.trajectory.SwerveSample;
-import choreo.trajectory.Trajectory;
+import java.util.Optional;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
-import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
@@ -30,19 +43,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
-import frc.robot.util.TrapezoidProfile;
-import frc.robot.util.TrapezoidProfile.Constraints;
-import frc.robot.util.TrapezoidProfile.State;
-import wpilibExt.DCMotorExt;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -56,9 +63,9 @@ import frc.robot.subsystems.drive.Pathing;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.RepulsorFieldPlanner;
-import java.util.Optional;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+import frc.robot.util.TrapezoidProfile;
+import frc.robot.util.TrapezoidProfile.Constraints;
+import frc.robot.util.TrapezoidProfile.State;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements

@@ -1,16 +1,14 @@
 package frc.robot.util.setpointGenerator3173;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import frc.robot.util.setpointGenerator3173.Types.ChassisConstraints;
-
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Optional;
 
 class Util {
   private static final double kEpsilon = 1E-5;

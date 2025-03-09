@@ -1,8 +1,9 @@
 package frc.robot.logging;
 
+import java.util.Arrays;
+
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.simulation.PDPSim;
-import java.util.Arrays;
 
 public class PowerDistributionSim {
   public enum Channel {

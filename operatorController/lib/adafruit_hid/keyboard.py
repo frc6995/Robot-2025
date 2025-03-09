@@ -10,12 +10,12 @@
 """
 
 import time
-from micropython import const
-import usb_hid
 
-from .keycode import Keycode
+import usb_hid
+from micropython import const
 
 from . import find_device
+from .keycode import Keycode
 
 try:
     from typing import Sequence
