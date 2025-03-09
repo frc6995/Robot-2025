@@ -127,7 +127,7 @@ public class Robot extends TimedRobot {
   public Robot() {
     DriverStation.startDataLog(DataLogManager.getLog());
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
-    Epilogue.bind(this);
+    // Epilogue.bind(this);
     m_driverDisplay.setAllHomedSupplier(() -> false)
         .setHasCoralSupplier(m_autos::hasCoral)
         .setBranchSupplier(m_operatorBoard::getBranch)

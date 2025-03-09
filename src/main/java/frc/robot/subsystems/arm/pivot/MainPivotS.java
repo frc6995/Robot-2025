@@ -86,6 +86,7 @@ public class MainPivotS extends SubsystemBase {
     public static final double K_G_RETRACTED = 0.35;
     public static final double K_G_EXTENDED = 0.35;
     public static final double K_S = 0.1;
+    public static final double K_P = 80.0;
     // arm plus hand
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(4);
@@ -93,9 +94,9 @@ public class MainPivotS extends SubsystemBase {
     public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375 + 0.125;
 
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(80).withKD(0).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(K_P).withKD(0).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
       //TEMP
-      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(0.66);
+      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(1.5);
       //config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.Feedback

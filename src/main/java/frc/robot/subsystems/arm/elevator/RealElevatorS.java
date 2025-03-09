@@ -84,14 +84,15 @@ public class RealElevatorS extends Elevator {
           .withForwardSoftLimitThreshold(MAX_LENGTH_ROTATIONS)
           .withReverseSoftLimitEnable(true)
           .withReverseSoftLimitThreshold(MIN_LENGTH_ROTATIONS);
-      config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(Amps.of(40));
+      config.CurrentLimits.withSupplyCurrentLimitEnable(true)
+        .withSupplyCurrentLimit(Amps.of(60));
       config.Slot0.withKS(0)
           .withKV(K_V.in(VoltsPerRotationPerSecond))
           .withKA(K_A.in(VoltsPerRotationPerSecondSquared))
           .withKP(1)
           .withKD(0.25);
-      config.MotionMagic.withMotionMagicAcceleration(140)
-          .withMotionMagicCruiseVelocity(48);
+      config.MotionMagic.withMotionMagicAcceleration(200)
+          .withMotionMagicCruiseVelocity(72);
       return config;
     }
 
@@ -99,7 +100,8 @@ public class RealElevatorS extends Elevator {
       config.MotorOutput.withNeutralMode(NeutralModeValue.Brake)
           .withInverted(InvertedValue.CounterClockwise_Positive);
 
-      config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(Amps.of(20));
+      config.CurrentLimits.withSupplyCurrentLimitEnable(true)
+        .withSupplyCurrentLimit(Amps.of(60));
 
       return config;
     }

@@ -26,7 +26,7 @@ public abstract class Arm {
 
   public record ArmPosition(Angle mainPivotAngle, Distance elevatorLength, Angle wristAngle) {
     public static final Distance SAFE_PIVOT_ELEVATOR_LENGTH =
-    ElevatorConstants.MIN_LENGTH.plus(Inches.of(12));
+    ElevatorConstants.MIN_LENGTH.plus(Inches.of(6));
     public static final Angle SAFE_WRIST = WristConstants.CW_LIMIT.plus(Degrees.of(30));
     public double pivotRadians() {
       return mainPivotAngle.in(Radians);
@@ -75,6 +75,7 @@ public abstract class Arm {
         new ArmPosition(Radians.of(0.957), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition INTAKE_CORAL =
         new ArmPosition(Radians.of(0.957), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), WristConstants.CW_LIMIT);
+    public static final ArmPosition POST_INTAKE_CORAL = new ArmPosition(Degrees.of(85), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), WristConstants.CW_LIMIT);
     public static final ArmPosition L1 =
         INTAKE_CORAL;
     public static final ArmPosition LOW_ALGAE = new ArmPosition(Degrees.of(55), ElevatorConstants.MIN_LENGTH.plus(Inches.of(8)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));
@@ -85,6 +86,10 @@ public abstract class Arm {
     public static final ArmPosition PRE_SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
     public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition POST_CLIMB = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Rotations.of(-0.096));
+
+    // ATTN: Outside pivot and wrist soft limits + need wrist hardware change
+    private static final ArmPosition LOW_ALGAE_REEF = new ArmPosition(Rotations.of(0.307), ElevatorConstants.MIN_LENGTH, Rotations.of(-0.134));
+
 
   }
 

@@ -108,11 +108,11 @@ public class Autos {
   }
 
   public void addAutos() {
-    autos.put("Left 3p (Home)", () -> flexAuto(POI.STI, POI.SL3, POI.I, POI.J, POI.K));
-    autos.put("Right 3p", () -> flexAuto(POI.STF, POI.SR3, POI.F, POI.E, POI.D));
-    autos.put("CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, POI.H));
-    autos.put("CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, POI.G));
-    autos.put("MoveOffLine", ()->{
+    autos.put("1.Left 3p (Home)", () -> flexAuto(POI.STJ, POI.SL3, POI.J, POI.K, POI.L, POI.J));
+    autos.put("2.Right 3p", () -> flexAuto(POI.STE, POI.SR3, POI.E, POI.D, POI.C));
+    autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, POI.H));
+    autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, POI.G));
+    autos.put("5.MoveOffLine", ()->{
       var move = new SwerveRequest.RobotCentric();
       return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
     for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
@@ -338,11 +338,13 @@ public class Autos {
   }
 
   private Command goToPositionWristLast(ArmPosition finalPosition) {
-    return sequence(m_arm.goToPosition(finalPosition.safeWrist()).until(
+    return sequence(
+      m_arm.goToPosition(finalPosition.safeWrist()).until(
       ()->m_arm.getPosition().withinTolerance(finalPosition.safeWrist(),
-        Degrees.of(10).in(Radians), Inches.of(12).in(Meters), Degrees.of(360).in(Radians))
+        Degrees.of(10).in(Radians), Inches.of(18).in(Meters), Degrees.of(360).in(Radians))
     ),
-    m_arm.goToPosition(finalPosition));
+    m_arm.goToPosition(finalPosition)
+    );
   }
 
 
@@ -388,12 +390,17 @@ public class Autos {
         new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
         new ScheduleCommand(
             m_hand.inCoral().until(this::hasCoral).andThen(
-                m_hand.inCoral().withTimeout(0.5)).andThen(
-                  new ScheduleCommand(
+                parallel(
+                  new ScheduleCommand(m_arm.goToPosition(Arm.Positions.POST_INTAKE_CORAL)),
+                  m_hand.inCoral().withTimeout(0.5)).andThen(
+                    new ScheduleCommand(
 
-                  LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(1)
-                    
-        ))));
+                    LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(1)
+                    )
+                  )
+            )
+        )
+    );
   }
 
   public Command bargeUpAndOut() {
@@ -443,10 +450,12 @@ public class Autos {
     // self.atTranslation(
     //    finalPoseUnflipped.getTranslation(), Units.inchesToMeters(6))
     //   .onTrue(m_arm.goToPosition(scoringPosition))
+    self.atTranslation(finalPoseUnflipped.getTranslation(), Units.inchesToMeters(12)).onTrue(
+      goToPositionWristLast(scoringPosition)
+    );
     self.atTranslation(
        finalPoseUnflipped.getTranslation(), Units.inchesToMeters(6))
         .onTrue(print("Inside Scoring Radius"))
-        .onTrue(goToPositionWristLast(scoringPosition))
         .onTrue(
           sequence(
             alignAndDrop(

@@ -95,6 +95,13 @@
      "val":4.0
     }
    },
+   "MAX_START_VEL":{
+    "dimension":"LinVel",
+    "var":{
+     "exp":"1.25 m / s",
+     "val":1.25
+    }
+   },
    "MAX_VEL":{
     "dimension":"LinVel",
     "var":{

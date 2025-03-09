@@ -30,11 +30,11 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
   }
 
   public void refreshAll() {
-    for (Integer i : talons.keySet()) {
-      var object = talons.get(i);
-      BaseStatusSignal.refreshAll(
-          object.statorCurrent(), object.torqueCurrent(), object.supplyCurrent, object.position(), object.voltage());
-    }
+    // for (Integer i : talons.keySet()) {
+    //   var object = talons.get(i);
+    //   BaseStatusSignal.refreshAll(
+    //       object.statorCurrent(), object.torqueCurrent(), object.supplyCurrent, object.position(), object.voltage());
+    // }
   }
 
   @Override
@@ -51,10 +51,10 @@ public class TalonFXLogger extends ClassSpecificLogger<TalonFX> {
       signals.statorCurrent.setUpdateFrequency(50);
       talons.put(object.getDeviceID(), signals);
     }
-    dataLogger.log("statorCurrent", signals.statorCurrent.getValue().baseUnitMagnitude());
-    dataLogger.log("torqueCurrent", signals.torqueCurrent.getValue().baseUnitMagnitude());
-    dataLogger.log("supplyCurrent", signals.supplyCurrent.getValue().baseUnitMagnitude());
-    dataLogger.log("position", signals.position.getValue().in(Rotation));
-    dataLogger.log("voltage", signals.voltage.getValueAsDouble());
+    // dataLogger.log("statorCurrent", signals.statorCurrent.getValue().baseUnitMagnitude());
+    // dataLogger.log("torqueCurrent", signals.torqueCurrent.getValue().baseUnitMagnitude());
+    // dataLogger.log("supplyCurrent", signals.supplyCurrent.getValue().baseUnitMagnitude());
+    // dataLogger.log("position", signals.position.getValue().in(Rotation));
+    // dataLogger.log("voltage", signals.voltage.getValueAsDouble());
   }
 }

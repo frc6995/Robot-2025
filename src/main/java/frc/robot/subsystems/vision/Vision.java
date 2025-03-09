@@ -170,6 +170,10 @@ public class Vision {
     return true;
   }
 
+  private boolean isReef(int id) {
+    return (id >= 6 && id <= 11) || (id >=17 && id <=22);
+  }
+
   private void handleResult(Camera camera, PhotonPipelineResult result) {
     var estimator = camera.estimator;
     estimator.setReferencePose(getPose.get());
@@ -212,18 +216,26 @@ public class Vision {
           }
       } 
       double tdist = tgt.getBestCameraToTarget().getTranslation().getNorm();
-      if (pose.targetsUsed.size() < 2 && tdist > Units.feetToMeters(8)){
-        return;
-      } else {
-        closeEnoughTgts = 1;
+      if (pose.targetsUsed.size() < 2) {
+        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(8) : Units.feetToMeters(8);
+        if (tdist > trustedDistance){
+          return;
+        
+        } else {
+          closeEnoughTgts = 1;
+        }
       }
       avgDistance += tdist;
       if (tdist < closestDistance) {
         closestDistance = tdist;
       }
-      if (pose.targetsUsed.size() >= 2 && tdist <= Units.feetToMeters(6)) {
+      if (pose.targetsUsed.size() >= 2) {
+        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(8) : Units.feetToMeters(8);
+        
+      if (tdist <= trustedDistance) {
         closeEnoughTgts++;
       }
+    }
       // ignore |= (tgt.getFiducialId() == 13);
       // ignore |= (tgt.getFiducialId() == 14);
     }

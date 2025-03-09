@@ -7,6 +7,7 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.controls.StaticBrake;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -73,7 +74,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
       TunerConstants.kWheelRadius.in(Meters),
       TunerConstants.kSpeedAt12Volts.in(MetersPerSecond), 1.5,
       DCMotor.getKrakenX60Foc(1).withReduction(TunerConstants.BackLeft.DriveMotorGearRatio),
-      120.0, 1),
+      600.0, 1),
       getModuleLocations()
     );
   public com.pathplanner.lib.util.swerve.SwerveSetpointGenerator m_pathPlannerGenerator =
@@ -136,10 +137,11 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
       TalonFXPDHChannel.registerFD(c10_BR_Steer, br.steer());
     }
   }
-
+  @NotLogged
+  public SwerveDriveState state = getState();
   /** Re-expose the state as a method of the subclass so Epilogue finds it. */
   public SwerveDriveState state() {
-    return getState();
+    return state;
   }
 
   private final SwerveDrivetrainConstants constants;
@@ -238,7 +240,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   SwerveRequest.ApplyRobotSpeeds idle = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds()).withDriveRequestType(DriveRequestType.Velocity);
-
+  SwerveRequest.SwerveDriveBrake xBrake = new SwerveRequest.SwerveDriveBrake().withDriveRequestType(DriveRequestType.Velocity);
   public Command stop() {
     return applyRequest(() -> idle);
   }
@@ -252,7 +254,9 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
   @Override
   public void periodic() {
+    state = getStateCopy();
     if (RobotBase.isReal()) {
+      
       m_vision.update();
     }
     /*
@@ -406,7 +410,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
   @NotLogged
   public Pose2d getPose() {
-    return getState().Pose;
+    return state.Pose;
   }
 
   @NotLogged
@@ -464,32 +468,29 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private TrapezoidProfile.State driveToPoseRotationGoal = new State(0, 0);
 
 
-  private SwerveSetpoint m_previousSwerveSetpoint;
+  private SwerveSetpoint m_previousSwerveSetpoint = new SwerveSetpoint(state().Speeds, state().ModuleStates, DriveFeedforwards.zeros(4));
   private ApplyRobotSpeeds m_pathApplyRobotSpeeds = new ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
-  private PathConstraints m_autoAlignPathConstraints = new PathConstraints(
-    driveToPoseConstraints.maxVelocity, driveToPoseConstraints.maxAcceleration,
-    driveToPoseRotationConstraints.maxVelocity, driveToPoseRotationConstraints.maxAcceleration);
-
   public SwerveRequest calculateFollowRequest(SwerveSetpoint previous, SwerveSample sample) {
     m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
     var pose = state().Pose;
     var targetSpeeds = sample.getChassisSpeeds();
-    targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(pose.getX(), sample.x);
-    targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(pose.getY(), sample.y);
-    targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(pose.getRotation().getRadians(),
-        sample.heading);
+    // Calculate module forces prior to PID correction
     var targetSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
     var swerveSetpoint = m_pathPlannerGenerator.generateSetpoint(
       previous,
       targetSpeedsRobotRelative, null, 0.02);
+    //
+    targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(pose.getX(), sample.x);
+    targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(pose.getY(), sample.y);
+    targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(pose.getRotation().getRadians(),
+        sample.heading);
+    targetSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
     m_previousSwerveSetpoint = swerveSetpoint;
     return
-
         m_pathApplyRobotSpeeds
-            
             .withSpeeds(targetSpeedsRobotRelative)
-            // .withWheelForceFeedforwardsX(swerveSetpoint.feedforwards().robotRelativeForcesXNewtons())
-            // .withWheelForceFeedforwardsY(swerveSetpoint.feedforwards().robotRelativeForcesYNewtons())
+            .withWheelForceFeedforwardsX(swerveSetpoint.feedforwards().robotRelativeForcesXNewtons())
+            .withWheelForceFeedforwardsY(swerveSetpoint.feedforwards().robotRelativeForcesYNewtons())
             ;
   }
   /**
@@ -553,7 +554,6 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
             run(
                 () -> {
                   var setpoint = driveToPoseProfile.calculate(0.02, state, driveToPoseGoal);
-                  var nextSetpoint = driveToPoseProfile.calculate(0.04, state, driveToPoseGoal);
                   state.position = setpoint.position;
                   state.velocity = setpoint.velocity;
                   // Rotation continuous input
@@ -593,10 +593,21 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                     normDirStartToEnd.inner.getY() * -setpoint.velocity,
                     rotationState.velocity));
                   if (atPose.getAsBoolean()) {
-                    this.setControl(idle);
+                    this.setControl(xBrake);
                   } else {
                     this.setControl(request);
                   }
+
+                  // if (atPose.getAsBoolean()) {
+                  //   this.setControl(xBrake);
+                  // } else {
+                  //   followPath(RepulsorFieldPlanner.sample(
+                  //   interpTrans,
+                  //   new Rotation2d(rotationState.position),
+                  //   normDirStartToEnd.inner.getX() * -setpoint.velocity,
+                  //   normDirStartToEnd.inner.getY() * -setpoint.velocity,
+                  //   rotationState.velocity));
+                  // }
                 }))
 ;
   }
