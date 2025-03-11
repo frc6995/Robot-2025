@@ -31,7 +31,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
-import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.epilogue.Logged;
@@ -103,7 +102,6 @@ public class Autos {
     drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
     drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
     drivetrainSafeToAlignTrig = m_drivebase.safeToReefAlign(this.offsetSelectedReefPose);
-    // m_autoChooser.addRoutine("splitCheeseRoutine", this::splitPathAutoRoutine);
     // // m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
 
   }
@@ -130,24 +128,8 @@ public class Autos {
     successfulAutoTest.set(true);
   }
 
-  public AutoRoutine splitPathAutoRoutine() {
-    AutoRoutine routine = m_autoFactory.newRoutine("splitPathRoutine");
 
-    AutoTrajectory start = routine.trajectory("split_path", 0);
-    AutoTrajectory secondHalf = routine.trajectory("split_path", 1);
 
-    // When the routine begins, reset odometry and start the first trajectory
-    routine
-        .active()
-        .onTrue(
-            sequence(
-                start.resetOdometry(),
-                start.cmd(),
-                m_drivebase.stop().withTimeout(2.54),
-                secondHalf.cmd()));
-
-    return routine;
-  }
 
 
   /**
