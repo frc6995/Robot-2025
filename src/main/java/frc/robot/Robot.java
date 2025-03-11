@@ -435,7 +435,7 @@ public class Robot extends TimedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    m_drivebaseS.stop().ignoringDisable(true).until(() -> true).schedule();
+    m_drivebaseS.stopBrakeMode().ignoringDisable(true).until(() -> true).schedule();
   }
 
   /** This function is called periodically when disabled. */

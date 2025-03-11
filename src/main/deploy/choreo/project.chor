@@ -98,8 +98,8 @@
    "MAX_START_VEL":{
     "dimension":"LinVel",
     "var":{
-     "exp":"1.25 m / s",
-     "val":1.25
+     "exp":"1 m / s",
+     "val":1.0
     }
    },
    "MAX_VEL":{
@@ -562,15 +562,15 @@
    "STE":{
     "x":{
      "exp":"STJ.x",
-     "val":7.2
+     "val":7.1
     },
     "y":{
      "exp":"E.y",
      "val":2.6784339149263756
     },
     "heading":{
-     "exp":"0 deg",
-     "val":0.0
+     "exp":"E.heading",
+     "val":5.235987755982989
     }
    },
    "STF":{
@@ -631,16 +631,16 @@
    },
    "STJ":{
     "x":{
-     "exp":"7.2 m",
-     "val":7.2
+     "exp":"7.1 m",
+     "val":7.1
     },
     "y":{
      "exp":"J.y",
      "val":5.373566085073624
     },
     "heading":{
-     "exp":"0 deg",
-     "val":0.0
+     "exp":"J.heading",
+     "val":1.0471975511965976
     }
    }
   }

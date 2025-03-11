@@ -247,9 +247,13 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   SwerveRequest.ApplyRobotSpeeds idle = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds()).withDriveRequestType(DriveRequestType.Velocity);
+  SwerveRequest.ApplyRobotSpeeds brakeMode = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds()).withDriveRequestType(DriveRequestType.OpenLoopVoltage);
   SwerveRequest.SwerveDriveBrake xBrake = new SwerveRequest.SwerveDriveBrake().withDriveRequestType(DriveRequestType.Velocity);
   public Command stop() {
     return applyRequest(() -> idle);
+  }
+  public Command stopBrakeMode() {
+    return applyRequest(() -> brakeMode);
   }
 
   private final SwerveSample[] emptyTrajectory = new SwerveSample[0];
@@ -259,6 +263,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     currentTrajectory = isStarting ? traj.samples().toArray(SwerveSample[]::new) : emptyTrajectory;
   }
 
+  
   @Override
   public void periodic() {
     state = getStateCopy();
@@ -593,28 +598,28 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                   var interpTrans = end.inner
                       .getTranslation()
                       .interpolate(startPose.getTranslation(), setpoint.position / dist.inner);
-                  var request = calculateFollowRequest(m_previousSwerveSetpoint, RepulsorFieldPlanner.sample(
-                    interpTrans,
-                    new Rotation2d(rotationState.position),
-                    normDirStartToEnd.inner.getX() * -setpoint.velocity,
-                    normDirStartToEnd.inner.getY() * -setpoint.velocity,
-                    rotationState.velocity));
-                  if (atPose.getAsBoolean()) {
-                    this.setControl(xBrake);
-                  } else {
-                    this.setControl(request);
-                  }
-
-                  // if (atPose.getAsBoolean()) {
-                  //   this.setControl(xBrake);
-                  // } else {
-                  //   followPath(RepulsorFieldPlanner.sample(
+                  // var request = calculateFollowRequest(m_previousSwerveSetpoint, RepulsorFieldPlanner.sample(
                   //   interpTrans,
                   //   new Rotation2d(rotationState.position),
                   //   normDirStartToEnd.inner.getX() * -setpoint.velocity,
                   //   normDirStartToEnd.inner.getY() * -setpoint.velocity,
                   //   rotationState.velocity));
+                  // if (atPose.getAsBoolean()) {
+                  //   this.setControl(xBrake);
+                  // } else {
+                  //   this.setControl(request);
                   // }
+
+                  if (atPose.getAsBoolean()) {
+                    this.setControl(xBrake);
+                  } else {
+                    followPath(RepulsorFieldPlanner.sample(
+                    interpTrans,
+                    new Rotation2d(rotationState.position),
+                    normDirStartToEnd.inner.getX() * -setpoint.velocity,
+                    normDirStartToEnd.inner.getY() * -setpoint.velocity,
+                    rotationState.velocity));
+                  }
                 }))
 ;
   }
