@@ -52,13 +52,11 @@ import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.operator.OperatorBoard;
 import frc.robot.subsystems.ArmBrakeS;
-import frc.robot.subsystems.ClimbHookS;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.Hand;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.led.LightStripS;
-import frc.robot.subsystems.led.OuterStrip.OuterStates;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.AllianceFlipUtil;
 
@@ -72,18 +70,16 @@ public class Autos {
   public final AutoChooser m_autoChooser;
 
   public final HashMap<String, Supplier<Command>> autos = new HashMap<>();
-  public final ClimbHookS m_ClimbHookS;
   public final ArmBrakeS m_ArmBrakeS;
   @Logged
   public final CoralSensor m_coralSensor = new CoralSensor();
 
-  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board, ClimbHookS climbHookS,
+  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board,
       ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
     m_hand = hand;
     m_board = board;
-    m_ClimbHookS = climbHookS;
     m_ArmBrakeS = armBrakeS;
     m_autoChooser = new AutoChooser();
     m_autoFactory = new AutoFactory(
@@ -522,16 +518,5 @@ public class Autos {
     trajectory.atTime(1)
         .onTrue(m_hand.inCoral().until(new Trigger(this::hasCoral)).andThen(m_hand.inCoral().withTimeout(0.5)));
     return trajectory;
-  }
-
-  public Command climb() {
-    return parallel(
-      m_ClimbHookS.clamp(), m_arm.Climb(),
-      LightStripS.top.stateC(()->TopStates.Climbing),
-      LightStripS.outer.stateC(()->OuterStates.Climbing),
-        sequence(
-          waitUntil(m_arm::readyToClimb),
-            m_ArmBrakeS.brake())
-    );
   }
 }

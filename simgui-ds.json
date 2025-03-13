@@ -34,7 +34,7 @@
         }
       ],
       "axisCount": 5,
-      "buttonCount": 8,
+      "buttonCount": 12,
       "buttonKeys": [
         90,
         88,
@@ -43,7 +43,11 @@
         66,
         78,
         77,
-        44
+        44,
+        46,
+        47,
+        -1,
+        -1
       ],
       "povConfig": [
         {
@@ -119,6 +123,9 @@
     }
   ],
   "robotJoysticks": [
+    {
+      "guid": "Keyboard0"
+    },
     {
       "guid": "Keyboard2"
     }

@@ -49,7 +49,7 @@ import frc.operator.RealOperatorBoard;
 import frc.operator.SimOperatorBoard;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ArmBrakeS;
-import frc.robot.subsystems.ClimbHookS;
+import frc.robot.subsystems.ClimbWheelsS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.RealHandS;
@@ -75,9 +75,10 @@ public class Robot extends TimedRobot {
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
   private final RealHandS m_hand = new RealHandS();
-  private final ClimbHookS m_climbHookS = new ClimbHookS();
+  //private final ClimbHookS m_climbHookS = new ClimbHookS();
+  private final ClimbWheelsS m_climbWheelsS = new ClimbWheelsS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
-  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_climbHookS, m_armBrakeS,
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_armBrakeS,
       (traj, isStarting) -> {
       });
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric().withDriveRequestType(DriveRequestType.Velocity);
@@ -108,6 +109,7 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+    LightStripS.start();
     DriverStation.startDataLog(DataLogManager.getLog());
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
     Epilogue.bind(this);
@@ -148,8 +150,9 @@ public class Robot extends TimedRobot {
 // Coast mode when disabled
     m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
       parallel(m_arm.mainPivotS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
-    ).whileTrue(m_climbHookS.coast());
-    m_driverController.back().onTrue(m_climbHookS.release().withTimeout(5));
+    );
+    //.whileTrue(m_climbHookS.coast());
+    //m_driverController.back().onTrue(m_climbHookS.release().withTimeout(5));
     //Home wrist when disabled
     m_driverController.start().and(RobotModeTriggers.disabled())
         .onTrue(parallel(
@@ -165,10 +168,10 @@ public class Robot extends TimedRobot {
   private void configureOperatorController() {
     m_operatorBoard.left().onTrue(
       m_arm.goToPosition(Arm.Positions.PRE_CLIMB)).onTrue(
-        m_climbHookS.release().withTimeout(5)
+        m_climbWheelsS.in()
     );
-    m_operatorBoard.center().onTrue(m_climbHookS.clamp())
-    .whileTrue(waitSeconds(2).andThen(
+    m_operatorBoard.center().onTrue(m_climbWheelsS.in())
+    .whileTrue(waitSeconds(0.5).andThen(
       parallel(
         m_arm.mainPivotS.voltage(()->
           (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(30)) ? 0 : -2),
@@ -177,7 +180,7 @@ public class Robot extends TimedRobot {
             m_arm.wristS.goTo(()->0.0)
           )))
     );
-    m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
+    m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release()).onTrue(m_climbWheelsS.stop());
   }
   public void configureDriverController() {
     

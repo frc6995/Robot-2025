@@ -34,7 +34,7 @@ public class RealHandS extends Hand {
 
   public static final double OUT_CORAL_VOLTAGE = -4.5; //worked with -6 but coral bounced
 
-  public static final double IN_ALGAE_VOLTAGE = -8;
+  public static final double IN_ALGAE_VOLTAGE = -10;
 
   public static final double OUT_ALGAE_VOLTAGE = 10;
 

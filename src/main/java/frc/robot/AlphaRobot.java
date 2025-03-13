@@ -47,7 +47,7 @@ public class AlphaRobot extends TimedRobot {
   private final NoneHandS m_hand = new NoneHandS();
   private final ClimbHookS m_climbHookS = new ClimbHookS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
-  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_climbHookS, m_armBrakeS, (traj, isStarting) -> {});
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_armBrakeS, (traj, isStarting) -> {});
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric();
 
   private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
