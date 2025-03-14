@@ -21,6 +21,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -34,6 +35,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -276,7 +278,10 @@ public class Robot extends TimedRobot {
 
   ArrayList<Translation2d> toGoal = new ArrayList<>();
   Pose3d emptyPose = Pose3d.kZero;
-
+@NotLogged
+  private double lastTimestamp = Timer.getFPGATimestamp();
+  @NotLogged
+  private int lastRobotHeartbeat = 0;
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items
    * like diagnostics
@@ -338,6 +343,10 @@ public class Robot extends TimedRobot {
     if (m_autos.drivetrainSafeToAlignTrig.getAsBoolean()) {
       LightStripS.outer.requestSafeToAlign();
     }
+    var loopTime = Timer.getFPGATimestamp()-lastTimestamp;
+    SmartDashboard.putNumber("loopTime", loopTime);
+    lastTimestamp = Timer.getFPGATimestamp();
+    SmartDashboard.putNumber("robotHeartbeat", lastRobotHeartbeat++);
 
   }
 

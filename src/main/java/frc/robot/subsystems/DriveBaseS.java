@@ -49,6 +49,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -505,6 +506,19 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
             .withWheelForceFeedforwardsY(swerveSetpoint.feedforwards().robotRelativeForcesYNewtons())
             ;
   }
+
+  Capture<Pose2d> start = new Capture<Pose2d>(new Pose2d());
+  // The goal (populated from poseSupplier at command start)
+  Capture<Pose2d> end = new Capture<Pose2d>(new Pose2d());
+  // Distance start-end in meters
+  Capture<Double> dist = new Capture<Double>(1.0);
+  // Unit vector start->end
+  Capture<Translation2d> normDirStartToEnd = new Capture<>(Translation2d.kZero);
+  TrapezoidProfile.State translationState = new State(0, 0);
+  TrapezoidProfile.State rotationState = new State(0, 0);
+
+  // Threshold for "close enough" to avoid microadjustments
+  Trigger atPose = atPose(()->end.inner, Units.inchesToMeters(0.5), Units.degreesToRadians(1));
   /**
    * Drives to a pose with motion profiles on translation and rotation.
    * The translation profile starts at dist(start,end) and drives toward 0. This state is then interpolated 
@@ -515,20 +529,9 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
    * @return
    */
   public Command driveToPoseSupC(Supplier<Pose2d> poseSupplier) {
-    TrapezoidProfile.State state = new State(0, 0);
-    TrapezoidProfile.State rotationState = new State(0, 0);
+    var startTime = Timer.getFPGATimestamp();
 
-    // The pose as of command start
-    Capture<Pose2d> start = new Capture<Pose2d>(new Pose2d());
-    // The goal (populated from poseSupplier at command start)
-    Capture<Pose2d> end = new Capture<Pose2d>(new Pose2d());
-    // Distance start-end in meters
-    Capture<Double> dist = new Capture<Double>(1.0);
-    // Unit vector start->end
-    Capture<Translation2d> normDirStartToEnd = new Capture<>(Translation2d.kZero);
-    // Threshold for "close enough" to avoid microadjustments
-    Trigger atPose = atPose(()->end.inner, Units.inchesToMeters(0.5), Units.degreesToRadians(1));
-    return runOnce(
+    var command = runOnce(
         () -> {
           // save the start pose and target pose
           start.inner = getPose();
@@ -540,9 +543,9 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           // initial position: distance from end
           // initial velocity: component of velocity straight towards end (as a negative number)
 
-          state.position = dist.inner;
+          translationState.position = dist.inner;
           // Pathing.velocityTowards is negative if approaching the target
-          state.velocity = 
+          translationState.velocity = 
           MathUtil.clamp(
               Pathing.velocityTowards(
                   start.inner,
@@ -553,25 +556,25 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           
           rotationState.position = start.inner.getRotation().getRadians();
           rotationState.velocity = state().Speeds.omegaRadiansPerSecond;
-          SmartDashboard.putNumber("driveToPoseTransInterp", state.position);
+          SmartDashboard.putNumber("driveToPoseTransInterp", translationState.position);
           SmartDashboard.putNumber("driveToPoseRotationInterp", rotationState.position);
-          SmartDashboard.putNumber("driveToPoseTransInterpVel", state.velocity);
+          SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
           SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
           SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
           // TODO reset previous swerve setpoint
-          m_previousSwerveSetpoint = new SwerveSetpoint(state().Speeds, state().ModuleStates, DriveFeedforwards.zeros(4));
+          //m_previousSwerveSetpoint = new SwerveSetpoint(state().Speeds, state().ModuleStates, DriveFeedforwards.zeros(4));
 
         })
         .andThen(
             run(
                 () -> {
-                  var setpoint = driveToPoseProfile.calculate(0.02, state, driveToPoseGoal);
-                  state.position = setpoint.position;
-                  state.velocity = setpoint.velocity;
+                  var setpoint = driveToPoseProfile.calculate(0.02, translationState, driveToPoseGoal);
+                  translationState.position = setpoint.position;
+                  translationState.velocity = setpoint.velocity;
                   // Rotation continuous input
                   // Get error which is the smallest distance between goal and measurement
                   double errorBound = Math.PI;
-                  var measurement = state().Pose.getRotation().getRadians();
+                  var measurement = getPoseHeading().getRadians();
                   double goalMinDistance =
                       MathUtil.inputModulus(driveToPoseRotationGoal.position-measurement, -errorBound, errorBound);
                   double setpointMinDistance =
@@ -591,7 +594,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                   SmartDashboard.putNumber("driveToPoseTransInterp", setpoint.position);
                   SmartDashboard.putNumber("driveToPoseRotationInterp", rotSetpoint.position);
                   SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
-                  SmartDashboard.putNumber("driveToPoseTransInterpVel", state.velocity);
+                  SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
                   SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
                   var startPose = start.inner;
 
@@ -622,7 +625,11 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                   }
                 }))
 ;
+var endTime = Timer.getFPGATimestamp();
+SmartDashboard.putNumber("driveToPoseTime", endTime-startTime);
+return command;
   }
+
 
   public Command driveToPoseC(Optional<Pose2d> poseOpt) {
     return poseOpt.map((pose) -> driveToPoseSupC(() -> pose)).orElse(Commands.none());

@@ -13,7 +13,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.arm.elevator.RealElevatorS;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
@@ -61,7 +63,8 @@ public class RealArm extends Arm {
   private static final Angle SAFE_WRIST_MIN = WristConstants.CW_LIMIT;
   private static final Angle SAFE_WRIST_MAX = WristConstants.CCW_LIMIT;
   public Command goToPosition(ArmPosition position) {
-    return defer(
+    var startTime = Timer.getFPGATimestamp();
+    var command = defer(
         () -> {
           double startMainPivot = mainPivotS.getAngleRadians();
           double startElevator = elevatorS.getLengthMeters();
@@ -107,6 +110,9 @@ public class RealArm extends Arm {
           }
         },
         Set.of(mainPivotS, elevatorS, wristS));
+    var endTime = Timer.getFPGATimestamp();
+    SmartDashboard.putNumber("goToPositionTime", endTime-startTime);
+    return command;
   }
   
   private Command goDirectlyTo(
