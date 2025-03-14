@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.defer;
+import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
@@ -233,9 +234,13 @@ public class Robot extends TimedRobot {
        // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
     m_driverController.rightBumper().onTrue(
+      either(m_hand.outCoralSlow().withTimeout(2),
+
         m_hand.outCoral().withTimeout(0.5).andThen(
           new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))
-            )
+            ),
+        ()->m_operatorBoard.getLevel() == 0
+      )
     )
         ;
 
