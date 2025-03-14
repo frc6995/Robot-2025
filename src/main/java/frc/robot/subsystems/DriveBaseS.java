@@ -462,7 +462,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   /* DRIVE TO POSE using Trapezoid Profiles */
-  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 1.5);
+  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 1);
   private TrapezoidProfile.Constraints driveToPoseRotationConstraints = new Constraints(3, 6);
   private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(driveToPoseConstraints);
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(driveToPoseRotationConstraints);
@@ -672,7 +672,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   public Trigger safeToMoveArm(Supplier<Pose2d> poseSup) {
-    return atPose(poseSup, Units.inchesToMeters(36), 2*Math.PI);
+    return atPose(poseSup, Units.inchesToMeters(24), 2*Math.PI);
   }
 
   public Trigger safeToReefAlign(Supplier<Pose2d> reefTargetSup) {

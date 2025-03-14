@@ -31,6 +31,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
+import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.epilogue.Logged;
@@ -103,16 +104,28 @@ public class Autos {
   }
 
   public void addAutos() {
-    autos.put("1.Left 3p (Home)", () -> flexAuto(POI.STJ, POI.SL3, POI.J, POI.K, POI.L, POI.J));
-    autos.put("2.Right 3p", () -> flexAuto(POI.STE, POI.SR3, POI.E, POI.D, POI.C));
-    autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, POI.H));
-    autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, POI.G));
+    autos.put("1.Left 3p (Home)", () -> flexAuto(POI.STJ, POI.SL3, Optional.empty(), POI.J, POI.K, POI.L, POI.J));
+    autos.put("2.Right 3p", () -> flexAuto(POI.STE, POI.SR3, Optional.empty(), POI.E, POI.D, POI.C));
+    autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, Optional.empty(), POI.H));
+    autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, Optional.empty(), POI.G));
     autos.put("5.MoveOffLine", ()->{
       var move = new SwerveRequest.RobotCentric();
       return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
+
+    autos.put("Left 2.5p Push", ()->flexAuto(POI.STJ, POI.SL3, Optional.of(
+        (routine)->{
+          var traj = routine.trajectory("K-PUSH");
+          traj.atTimeBeforeEnd(1).onTrue(
+            m_hand.inCoral().until(new Trigger(this::hasCoral)).andThen(m_hand.inCoral().withTimeout(0.5)));
+          return traj;
+        }
+      ), POI.J, POI.K));
+
+    // autos.put must be before here
     for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
       m_autoChooser.addCmd(entry.getKey(), entry.getValue());
     }
+
   }
 
   private Alert successfulAutoTest = new Alert("Successfully Checked Autos", AlertType.kInfo);
@@ -157,7 +170,7 @@ public class Autos {
           waitSeconds(4),
           m_drivebase.driveToPoseSupC(targetSup))
           .andThen(deadline(
-              waitSeconds(0.25).andThen(outtake().withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop()));
+              waitSeconds(0.35).andThen(outtake().withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop()));
     }, Set.of(m_drivebase));
   }
 
@@ -449,7 +462,7 @@ public class Autos {
         ));
     return self;
   }
-  public Command flexAuto(POI start, POI intake, POI firstScore, POI... rest)
+  public Command flexAuto(POI start, POI intake, Optional<Function<AutoRoutine, AutoTrajectory>> after, POI firstScore, POI... rest)
       throws NoSuchElementException {
     final ArmPosition scoringPosition = autoScoringPosition;
     var routine = m_autoFactory.newRoutine("JKLA_SL3");
@@ -498,7 +511,7 @@ public class Autos {
       ));
       toReef = nextToReef;
     }
-    bindScore(toReef, scoringPosition, Optional.empty());
+    bindScore(toReef, scoringPosition, after.map((func)->func.apply(routine)));
     return routine.cmd();
   }
 

@@ -81,7 +81,7 @@ public abstract class Arm {
     public static final ArmPosition SCORE_BARGE = new ArmPosition(Degrees.of(80), ElevatorConstants.MAX_LENGTH, Radians.of(-0.5));
     public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT.plus(Degrees.of(20)));
     public static final ArmPosition PRE_SCORE_PROCESSOR = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Radians.of(0));
-    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(95), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
+    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.CW_LIMIT);
     public static final ArmPosition POST_CLIMB = new ArmPosition(MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_PADDED_LENGTH, Rotations.of(-0.096));
 
     // ATTN: Outside pivot and wrist soft limits + need wrist hardware change
