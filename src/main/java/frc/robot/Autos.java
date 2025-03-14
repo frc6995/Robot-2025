@@ -360,18 +360,12 @@ public class Autos {
         () -> {
           Pose2d target = offsetSelectedReefPose.get();
           Supplier<Pose2d> targetSup = ()->target;
+          var selectedLevel = m_board.getLevel();
           return parallel(
-              waitUntil(
-                  m_drivebase.atPose(target)
-                      .and(
-                          () -> m_arm.atPosition(selectedBranch())))
-          // .andThen(outtake().withTimeout(AUTO_OUTTAKE_TIME).asProxy())
-              ,
-              Commands.defer(()->{
-                return m_drivebase.driveToPoseSupC(targetSup);}, Set.of(m_drivebase)).asProxy(),
-              preMoveUntilTarget(targetSup, selectedBranch()).asProxy()).andThen(
-          // new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
-          ).asProxy();
+              (selectedLevel==0 ? Commands.none() :
+                Commands.defer(()->{
+                  return m_drivebase.driveToPoseSupC(targetSup);}, Set.of(m_drivebase)).asProxy()),
+              preMoveUntilTarget(targetSup, selectedBranch()).asProxy()).asProxy();
         }, Set.of());
 
   }
