@@ -463,7 +463,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   /* DRIVE TO POSE using Trapezoid Profiles */
-  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 1);
+  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 1.5);
   private TrapezoidProfile.Constraints driveToPoseRotationConstraints = new Constraints(3, 6);
   private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(driveToPoseConstraints);
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(driveToPoseRotationConstraints);
@@ -535,7 +535,10 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
         () -> {
           // save the start pose and target pose
           start.inner = getPose();
+          var getTargetTime = Timer.getFPGATimestamp();
           end.inner = poseSupplier.get();
+          SmartDashboard.putNumber("getTargetTime", Timer.getFPGATimestamp()-getTargetTime);
+          var setupTime = Timer.getFPGATimestamp();
           // save the normalized vector from current to target
           normDirStartToEnd.inner = end.inner.getTranslation().minus(start.inner.getTranslation());
           dist.inner = normDirStartToEnd.inner.getNorm();
@@ -557,10 +560,11 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           rotationState.position = start.inner.getRotation().getRadians();
           rotationState.velocity = state().Speeds.omegaRadiansPerSecond;
           SmartDashboard.putNumber("driveToPoseTransInterp", translationState.position);
-          SmartDashboard.putNumber("driveToPoseRotationInterp", rotationState.position);
-          SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
-          SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
+          // SmartDashboard.putNumber("driveToPoseRotationInterp", rotationState.position);
+          // SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
+          // SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
           SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
+          SmartDashboard.putNumber("setupTime", Timer.getFPGATimestamp()-setupTime);
           // TODO reset previous swerve setpoint
           //m_previousSwerveSetpoint = new SwerveSetpoint(state().Speeds, state().ModuleStates, DriveFeedforwards.zeros(4));
 
@@ -594,8 +598,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                   SmartDashboard.putNumber("driveToPoseTransInterp", setpoint.position);
                   SmartDashboard.putNumber("driveToPoseRotationInterp", rotSetpoint.position);
                   SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
-                  SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
-                  SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
+                  // SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
+                  // SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
                   var startPose = start.inner;
 
                   var interpTrans = end.inner
@@ -614,7 +618,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                   // }
 
                   if (atPose.getAsBoolean()) {
-                    this.setControl(xBrake);
+                    this.setControl(idle);
                   } else {
                     followPath(RepulsorFieldPlanner.sample(
                     interpTrans,

@@ -369,7 +369,7 @@ public class Autos {
               ,
               Commands.defer(()->{
                 return m_drivebase.driveToPoseSupC(targetSup);}, Set.of(m_drivebase)).asProxy(),
-              preMoveUntilTarget(targetSup, selectedBranch()).asProxy()).andThen(
+              new ScheduleCommand(goToPositionWristLast(selectedBranch()))).andThen(
           // new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
           ).asProxy();
         }, Set.of());
