@@ -32,7 +32,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -296,36 +295,6 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     m_operatorBoard.poll();
     m_driverDisplay.update();
-    if (RobotBase.isSimulation()) {
-      toGoal.clear();
-      toGoal.addAll(m_drivebaseS.m_repulsor.getTrajectory(
-          m_drivebaseS.state().Pose.getTranslation(),
-          m_drivebaseS.m_repulsor.goal().getTranslation(), 3 * 0.02));
-      // This needs to be just before pdh.update() so it can't be in
-      // simulationPeriodic, which is after
-      // TalonFXPDHChannel.refresh();
-      // TalonFXPDHChannel.currentSignalsRio.forEach((channel, signal)->{
-      // PowerDistributionSim.instance.setChannelCurrent(channel,
-      // signal.getValueAsDouble());}
-      // );
-      // TalonFXPDHChannel.currentSignalsCanivore.forEach((channel, signal)->{
-      // PowerDistributionSim.instance.setChannelCurrent(channel,
-      // signal.getValueAsDouble());}
-      // );
-    }
-    // toProc.clear();
-    // to_a_left.clear();
-    // to_b_left.clear();
-    // to_proc_stat.clear();
-
-    // toProc.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(),
-    // proc.getTranslation(), 3*0.02));
-    // to_a_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(),
-    // a_left.getTranslation(), 3*0.02));
-    // to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(),
-    // b_left.getTranslation(), 3*0.02));
-    // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(),
-    // proc_stat.getTranslation(), 3*0.02));
 
     m_arm.update();
     RobotVisualizer.setArmPosition(m_arm.getPosition());
@@ -333,16 +302,16 @@ public class Robot extends TimedRobot {
     // pdh.update();
     CommandScheduler.getInstance().run();
     LightStripS.periodic();
-    DriverStation.getAlliance().ifPresent(alliance->{
-      if (alliance == Alliance.Red) {
-        LightStripS.top.requestState(TopStates.RedAlliance);
-      } else {
-        LightStripS.top.requestState(TopStates.BlueAlliance);
-      }
-    });
-    if (m_autos.drivetrainSafeToAlignTrig.getAsBoolean()) {
-      LightStripS.outer.requestSafeToAlign();
-    }
+    // DriverStation.getAlliance().ifPresent(alliance->{
+    //   if (alliance == Alliance.Red) {
+    //     LightStripS.top.requestState(TopStates.RedAlliance);
+    //   } else {
+    //     LightStripS.top.requestState(TopStates.BlueAlliance);
+    //   }
+    // });
+    // if (m_autos.drivetrainSafeToAlignTrig.getAsBoolean()) {
+    //   LightStripS.outer.requestSafeToAlign();
+    // }
     var loopTime = Timer.getFPGATimestamp()-lastTimestamp;
     SmartDashboard.putNumber("loopTime", loopTime);
     lastTimestamp = Timer.getFPGATimestamp();
