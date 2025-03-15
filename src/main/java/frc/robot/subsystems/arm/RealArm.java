@@ -2,6 +2,7 @@ package frc.robot.subsystems.arm;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
@@ -68,68 +69,27 @@ public class RealArm extends Arm {
       SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
     double retractWristTarget = MathUtil.clamp(positionWristRadians, SAFE_WRIST_MIN.in(Radians),
       SAFE_WRIST_MAX.in(Radians));
-    Command command = Commands.either(
+    Command command = either(
       goDirectlyTo(
-                positionPivotRadians, positionElevatorMeters, positionWristRadians);
+                positionPivotRadians, positionElevatorMeters, positionWristRadians)
       , sequence(
-        // TODO: if position is unsafe to fully retract, move to safe position first
         // Retract elevator
-        goDirectlyTo(startMainPivot, postPivotElevator, retractWristTarget)
+        goDirectlyToPivotHold(postPivotElevator, retractWristTarget)
             .until(elevatorRetractedEnough),
         // pivot
         goDirectlyTo(positionPivotRadians, postPivotElevator, retractWristTarget)
             .until(
                 () -> Math.abs(mainPivotS.getAngleRadians() - positionPivotRadians) < Units.degreesToRadians(10)),
-
         goDirectlyTo(
             positionPivotRadians, positionElevatorMeters, positionWristRadians))
       , ()->
         Math.abs(positionPivotRadians - mainPivotS.getAngleRadians()) < Units.degreesToRadians(4)
       );
-    // var command = defer(
-    //     () -> {
-
-    //       double startMainPivot = mainPivotS.getAngleRadians();
-    //       double dPivot = positionPivotRadians - startMainPivot;
-
-    //       // Just need to move wrist
-    //       if (Math.abs(dPivot) < Units.degreesToRadians(4)) {
-    //         return goDirectlyTo(
-    //             positionPivotRadians, positionElevatorMeters, positionWristRadians);
-    //       } else {
-    //         // double prePivotElevator = MathUtil.clamp(startElevator,
-    //         // MIN_ELEVATOR_LENGTH.in(Meters), SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
-    //         double postPivotElevator = MathUtil.clamp(positionElevatorMeters, MIN_ELEVATOR_LENGTH.in(Meters),
-    //             SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
-    //         // double retractWrist = MathUtil.clamp(startWrist, SAFE_WRIST_MIN.in(Radians),
-    //         // SAFE_WRIST_MAX.in(Radians));
-    //         double retractWristTarget = MathUtil.clamp(positionWristRadians, SAFE_WRIST_MIN.in(Radians),
-    //             SAFE_WRIST_MAX.in(Radians));
-    //         return sequence(
-    //             // TODO: if position is unsafe to fully retract, move to safe position first
-    //             // Retract elevator
-    //             goDirectlyTo(startMainPivot, postPivotElevator, retractWristTarget)
-    //                 .until(elevatorRetractedEnough),
-    //             // pivot
-    //             goDirectlyTo(positionPivotRadians, postPivotElevator, retractWristTarget)
-    //                 .until(
-    //                     () ->
-
-    //         Math.abs(mainPivotS.getAngleRadians() - positionPivotRadians) < Units.degreesToRadians(10)),
-
-    //             goDirectlyTo(
-    //                 positionPivotRadians, positionElevatorMeters, positionWristRadians));
-    //       }
-    //     },
-    //     Set.of(mainPivotS, elevatorS, wristS));
     return command;
   }
 
-  private Command goDirectlyTo(
-      double mainPivotRadians, double elevatorMeters, double wristRadians) {
-    return parallel(
-        mainPivotS.goTo(() -> mainPivotRadians),
-        elevatorS.goToLength(
+  private Command elevatorDirectlyTo(double elevatorMeters) {
+    return elevatorS.goToLength(
             () -> {
               var dontHitDrivetrainTarget = (mainPivotS.getAngleRadians() < Units.degreesToRadians(30))
                   ? Math.max(elevatorMeters, Arm.Positions.GROUND_ALGAE.elevatorMeters())
@@ -145,13 +105,29 @@ public class RealArm extends Arm {
             }
         // () ->
         // Math.min(elevatorMeters,Units.inchesToMeters(29)/Math.cos(mainPivotS.getAngleRadians()))
-        ),
-
-        wristS.goTo(
-            () -> mainPivotS.getAngleRadians() < Units.degreesToRadians(30)
-                ? Math.min(wristRadians, Units.degreesToRadians(-30))
-                : wristRadians));
+        );
   }
+  private Command wristDirectlyTo(double wristRadians) {
+    return wristS.goTo(
+      () -> mainPivotS.getAngleRadians() < Units.degreesToRadians(30)
+          ? Math.min(wristRadians, Units.degreesToRadians(-30))
+          : wristRadians);
+  }
+  private Command goDirectlyTo(
+      double mainPivotRadians, double elevatorMeters, double wristRadians) {
+    return parallel(
+        mainPivotS.goTo(() -> mainPivotRadians),
+        elevatorDirectlyTo(elevatorMeters),
+        wristDirectlyTo(wristRadians));
+  }
+
+  private Command goDirectlyToPivotHold(
+    double elevatorMeters, double wristRadians) {
+  return parallel(
+      mainPivotS.hold(),
+      elevatorDirectlyTo(elevatorMeters),
+      wristDirectlyTo(wristRadians));
+}
 
   @Override
   public Command Climb() {
