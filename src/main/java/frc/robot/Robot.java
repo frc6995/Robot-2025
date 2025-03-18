@@ -302,16 +302,6 @@ public class Robot extends TimedRobot {
     // pdh.update();
     CommandScheduler.getInstance().run();
     LightStripS.periodic();
-    // DriverStation.getAlliance().ifPresent(alliance->{
-    //   if (alliance == Alliance.Red) {
-    //     LightStripS.top.requestState(TopStates.RedAlliance);
-    //   } else {
-    //     LightStripS.top.requestState(TopStates.BlueAlliance);
-    //   }
-    // });
-    // if (m_autos.drivetrainSafeToAlignTrig.getAsBoolean()) {
-    //   LightStripS.outer.requestSafeToAlign();
-    // }
     var loopTime = Timer.getFPGATimestamp()-lastTimestamp;
     SmartDashboard.putNumber("loopTime", loopTime);
     lastTimestamp = Timer.getFPGATimestamp();

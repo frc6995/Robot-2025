@@ -28,7 +28,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 
 import choreo.trajectory.SwerveSample;
@@ -481,7 +480,6 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private TrapezoidProfile.State driveToPoseRotationGoal = new State(0, 0);
 
 
-  private SwerveSetpoint m_previousSwerveSetpoint = new SwerveSetpoint(state().Speeds, state().ModuleStates, DriveFeedforwards.zeros(4));
   private ApplyRobotSpeeds m_pathApplyRobotSpeeds = new ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
   public SwerveRequest calculateFollowRequest(SwerveSetpoint previous, SwerveSample sample) {
     m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
@@ -498,7 +496,6 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(pose.getRotation().getRadians(),
         sample.heading);
     targetSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
-    m_previousSwerveSetpoint = swerveSetpoint;
     return
         m_pathApplyRobotSpeeds
             .withSpeeds(targetSpeedsRobotRelative)
@@ -565,9 +562,6 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           // SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
           SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
           SmartDashboard.putNumber("setupTime", Timer.getFPGATimestamp()-setupTime);
-          // TODO reset previous swerve setpoint
-          //m_previousSwerveSetpoint = new SwerveSetpoint(state().Speeds, state().ModuleStates, DriveFeedforwards.zeros(4));
-
         })
         .andThen(
             run(
