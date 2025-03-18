@@ -7,12 +7,12 @@
 # https://learn.adafruit.com/customizing-usb-devices-in-circuitpython/hid-devices#custom-hid-devices-3096614-9
 
 import time
+
+import analogio
 import board
 import digitalio
-import analogio
 # from operatorController.lib import neopixel
 import usb_hid
-
 from adafruit_hid.hid_gamepad import Gamepad
 
 gp = Gamepad(usb_hid.devices)

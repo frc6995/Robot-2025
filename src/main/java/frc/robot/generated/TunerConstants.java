@@ -1,19 +1,41 @@
 package frc.robot.generated;
 
-import static edu.wpi.first.units.Units.*;
-import static frc.robot.subsystems.DrivetrainSysId.*;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.subsystems.DrivetrainSysId.VoltsPerRotationPerSecond;
+import static frc.robot.subsystems.DrivetrainSysId.VoltsPerRotationPerSecondSquared;
 
 import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.configs.*;
-import com.ctre.phoenix6.hardware.*;
-import com.ctre.phoenix6.mechanisms.swerve.LegacySimSwerveDrivetrain.LegacySimSwerveModule;
-import com.ctre.phoenix6.signals.*;
-import com.ctre.phoenix6.swerve.*;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerFeedbackType;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
+import com.ctre.phoenix6.swerve.SwerveModuleConstantsFactory;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.units.measure.*;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.DrivetrainSysId;
@@ -42,10 +64,10 @@ public class TunerConstants {
   // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
   private static final Slot0Configs driveGains =
       new Slot0Configs()
-          .withKP(6)
+          .withKP(8)
           .withKI(0)
           .withKD(0)
-          .withKS(5)
+          .withKS(0)
           .withKV(0);
 
   // The closed-loop output type to use for the steer motors;
@@ -68,7 +90,7 @@ public class TunerConstants {
 
   // The stator current at which the wheels start to slip;
   // This needs to be tuned to your individual robot
-  private static final Current kSlipCurrent = Amps.of(120.0);
+  public static final Current kSlipCurrent = Amps.of(180.0);
 
   // Initial configs for the drive and steer motors and the azimuth encoder; these cannot be null.
   // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.

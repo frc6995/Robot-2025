@@ -19,10 +19,12 @@ if sys.implementation.version[0] < 3:
 # pylint: disable=wrong-import-position
 import struct
 import time
+
 from .. import find_device
 
 try:
     from typing import Sequence
+
     import usb_hid
 except ImportError:
     pass

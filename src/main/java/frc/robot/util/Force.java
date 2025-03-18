@@ -6,10 +6,16 @@ package frc.robot.util;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -19,10 +25,6 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import edu.wpi.first.util.struct.StructSerializable;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Represents a translation in 2D space. This object can be used to represent a point or a vector.

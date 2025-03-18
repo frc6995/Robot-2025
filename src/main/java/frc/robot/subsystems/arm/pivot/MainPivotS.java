@@ -9,8 +9,10 @@ import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.wpilibj2.command.Commands.*;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
+
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -26,10 +28,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.ctre.phoenix6.sim.ChassisReference;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
@@ -42,13 +44,9 @@ import edu.wpi.first.wpilibj.simulation.VariableLengthArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.util.NomadMathUtil;
-import java.util.Map;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 @Logged
 public class MainPivotS extends SubsystemBase {
@@ -86,6 +84,7 @@ public class MainPivotS extends SubsystemBase {
     public static final double K_G_RETRACTED = 0.35;
     public static final double K_G_EXTENDED = 0.35;
     public static final double K_S = 0.1;
+    public static final double K_P = 80.0;
     // arm plus hand
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(4);
@@ -93,9 +92,9 @@ public class MainPivotS extends SubsystemBase {
     public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375 + 0.125;
 
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(80).withKD(0).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(K_P).withKD(0).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
       //TEMP
-      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(0.66);
+      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(0.75);
       //config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.Feedback
@@ -105,7 +104,7 @@ public class MainPivotS extends SubsystemBase {
           .withRotorToSensorRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
-          .withReverseSoftLimitThreshold(Rotations.of(0.038*2))
+          .withReverseSoftLimitThreshold(Degrees.of(1))
           .withReverseSoftLimitEnable(true);
       config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;

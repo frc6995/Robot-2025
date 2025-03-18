@@ -1,6 +1,20 @@
 package frc.robot.subsystems.vision;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonPipelineResult;
+
 import com.ctre.phoenix6.Utils;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
@@ -18,17 +32,6 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.util.TriConsumer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.simulation.PhotonCameraSim;
-import org.photonvision.simulation.SimCameraProperties;
-import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.PhotonPipelineResult;
 
 public class Vision {
   public interface VisionConsumer extends TriConsumer<Pose2d, Double, Vector<N3>> {}
@@ -170,6 +173,10 @@ public class Vision {
     return true;
   }
 
+  private boolean isReef(int id) {
+    return (id >= 6 && id <= 11) || (id >=17 && id <=22);
+  }
+
   private void handleResult(Camera camera, PhotonPipelineResult result) {
     var estimator = camera.estimator;
     estimator.setReferencePose(getPose.get());
@@ -212,16 +219,26 @@ public class Vision {
           }
       } 
       double tdist = tgt.getBestCameraToTarget().getTranslation().getNorm();
-      if (pose.targetsUsed.size() < 2 && tdist > Units.feetToMeters(8)){
-        return;
+      if (pose.targetsUsed.size() < 2) {
+        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(8) : Units.feetToMeters(8);
+        if (tdist > trustedDistance){
+          return;
+        
+        } else {
+          closeEnoughTgts = 1;
+        }
       }
       avgDistance += tdist;
       if (tdist < closestDistance) {
         closestDistance = tdist;
       }
-      if (tdist <= Units.feetToMeters(10)) {
+      if (pose.targetsUsed.size() >= 2) {
+        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(8) : Units.feetToMeters(8);
+        
+      if (tdist <= trustedDistance) {
         closeEnoughTgts++;
       }
+    }
       // ignore |= (tgt.getFiducialId() == 13);
       // ignore |= (tgt.getFiducialId() == 14);
     }

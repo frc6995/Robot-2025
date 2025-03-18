@@ -5,27 +5,27 @@
 package frc.robot.subsystems.arm.wrist;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Kilograms;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.wpilibj2.command.Commands.*;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
+import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
+
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
@@ -34,23 +34,16 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import edu.wpi.first.wpilibj.simulation.VariableLengthArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.NomadMathUtil;
-import java.util.Map;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 @Logged
 public class RealWristS extends Wrist {
@@ -87,8 +80,10 @@ public class RealWristS extends Wrist {
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
     public static final double MOI = 0.10829;
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
+      config.CurrentLimits.withStatorCurrentLimitEnable(true).withStatorCurrentLimit(120)
+      .withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(60);
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(50).withKD(0);
-      config.MotionMagic.withMotionMagicCruiseVelocity(4).withMotionMagicAcceleration(6);
+      config.MotionMagic.withMotionMagicCruiseVelocity(4).withMotionMagicAcceleration(10);
       config.Feedback
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
@@ -140,6 +135,7 @@ public class RealWristS extends Wrist {
 
   @Override
   public void periodic() {
+    BaseStatusSignal.refreshAll(m_currentSig, m_angleSig);
     // This method will be called once per scheduler run
     WRIST.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
   }
