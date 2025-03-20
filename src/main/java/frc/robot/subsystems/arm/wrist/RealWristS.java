@@ -244,4 +244,12 @@ public class RealWristS extends Wrist {
       
     );
   }
+  public Command coast() {
+    return this.startEnd(
+      ()->setNeutralMode(NeutralModeValue.Coast), ()->setNeutralMode(NeutralModeValue.Brake)).ignoringDisable(true);
+  }
+
+private void setNeutralMode(NeutralModeValue mode) {
+  m_leader.setNeutralMode(mode);
+}
 }

@@ -11,9 +11,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.arm.elevator.RealElevatorS;
@@ -93,7 +91,7 @@ public class RealArm extends Arm {
   private Command elevatorDirectlyTo(double elevatorMeters) {
     return elevatorS.goToLength(
             () -> {
-              var dontHitDrivetrainTarget = (mainPivotS.getAngleRadians() < Units.degreesToRadians(30))
+              var dontHitDrivetrainTarget = (mainPivotS.getAngleRadians() < Units.degreesToRadians(20))
                   ? Math.max(elevatorMeters, Arm.Positions.GROUND_ALGAE.elevatorMeters())
                   : elevatorMeters;
               // don't put the wrist axis more than a few inches outside fp

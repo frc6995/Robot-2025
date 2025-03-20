@@ -37,6 +37,7 @@ import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -62,6 +63,7 @@ import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.drive.Pathing;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.Capture;
 import frc.robot.util.RepulsorFieldPlanner;
 import frc.robot.util.TrapezoidProfile;
 import frc.robot.util.TrapezoidProfile.Constraints;
@@ -468,13 +470,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(driveToPoseRotationConstraints);
 
   // For modifying goals from within a lambda
-  private class Capture<T> {
-    public T inner;
 
-    public Capture(T inner) {
-      this.inner = inner;
-    }
-  }
 
   private TrapezoidProfile.State driveToPoseGoal = new State(0, 0);
   private TrapezoidProfile.State driveToPoseRotationGoal = new State(0, 0);
@@ -693,5 +689,70 @@ return command;
 public Command goToPosition(Supplier<Pose2d> target) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'goToPosition'");
+}
+
+
+private final SwerveRequest.RobotCentric m_characterisationReq = new SwerveRequest.RobotCentric()
+.withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+private double lastGyroYawRads = 0;
+private double accumGyroYawRads = 0;
+
+private double[] startWheelPositions = new double[4];
+private double currentEffectiveWheelRadius = 0;
+private DoubleSupplier m_gyroYawRadsSupplier = () -> Units.degreesToRadians(getPigeon2().getAngle());
+private final SlewRateLimiter m_omegaLimiter = new SlewRateLimiter(1);
+
+public Command wheelRadiusCharacterisation(double omegaDirection) {
+  var initialize = runOnce(() -> {
+    lastGyroYawRads = m_gyroYawRadsSupplier.getAsDouble();
+    accumGyroYawRads = 0;
+    currentEffectiveWheelRadius = 0;
+    for (int i = 0; i < 4; i++) {
+      var pos = this.getModule(i).getPosition(true);
+      startWheelPositions[i] = pos.distanceMeters * TunerConstants.kDriveRotationsPerMeter;
+    }
+    m_omegaLimiter.reset(0);
+  });
+
+  var executeEnd = runEnd(
+    () -> {
+      setControl(m_characterisationReq
+        .withRotationalRate(m_omegaLimiter.calculate(1 * omegaDirection)));
+      accumGyroYawRads += MathUtil.angleModulus(m_gyroYawRadsSupplier.getAsDouble() - lastGyroYawRads);
+      lastGyroYawRads = m_gyroYawRadsSupplier.getAsDouble();
+      double averageWheelPositionRotations = 0;
+      double[] wheelPositionRotationss = new double[4];
+      for (int i = 0; i < 4; i++) {
+        var pos = this.getModule(i).getPosition(true);
+        // log("pos"+i, pos.distanceMeters);
+        wheelPositionRotationss[i] = pos.distanceMeters * TunerConstants.kDriveRotationsPerMeter;
+        averageWheelPositionRotations += Math.abs(wheelPositionRotationss[i] - startWheelPositions[i]);
+      }
+      averageWheelPositionRotations /= 4.0;
+      // log("wheelPos", wheelPositionRotationss);
+      // log("avgWheelPos", averageWheelPositionRotations);
+      // log("accumGyroYawRads", accumGyroYawRads);
+      
+      // arc length meters / wheel rotations = wheel circumference
+      currentEffectiveWheelRadius = (accumGyroYawRads * TunerConstants.kDriveRadius) / averageWheelPositionRotations;
+      SmartDashboard.putNumber("currWheelRad", currentEffectiveWheelRadius / (2*Math.PI));
+      // log_lastGyro.accept(lastGyroYawRads);
+      // log_avgWheelPos.accept(averageWheelPosition);
+      // log_accumGyro.accept(accumGyroYawRads);
+      // log_curEffWheelRad.accept(currentEffectiveWheelRadius);
+    }, () -> {
+      setControl(m_characterisationReq.withRotationalRate(0));
+      if (Math.abs(accumGyroYawRads) <= Math.PI * 2.0) {
+        System.out.println("not enough data for characterization " + accumGyroYawRads);
+      } else {
+        System.out.println(
+          "effective wheel radius: "
+            + currentEffectiveWheelRadius
+            + " inches");
+      }
+    });
+
+  return Commands.sequence(
+    initialize, executeEnd);
 }
 }

@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.wpilibj2.command.Commands.defer;
 import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
@@ -13,11 +12,11 @@ import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 
 import edu.wpi.first.epilogue.Epilogue;
@@ -84,6 +83,8 @@ public class Robot extends TimedRobot {
       (traj, isStarting) -> {
       });
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric().withDriveRequestType(DriveRequestType.Velocity);
+  public FieldCentricFacingAngle m_headingAlignRequest =
+  new FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withDriveRequestType(DriveRequestType.Velocity);
   private boolean allHomed = false;
   // private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
@@ -105,6 +106,8 @@ public class Robot extends TimedRobot {
     .and(()->!DriverStation.isFMSAttached());
 
   private DigitalInput coastButton = new DigitalInput(0);
+  private Trigger headingAlignLeftStation = m_driverController.a().and(m_autos::onLeftHalf);
+  private Trigger headingAlignRightStation = m_driverController.a().and(new Trigger(m_autos::onLeftHalf).negate());
   /**
    * This function is run when the robot is first started up and should be used
    * for any
@@ -124,21 +127,36 @@ public class Robot extends TimedRobot {
     AlertsUtil.bind(
         new Alert("Driver Xbox Disconnect", AlertType.kError),
         () -> !m_driverController.isConnected());
+    var intakeAlignButton = m_driverController.a();
+    var algaeAlignButton = m_driverController.x();
     m_drivebaseS.setDefaultCommand(
         // Drivetrain will execute this command periodically
         m_drivebaseS.applyRequest(
-            () -> DriverStation.isAutonomous()
-                ? m_driveRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0)
-                : m_driveRequest
+            () -> {
+              var xSpeed = -m_driverController.getLeftY() * 5;
+              var ySpeed = -m_driverController.getLeftX() * 5;
+              var rotationSpeed = -m_driverController.getRightX() * 2 * Math.PI;
+
+              if (DriverStation.isAutonomous()) {
+                return m_driveRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
+              }
+              if (intakeAlignButton.getAsBoolean()) {
+                return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
+                  m_autos.intakeHeadingAllianceRelative()
+                );
+              }
+              if (algaeAlignButton.getAsBoolean()) {
+                return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
+                  m_autos.closestSide().faceAlgaeHeading
+                );
+              }
+              return m_driveRequest
                     .withVelocityX(
-                        -m_driverController.getLeftY()
-                            * 5) // Drive forward with negative Y (forward)
+                        xSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(
-                        -m_driverController.getLeftX() * 5) // Drive left with negative X (left)
+                        ySpeed) // Drive left with negative X (left)
                     .withRotationalRate(
-                        -m_driverController.getRightX()
-                            * 2
-                            * Math.PI) // Drive counterclockwise with negative X (left)
+                        rotationSpeed);} // Drive counterclockwise with negative X (left)
         ));
 
     RobotVisualizer.setupVisualizer();
@@ -151,7 +169,7 @@ public class Robot extends TimedRobot {
     configureDriverController();
 // Coast mode when disabled
     m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
-      parallel(m_arm.mainPivotS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
+      parallel(m_arm.mainPivotS.coast(), m_arm.wristS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
     )
     .whileTrue(m_climbHookS.coast());
     m_driverController.back().onTrue(m_climbHookS.release().withTimeout(5));
@@ -185,13 +203,14 @@ public class Robot extends TimedRobot {
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
     //.onTrue(m_climbWheelsS.stop());
   }
+  
   public void configureDriverController() {
     
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station (or left station if in workshop)
-    m_driverController.a().whileTrue(
-        Commands.defer(() -> m_autos.autoCoralIntake(inWorkshop.getAsBoolean() ? POI.SL3 : m_autos.closestIntake()), Set.of(m_drivebaseS)));
+    m_driverController.a().whileTrue(m_autos.autoCoralIntake());
+    
     // Drive and autoalign to processor
     // If NOT in workshop, drive to processor.
     m_driverController.start()
@@ -223,10 +242,7 @@ public class Robot extends TimedRobot {
     //     defer(() -> m_drivebaseS.driveToPoseSupC(m_autos.closestSide().algae::flippedPose), Set.of(m_drivebaseS))
 
     // )
-    .whileTrue(
-        defer(() -> new ScheduleCommand(
-            m_arm.goToPosition(m_autos.closestSide().algaeArm)),
-            Set.of(m_arm.mainPivotS, m_arm.elevatorS, m_arm.wristS)))
+    .onTrue(m_autos.armToClosestAlgae())
     .onTrue(m_hand.inAlgae());
 
     // Stow
@@ -238,7 +254,7 @@ public class Robot extends TimedRobot {
       either(m_hand.outCoralSlow().withTimeout(2),
 
         m_hand.outCoral().withTimeout(0.5).andThen(
-          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))
+          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL))
             ),
         ()->m_operatorBoard.getLevel() == 0
       )

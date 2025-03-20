@@ -3,6 +3,7 @@ package frc.robot.generated;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -135,7 +136,7 @@ public class TunerConstants {
   // Simulated voltage necessary to overcome friction
   private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
   private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
-
+  public static final double kDriveRotationsPerMeter = 1 / (2*Math.PI*kWheelRadius.in(Meter));
   public static final SwerveDrivetrainConstants DrivetrainConstants =
       new SwerveDrivetrainConstants()
           .withCANBusName(kCANBus.getName())
@@ -264,6 +265,7 @@ public class TunerConstants {
               kInvertRightSide,
               kBackRightSteerMotorInverted,
               kBackRightEncoderInverted);
+public static double kDriveRadius = Math.hypot(kFrontLeftXPos.in(Meter), kFrontLeftYPos.in(Meter));
 
   /**
    * Creates a CommandSwerveDrivetrain instance. This should only be called once in your robot

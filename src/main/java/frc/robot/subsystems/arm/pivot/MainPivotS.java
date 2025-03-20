@@ -212,7 +212,7 @@ public class MainPivotS extends SubsystemBase {
     m_cancoderAngleSig.refresh();
     return m_cancoderAngleSig.getValueAsDouble();
   }
-  public void setNeutralMode(NeutralModeValue mode) {
+  private void setNeutralMode(NeutralModeValue mode) {
     m_leader.setNeutralMode(mode);
     m_follower.setNeutralMode(mode);
     m_oppose1.setNeutralMode(mode);

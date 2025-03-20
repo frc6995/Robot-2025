@@ -11,6 +11,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.print;
 import static edu.wpi.first.wpilibj2.command.Commands.race;
 import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
+import static edu.wpi.first.wpilibj2.command.Commands.select;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
@@ -18,6 +19,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -60,6 +62,7 @@ import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.Capture;
 
 @Logged(strategy = Strategy.OPT_IN)
 public class Autos {
@@ -120,6 +123,7 @@ public class Autos {
           return traj;
         }
       ), POI.J, POI.K));
+      autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
 
     // autos.put must be before here
     for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
@@ -128,6 +132,8 @@ public class Autos {
 
   }
 
+  @Logged
+  public Pose2d b1 = POI.L1_B.bluePose;
   private Alert successfulAutoTest = new Alert("Successfully Checked Autos", AlertType.kInfo);
 
   public void testAutos() {
@@ -157,10 +163,12 @@ public class Autos {
 
   public Command alignAndDrop(
       Supplier<Pose2d> target, ArmPosition position, double outtakeSeconds) {
-    return defer(() -> {
-      var cachedTarget = target.get();
-      Supplier<Pose2d> targetSup = () -> cachedTarget;
-      return race(
+      Capture<Pose2d> targetSup = new Capture<Pose2d>(target.get());
+      return 
+      runOnce(()->{
+        targetSup.inner = target.get();
+      }).andThen(
+      race(
           waitUntil(
               m_drivebase.atPose(targetSup)
                   .and(
@@ -170,8 +178,8 @@ public class Autos {
           waitSeconds(4),
           m_drivebase.driveToPoseSupC(targetSup))
           .andThen(deadline(
-              waitSeconds(0.35).andThen(outtake().withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop()));
-    }, Set.of(m_drivebase));
+              waitSeconds(0.35).andThen(outtake().withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop())));
+    
   }
 
   @Logged
@@ -193,6 +201,7 @@ public class Autos {
   }
 
   public POI selectedReefPOI() {
+    if (m_board.getLevel() != 0) {
     return switch (m_board.getBranch()) {
       case 0 -> POI.A;
       case 1 -> POI.B;
@@ -209,8 +218,24 @@ public class Autos {
       default -> POI.A;
     };
   }
+    else {     return switch (m_board.getBranch()) {
+      case 0 -> POI.L1_A;
+      case 1 -> POI.L1_B;
+      case 2 -> POI.L1_C;
+      case 3 -> POI.L1_D;
+      case 4 -> POI.L1_E;
+      case 5 -> POI.L1_F;
+      case 6 -> POI.L1_G;
+      case 7 -> POI.L1_H;
+      case 8 -> POI.L1_I;
+      case 9 -> POI.L1_J;
+      case 10 -> POI.L1_K;
+      case 11 -> POI.L1_L;
+      default -> POI.L1_A;
+    };
+  }
+  }
 
-  @Logged
   public Pose2d selectedReefPose() {
     return selectedReefPOI().flippedPose();
   }
@@ -226,24 +251,38 @@ public class Autos {
     return m_drivebase.repulsorCommand(offsetSelectedReefPose);
   }
 
+  public enum AlgaeHeight {
+    LOW(Arm.Positions.LOW_ALGAE),
+    HIGH(Arm.Positions.HIGH_ALGAE);
+    AlgaeHeight(ArmPosition position) {
+          this.position = position;
+        }
+    
+        public final ArmPosition position;
+    
+  }
   public enum ReefSide {
-    R1(POI.A, POI.B, POI.R1, Arm.Positions.HIGH_ALGAE),
-    R2(POI.C, POI.D, POI.R2, Arm.Positions.LOW_ALGAE),
-    R3(POI.E, POI.F, POI.R3, Arm.Positions.HIGH_ALGAE),
-    R4(POI.G, POI.H, POI.R4, Arm.Positions.LOW_ALGAE),
-    R5(POI.I, POI.J, POI.R5, Arm.Positions.HIGH_ALGAE),
-    R6(POI.K, POI.L, POI.R6, Arm.Positions.LOW_ALGAE);
+    R1(POI.A, POI.B, POI.R1, AlgaeHeight.HIGH, Rotation2d.kZero),
+    R2(POI.C, POI.D, POI.R2, AlgaeHeight.LOW, Rotation2d.fromDegrees(60)),
+    R3(POI.E, POI.F, POI.R3, AlgaeHeight.HIGH, Rotation2d.fromDegrees(120)),
+    R4(POI.G, POI.H, POI.R4, AlgaeHeight.LOW, Rotation2d.fromDegrees(180)),
+    R5(POI.I, POI.J, POI.R5, AlgaeHeight.HIGH, Rotation2d.fromDegrees(240)),
+    R6(POI.K, POI.L, POI.R6, AlgaeHeight.LOW, Rotation2d.fromDegrees(300));
 
     public final POI left;
     public final POI right;
     public final POI algae;
+    public final AlgaeHeight algaeHeight;
     public final ArmPosition algaeArm;
+    public final Rotation2d faceAlgaeHeading;
 
-    private ReefSide(POI left, POI right, POI algae, ArmPosition algaeArm) {
+    private ReefSide(POI left, POI right, POI algae, AlgaeHeight height, Rotation2d allianceRelativeFaceAlgae) {
       this.left = left;
       this.right = right;
       this.algae = algae;
-      this.algaeArm = algaeArm;
+      this.algaeHeight = height;
+      this.algaeArm = height.position;
+      this.faceAlgaeHeading = allianceRelativeFaceAlgae;
     }
   }
 
@@ -309,14 +348,29 @@ public class Autos {
     return defer(() -> m_drivebase.driveToPoseSupC(selectedClimb()::flippedPose), Set.of(m_drivebase));
   }
 
+  public Command intakePositionWithToggle() {
+    return Commands.either(
+      m_arm.goToPosition(Arm.Positions.INTAKE_CORAL).until(m_board.toggle().negate()),
+      m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL).until(m_board.toggle()),
+      
+     m_board.toggle()).repeatedly();
+  }
+
   public POI closestIntake() {
-    var pose = m_drivebase.getPose();
-    if (pose.getTranslation().getDistance(POI.SL3.flippedPose().getTranslation()) < pose.getTranslation()
-        .getDistance(POI.SR3.flippedPose().getTranslation())) {
+    if (onLeftHalf()) {
       return POI.SL3;
     } else {
       return POI.SR3;
     }
+  }
+  public Rotation2d intakeHeadingAllianceRelative() {
+    return closestIntake().bluePose.getRotation();
+  }
+
+  public boolean onLeftHalf() {
+    var pose = m_drivebase.getPose();
+    return pose.getTranslation().getDistance(POI.SL3.flippedPose().getTranslation()) < pose.getTranslation()
+        .getDistance(POI.SR3.flippedPose().getTranslation());
   }
 
   private Command preMoveUntilTarget(Supplier<Pose2d> target, ArmPosition finalPosition) {
@@ -328,12 +382,20 @@ public class Autos {
             goToPositionWristLast(finalPosition)
         );
   }
+  private Command preMoveUntilReefLevel(Supplier<Pose2d> target, Supplier<Integer> level) {
+    return select(Map.of(
+      0, new ScheduleCommand(m_arm.goToPosition(Arm.Positions.L1)),
+      1, preMoveUntilTarget(target, Arm.Positions.L2),
+      2, preMoveUntilTarget(target, Arm.Positions.L3),
+      3, preMoveUntilTarget(target, Arm.Positions.L4)
+    ),level);
+  }
 
   private Command goToPositionWristLast(ArmPosition finalPosition) {
     return sequence(
       m_arm.goToPosition(finalPosition.safeWrist()).until(
       ()->m_arm.getPosition().withinTolerance(finalPosition.safeWrist(),
-        Degrees.of(10).in(Radians), Inches.of(18).in(Meters), Degrees.of(360).in(Radians))
+        Degrees.of(10).in(Radians), Inches.of(24).in(Meters), Degrees.of(360).in(Radians))
     ),
     m_arm.goToPosition(finalPosition)
     );
@@ -355,25 +417,32 @@ public class Autos {
   public Trigger drivetrainSafeToAlignTrig;
 
   public Command autoScore() {
-    
-    return defer(
-        () -> {
-          Pose2d target = offsetSelectedReefPose.get();
-          Supplier<Pose2d> targetSup = ()->target;
-          var selectedLevel = m_board.getLevel();
-          return parallel(
-              (selectedLevel==0 ? Commands.none() :
-                Commands.defer(()->{
-                  return m_drivebase.driveToPoseSupC(targetSup);}, Set.of(m_drivebase)).asProxy()),
-              preMoveUntilTarget(targetSup, selectedBranch()).asProxy()).asProxy();
-        }, Set.of());
-
+    Capture<Pose2d> targetSup = new Capture<Pose2d>(offsetSelectedReefPose.get());
+          return 
+          parallel(
+              m_drivebase.driveToPoseSupC(targetSup).asProxy(),
+                preMoveUntilReefLevel(targetSup, m_board::getLevel)
+              .asProxy())
+          .beforeStarting(()->{
+            targetSup.inner = offsetSelectedReefPose.get();
+          })
+              
+              .asProxy();
   }
 
-  public Command autoCoralIntake(POI intake) {
+  public Command armToClosestAlgae(){
+    return
+      Commands.select(
+      Map.of(
+        AlgaeHeight.LOW, new ScheduleCommand(m_arm.goToPosition(Arm.Positions.LOW_ALGAE)),
+        AlgaeHeight.HIGH, new ScheduleCommand(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE))
+      ),
+      ()->closestSide().algaeHeight);
+  }
+
+  public Command autoCoralIntake() {
     return parallel(
-        m_drivebase.driveToPoseSupC(intake::flippedPose),
-        new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
+        new ScheduleCommand(intakePositionWithToggle()),
         new ScheduleCommand(
             m_hand.inCoral().until(this::hasCoral).andThen(
                 parallel(
@@ -392,7 +461,7 @@ public class Autos {
   public Command bargeUpAndOut() {
     return deadline(
       m_hand.inAlgae().until(()-> m_arm.position.elevatorMeters() > 
-        Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(6))
+        Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(12))
           .andThen(m_hand.outAlgae().withTimeout(0.5)),
       m_arm.goToPosition(Arm.Positions.SCORE_BARGE).asProxy()
       
@@ -448,7 +517,7 @@ public class Autos {
               sensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME
             ),
             //Commands.waitSeconds(AUTO_OUTTAKE_TIME),
-            new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)),
+            new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL)),
             next.map((Function<AutoTrajectory, Command>) (nextTraj)->
               waitUntil(
                   () -> m_arm.position.elevatorLength().lt(Arm.Positions.L3.elevatorLength().plus(Inches.of(1))))
@@ -521,7 +590,6 @@ public class Autos {
   }
 
   private AutoTrajectory bindIntake(AutoTrajectory trajectory) {
-    //trajectory.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL));
     trajectory.atTime(1)
         .onTrue(m_hand.inCoral().until(new Trigger(this::hasCoral)).andThen(m_hand.inCoral().withTimeout(0.5)));
     return trajectory;
