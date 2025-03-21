@@ -132,8 +132,6 @@ public class Autos {
 
   }
 
-  @Logged
-  public Pose2d b1 = POI.L1_B.bluePose;
   private Alert successfulAutoTest = new Alert("Successfully Checked Autos", AlertType.kInfo);
 
   public void testAutos() {
@@ -286,7 +284,6 @@ public class Autos {
     }
   }
 
-  @Logged
   public ReefSide closestSide() {
     var reef = POI.REEF.flippedPose();
     var pose = m_drivebase.getPose();
@@ -329,7 +326,6 @@ public class Autos {
     };
   }
 
-  @Logged
   public int selectedClimbNumber() {
     var poseTranslation = m_drivebase.getPose().getTranslation();
     var CL1Dist = poseTranslation.getDistance(POI.CL1.flippedPose().getTranslation());
@@ -363,6 +359,7 @@ public class Autos {
       return POI.SR3;
     }
   }
+  
   public Rotation2d intakeHeadingAllianceRelative() {
     return closestIntake().bluePose.getRotation();
   }
@@ -409,11 +406,8 @@ public class Autos {
 }*/
 
 
-  @Logged
   private Trigger drivetrainAtReefTargetTrig;
-  @Logged
   private Trigger drivetrainCloseMoveArmTrig;
-  @Logged
   public Trigger drivetrainSafeToAlignTrig;
 
   public Command autoScore() {

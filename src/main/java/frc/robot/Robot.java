@@ -13,6 +13,7 @@ import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import java.util.ArrayList;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
@@ -106,14 +107,13 @@ public class Robot extends TimedRobot {
     .and(()->!DriverStation.isFMSAttached());
 
   private DigitalInput coastButton = new DigitalInput(0);
-  private Trigger headingAlignLeftStation = m_driverController.a().and(m_autos::onLeftHalf);
-  private Trigger headingAlignRightStation = m_driverController.a().and(new Trigger(m_autos::onLeftHalf).negate());
   /**
    * This function is run when the robot is first started up and should be used
    * for any
    * initialization code.
    */
   public Robot() {
+    SignalLogger.enableAutoLogging(false);
     LightStripS.start();
     DriverStation.startDataLog(DataLogManager.getLog());
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
