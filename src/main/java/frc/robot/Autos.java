@@ -176,7 +176,7 @@ public class Autos {
           waitSeconds(4),
           m_drivebase.driveToPoseSupC(targetSup))
           .andThen(deadline(
-              waitSeconds(0.35).andThen(outtake().withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop())));
+              waitSeconds(0.25).andThen(outtake().withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop())));
     
   }
 
@@ -359,7 +359,7 @@ public class Autos {
       return POI.SR3;
     }
   }
-  
+
   public Rotation2d intakeHeadingAllianceRelative() {
     return closestIntake().bluePose.getRotation();
   }
@@ -499,12 +499,14 @@ public class Autos {
     // self.atTranslation(
     //    finalPoseUnflipped.getTranslation(), Units.inchesToMeters(6))
     //   .onTrue(m_arm.goToPosition(scoringPosition))
-    self.atTranslation(finalPoseUnflipped.getTranslation(), Units.inchesToMeters(12)).onTrue(
-      goToPositionWristLast(scoringPosition)
-    );
+    // self.atTranslation(finalPoseUnflipped.getTranslation(), Units.inchesToMeters(12))
+    // .onTrue(
+    //   goToPositionWristLast(scoringPosition)
+    // );
     self.atTranslation(
        finalPoseUnflipped.getTranslation(), Units.inchesToMeters(6))
         .onTrue(print("Inside Scoring Radius"))
+        .onTrue(goToPositionWristLast(scoringPosition))
         .onTrue(
           sequence(
             alignAndDrop(
@@ -556,7 +558,7 @@ public class Autos {
       .map(this::bindAutoScorePremove)
       .get();
       var intakeFinalPose = toIntake.getRawTrajectory().getFinalPose(false).get();
-      var recieveCoral= RobotBase.isSimulation() ? sequence(waitSeconds(0.6), runOnce(()->m_coralSensor.setHasCoral(true))) : waitUntil(this::hasCoral);
+      var recieveCoral= RobotBase.isSimulation() ? sequence(waitSeconds(0.4), runOnce(()->m_coralSensor.setHasCoral(true))) : waitUntil(this::hasCoral);
       toIntake
       .done()
           .onTrue(

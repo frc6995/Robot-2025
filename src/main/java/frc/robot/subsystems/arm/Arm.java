@@ -53,7 +53,7 @@ public abstract class Arm {
     public ArmPosition safeWrist() {
       return new ArmPosition(mainPivotAngle,
         elevatorLength,
-        wristAngle.lt(Rotations.of(0))? wristAngle : Rotations.of(-0.1));
+        wristAngle.lt(Rotations.of(0))? wristAngle : Rotations.of(-0.25));
     }
   }
   ;
@@ -74,7 +74,7 @@ public abstract class Arm {
     public static final ArmPosition INTAKE_CORAL =
         new ArmPosition(Radians.of(0.957), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), WristConstants.CW_LIMIT);
     public static final ArmPosition WALL_INTAKE_CORAL =
-        new ArmPosition(Degrees.of(60.11), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), WristConstants.CW_LIMIT);
+        new ArmPosition(Degrees.of(60.11 - 0.5), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(0.5)), WristConstants.CW_LIMIT);
     public static final ArmPosition POST_INTAKE_CORAL = new ArmPosition(Degrees.of(85), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), WristConstants.CW_LIMIT);
 
     public static final ArmPosition LOW_ALGAE = new ArmPosition(Degrees.of(55), ElevatorConstants.MIN_LENGTH.plus(Inches.of(8)), WristConstants.CW_LIMIT.plus(Degrees.of(40)));

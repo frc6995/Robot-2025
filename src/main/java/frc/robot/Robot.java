@@ -222,18 +222,18 @@ public class Robot extends TimedRobot {
         .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
 
     // Align and score in barge; stow
-    m_driverController.y().and(inWorkshop.negate())
-        .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
-        .onTrue(m_hand.inAlgae())
-        .whileTrue(
-            parallel(
-              m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4),
-              waitUntil(m_autos::atBargeLine).andThen(
-                m_autos.bargeUpAndOut()
-              )
-            )
-            );
-      m_driverController.y().and(inWorkshop)
+    // m_driverController.y().and(inWorkshop.negate())
+    //     .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
+    //     .onTrue(m_hand.inAlgae())
+    //     .whileTrue(
+    //         parallel(
+    //           m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4),
+    //           waitUntil(m_autos::atBargeLine).andThen(
+    //             m_autos.bargeUpAndOut()
+    //           )
+    //         )
+    //         );
+      m_driverController.y()
       .onTrue(m_autos.bargeUpAndOut());
       //.onTrue(m_hand.inAlgae());
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
@@ -321,12 +321,16 @@ public class Robot extends TimedRobot {
     RobotVisualizer.setArmPosition(m_arm.getPosition());
     Epilogue.talonFXLogger.refreshAll();
     // pdh.update();
+    // if (m_operatorBoard.getToggle()) {
+    //   LightStripS.top.requestState(TopStates.ReadyToIntake);
+    // }
     CommandScheduler.getInstance().run();
     LightStripS.periodic();
     var loopTime = Timer.getFPGATimestamp()-lastTimestamp;
     SmartDashboard.putNumber("loopTime", loopTime);
     lastTimestamp = Timer.getFPGATimestamp();
     SmartDashboard.putNumber("robotHeartbeat", lastRobotHeartbeat++);
+    
 
   }
 

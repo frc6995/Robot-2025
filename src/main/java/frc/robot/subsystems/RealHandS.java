@@ -30,16 +30,16 @@ public class RealHandS extends Hand {
 
   public static final int CAN_ID = 51;
 
-  public static final double IN_CORAL_VOLTAGE = 5;
+  public static final double IN_CORAL_VOLTAGE = 4;
 
   public static final double OUT_CORAL_VOLTAGE = -3; //worked with -6 but coral bounced
-  public static final double OUT_CORAL_VOLTAGE_SLOW = -4; //worked with -6 but coral bounced
+  public static final double OUT_CORAL_VOLTAGE_SLOW = -2; //worked with -6 but coral bounced
   public static final double IN_ALGAE_VOLTAGE = -10;
 
   public static final double OUT_ALGAE_VOLTAGE = 10;
 
   public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
-    config.CurrentLimits.withStatorCurrentLimit(60).withStatorCurrentLimitEnable(true);
+    config.CurrentLimits.withStatorCurrentLimit(90).withStatorCurrentLimitEnable(true);
     return config;
   }
   }
