@@ -111,6 +111,7 @@ public class Autos {
     autos.put("2.Right 3p", () -> flexAuto(POI.STE, POI.SR3, Optional.empty(), POI.E, POI.D, POI.C));
     autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, Optional.empty(), POI.H));
     autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, Optional.empty(), POI.G));
+    autos.put("AB", ()->flexAuto(POI.STA, POI.SL3, Optional.empty(), POI.A, POI.B));
     autos.put("5.MoveOffLine", ()->{
       var move = new SwerveRequest.RobotCentric();
       return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
@@ -129,7 +130,7 @@ public class Autos {
         (routine)->{
           var traj = routine.trajectory("1");
           var push = routine.trajectory("2");
-          traj.atTime(1).onTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE));
+          traj.atTime(1).onTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE)).onTrue(m_hand.inAlgae());
           traj.chain(push);
           
           var toScore = routine.trajectory("3");
@@ -139,13 +140,14 @@ public class Autos {
 
           
           var push2 = routine.trajectory("5");
-          moveback.atTime(0).onTrue(waitSeconds(1).andThen(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE)));
+          moveback.atTime(1).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE)).onTrue(m_hand.inAlgae());
 
           moveback.chain(push2);
 
-          push2.atTime(0).onTrue(waitSeconds(0.7).andThen(m_arm.goToPosition(Arm.Positions.LOW_ALGAE)));
+          
 
           var toScore2 = routine.trajectory("6");
+          toScore2.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
           push2.chain(toScore2);
 
 

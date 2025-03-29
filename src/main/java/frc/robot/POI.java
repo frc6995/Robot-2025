@@ -47,9 +47,11 @@ public enum POI {
     SR2(false),
     SR3(false),
     // Starting for corresponding pose
+    STA(false),
     STE(false),
     STF(false),
     STG(false),
+
     STH(false),
     STJ(false),
     STI(false),
@@ -64,6 +66,7 @@ public enum POI {
     PROC(false),
     // Climb
     CL1(false),
+    
     CL2(false),
     CL3(false);
 
