@@ -30,5 +30,8 @@ public class NoneHandS extends Hand {
     public Command outAlgae() {
         return Commands.idle(this);
     }
+    public Command outAlgaeSlow() {
+        return Commands.idle(this);
+    }
     
 }

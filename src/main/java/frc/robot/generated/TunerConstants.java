@@ -65,7 +65,7 @@ public class TunerConstants {
   // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
   private static final Slot0Configs driveGains =
       new Slot0Configs()
-          .withKP(8/(5.35714285714285 / 7.125)) // 8 A/(oldRot/s) = 8 A/(5.357 newRot/7.125oldRot)*oldRot
+          .withKP(8*(5.35714285714285 / 7.125)) // 8 A/(oldRot/s) = 8 A/(5.357 newRot/7.125oldRot)*oldRot
           .withKI(0)
           .withKD(0)
           .withKS(0)
@@ -115,7 +115,7 @@ public class TunerConstants {
 
   // Theoretical free speed (m/s) at 12 V applied output;
   // This needs to be tuned to your individual robot
-  public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.547 * 5.35714285714285 / 7.125);
+  public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.245);
 
   // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
   // This may need to be tuned to your individual robot

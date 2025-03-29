@@ -107,7 +107,7 @@ public class Autos {
   }
 
   public void addAutos() {
-    autos.put("1.Left 3p (Home)", () -> flexAuto(POI.STJ, POI.SL3, Optional.empty(), POI.J, POI.K, POI.L, POI.J));
+    autos.put("1.Left 3p (Home)", () -> flexAuto(POI.STJ, POI.SL3, Optional.empty(), POI.J, POI.K, POI.L, POI.I));
     autos.put("2.Right 3p", () -> flexAuto(POI.STE, POI.SR3, Optional.empty(), POI.E, POI.D, POI.C));
     autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, Optional.empty(), POI.H));
     autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, Optional.empty(), POI.G));
@@ -123,7 +123,7 @@ public class Autos {
           return traj;
         }
       ), POI.J, POI.K));
-      autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
+      //autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
 
     // autos.put must be before here
     for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
@@ -474,19 +474,16 @@ public class Autos {
     );
   }
   private double bargeTargetX() {
-    final double blueX = 8.21 - Units.inchesToMeters(18);
+    final double blueX = 7;
     return AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(blueX) : blueX;
   }
 
+  private final Supplier<Rotation2d> bargeTargetHeading = AllianceFlipUtil.getFlipped(Rotation2d.fromDegrees(30));
   public Rotation2d bargeTargetHeading() {
-    return AllianceFlipUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero;
+    return bargeTargetHeading.get();
   }
   public Command alignToBarge(DoubleSupplier lateralSpeed) {
-    return m_drivebase.driveToPoseSupC(()->{
-      var start = m_drivebase.getPose();
-      var target = new Pose2d(bargeTargetX(), start.getY(), bargeTargetHeading());
-      return target;
-    });
+    return m_drivebase.driveToX(this::bargeTargetX, lateralSpeed, bargeTargetHeading);
   }
 
   public boolean atBargeLine() {
@@ -513,12 +510,11 @@ public class Autos {
     self.atTranslation(
        finalPoseUnflipped.getTranslation(), Units.inchesToMeters(6))
         .onTrue(print("Inside Scoring Radius"))
-        .onTrue(goToPositionWristLast(scoringPosition));
-    self.done()
+        .onTrue(goToPositionWristLast(scoringPosition))
         .onTrue(
           sequence(
             alignAndDrop(
-              angledSensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME
+              sensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME
             ),
             //Commands.waitSeconds(AUTO_OUTTAKE_TIME),
             new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL)),
@@ -583,7 +579,7 @@ public class Autos {
   }
 
   private final double TIME_INTAKE_TO_L4 = 1.4;
-  private final double AUTO_OUTTAKE_TIME = 0.25;
+  private final double AUTO_OUTTAKE_TIME = 0.17;
 
   private final ArmPosition autoScoringPosition = Arm.Positions.L4;
   private AutoTrajectory bindAutoScorePremove(AutoTrajectory trajectory) {
