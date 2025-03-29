@@ -42,6 +42,8 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -188,16 +190,19 @@ public class Autos {
     return m_coralSensor.hasCoral();
   }
 
-  public final double centerToCoralEnd = 1;
-  public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
-    // TODO reduce allocations
-    // TODO angle instead of sideways?
-    // return () -> original
-    //     .get()
-    //     .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
+  
+  public final double centerToCoralEnd = 0.61;
+
+  public Supplier<Pose2d> angledSensorOffsetPose(Supplier<Pose2d> original) {
     return () -> original
         .get()
-        .rotateBy(null);
+        .transformBy(new Transform2d(Translation2d.kZero, new Rotation2d(centerToCoralEnd, -getDistanceSensorOffset())));
+  }
+
+  public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
+    return () -> original
+        .get()
+        .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
   }
 
   public POI selectedReefPOI() {
@@ -508,11 +513,12 @@ public class Autos {
     self.atTranslation(
        finalPoseUnflipped.getTranslation(), Units.inchesToMeters(6))
         .onTrue(print("Inside Scoring Radius"))
-        .onTrue(goToPositionWristLast(scoringPosition))
+        .onTrue(goToPositionWristLast(scoringPosition));
+    self.done()
         .onTrue(
           sequence(
             alignAndDrop(
-              sensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME
+              angledSensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME
             ),
             //Commands.waitSeconds(AUTO_OUTTAKE_TIME),
             new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL)),
