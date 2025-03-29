@@ -59,8 +59,15 @@ public class RealArm extends Arm {
   private static final Angle SAFE_WRIST_MIN = WristConstants.CW_LIMIT;
   private static final Angle SAFE_WRIST_MAX = WristConstants.CCW_LIMIT;
   public Trigger elevatorRetractedEnough = new Trigger(
-      () -> elevatorS.getLengthMeters() < SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters) + Units.inchesToMeters(1));
+      () -> elevatorS.getLengthMeters() < SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters) + Units.inchesToMeters(1)
+      );
 
+  /**
+   * Move the Arm to provided ArmPosition.
+   * moves directly if pivot is within 4 degrees, otherwise retracts elevator and then moves to position
+   * @param position ArmPosition for desired tartget ArmPosition
+   * @return a command that moves the arm subsystems to the desired positions
+   */
   public Command goToPosition(ArmPosition position) {
     double positionPivotRadians = position.pivotRadians();
     double positionElevatorMeters = position.elevatorMeters();
@@ -129,16 +136,23 @@ public class RealArm extends Arm {
       wristDirectlyTo(wristRadians));
 }
 
+  /**
+   * provides voltage to the main pivot until it has reached the readyToClimb position, and then holds the pivot angle
+   */
   @Override
   public Command Climb() {
     return mainPivotS.voltage(() -> -2).until(this::readyToClimb).andThen(mainPivotS.hold());
 
   }
 
+  /**
+   * returns true if pivot is at the climb angle
+   */
   public boolean readyToClimb() {
     return position.mainPivotAngle().lt(MainPivotConstants.climbAngle);
   }
 
+  /**DOES NOT CURRENTLY HOME*/
   @Override
   public Command algaeStowWithHome() {
     return sequence(

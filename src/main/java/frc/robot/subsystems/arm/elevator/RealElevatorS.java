@@ -64,7 +64,6 @@ public class RealElevatorS extends Elevator {
     public static final double a = 13.0/50.0 * (Math.PI*1.508) * 2;
     public static final double b = 1.32278 * 2;
     public static final Per<AngleUnit, DistanceUnit> MOTOR_ROTATIONS_PER_METER_UNIT =
-        
         Rotations.of(1).div(Inches.of(13.0/50.0 * (Math.PI*1.4397) * 2));
     public static final double MOTOR_ROTATIONS_PER_METER =
         MOTOR_ROTATIONS_PER_METER_UNIT.in(Rotations.per(Meter));
@@ -236,14 +235,26 @@ public class RealElevatorS extends Elevator {
 
   VoltageOut voltage = new VoltageOut(0);
 
+  /**
+   * drives the elevator up at one (1) volt
+   * @return returns a run comand
+   */
   public Command up() {
     return this.run(() -> leader.setControl(voltage.withOutput(1)));
   }
 
+  /**
+   * drives the elevator down at negative one (-1) volt
+   * @return returns a run command
+   */
   public Command down() {
     return this.run(() -> leader.setControl(voltage.withOutput(-1)));
   }
 
+  /**
+   * sets elevator voltage to zero (0)
+   * @return returns a run command
+   */
   public Command stop() {
     return this.run(() -> leader.setControl(voltage.withOutput(0)));
   }

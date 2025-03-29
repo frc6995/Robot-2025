@@ -88,7 +88,6 @@ public class Robot extends TimedRobot {
   public FieldCentricFacingAngle m_headingAlignRequest =
   new FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withDriveRequestType(DriveRequestType.Velocity);
   private boolean allHomed = false;
-  // private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
   private final DriverDisplay m_driverDisplay = new DriverDisplay();
   
@@ -102,6 +101,7 @@ public class Robot extends TimedRobot {
     this.allHomed = homed;
   }
 
+  //TODO ALWAYS REMEMBER THIS!!!
   private boolean realRobotIsInWorkshop = true;
   private Trigger inWorkshop = 
     new Trigger(()->RobotBase.isReal() && realRobotIsInWorkshop)
@@ -134,6 +134,7 @@ public class Robot extends TimedRobot {
         // Drivetrain will execute this command periodically
         m_drivebaseS.applyRequest(
             () -> {
+              // TODO make these multipliers constants? move most of this command to DriveBaseS.java?
               var xSpeed = -m_driverController.getLeftY() * 5;
               var ySpeed = -m_driverController.getLeftX() * 5;
               var rotationSpeed = -m_driverController.getRightX() * 2 * Math.PI;
@@ -168,7 +169,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("autoChooser", m_autos.m_autoChooser);
 
     configureDriverController();
-// Coast mode when disabled
+    // Coast mode when disabled
     m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
       parallel(m_arm.mainPivotS.coast(), m_arm.wristS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
     )
@@ -208,7 +209,7 @@ public class Robot extends TimedRobot {
   
   public void configureDriverController() {
     
-    // TODO: assign buttons to functions specified in comments
+    // TODO: this is really just a navigation marker now
 
     // align to closest coral station (or left station if in workshop)
     m_driverController.a().whileTrue(m_autos.autoCoralIntake());
@@ -247,8 +248,9 @@ public class Robot extends TimedRobot {
     .onTrue(m_autos.armToClosestAlgae())
     .onTrue(m_hand.inAlgae());
 
-    // Stow
+    // Ground algae intake
     m_driverController.b().onTrue(m_arm.goToPosition(Arm.Positions.GROUND_ALGAE)).onTrue(m_hand.inAlgae());
+    // Stow
     m_driverController.leftBumper().onTrue(m_arm.algaeStowWithHome());
        // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
@@ -263,7 +265,7 @@ public class Robot extends TimedRobot {
     )
         ;
 
-    // Score algae and stow if at barge position
+    // Score algae and then stow if at barge position
     m_driverController.leftTrigger().onTrue(parallel(
         m_hand.outAlgae().withTimeout(0.5)).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
         .onlyIf(()->
@@ -281,6 +283,7 @@ public class Robot extends TimedRobot {
         .onTrue(m_armBrakeS.home())
         .onTrue(LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(0.5));
 
+    // robot relative D-pad driving
     m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
 
   }
@@ -300,7 +303,7 @@ public class Robot extends TimedRobot {
 
   ArrayList<Translation2d> toGoal = new ArrayList<>();
   Pose3d emptyPose = Pose3d.kZero;
-@NotLogged
+  @NotLogged
   private double lastTimestamp = Timer.getFPGATimestamp();
   @NotLogged
   private int lastRobotHeartbeat = 0;
@@ -448,7 +451,7 @@ public class Robot extends TimedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    m_drivebaseS.stopBrakeMode().ignoringDisable(true).until(() -> true).schedule();
+    m_drivebaseS.stopWithBrakeMode().ignoringDisable(true).until(() -> true).schedule();
   }
 
   /** This function is called periodically when disabled. */

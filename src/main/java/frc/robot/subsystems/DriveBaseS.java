@@ -254,7 +254,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   public Command stop() {
     return applyRequest(() -> idle);
   }
-  public Command stopBrakeMode() {
+  public Command stopWithBrakeMode() {
     return applyRequest(() -> brakeMode);
   }
 

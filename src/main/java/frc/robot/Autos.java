@@ -94,15 +94,16 @@ public class Autos {
         m_drivebase,
         m_drivebase::logTrajectory);
     addAutos();
+    // buttons for coral during simulation
     new Trigger(() -> DriverStation.getStickButton(4, 1))
         .onTrue(runOnce(() -> m_coralSensor.setHasCoral(true)).ignoringDisable(true));
     new Trigger(() -> DriverStation.getStickButton(4, 2))
         .onTrue(runOnce(() -> m_coralSensor.setHasCoral(false)).ignoringDisable(true));
+
     new Trigger(() -> DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
     drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
     drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
     drivetrainSafeToAlignTrig = m_drivebase.safeToReefAlign(this.offsetSelectedReefPose);
-    // // m_autoChooser.addCmd("HIJKL_SL3", this::HIJKL_SL3);
 
   }
 
@@ -140,10 +141,6 @@ public class Autos {
     }
     successfulAutoTest.set(true);
   }
-
-
-
-
 
   /**
    * Requires: only drivetrain Runs: drivetrain and rollers
@@ -284,6 +281,10 @@ public class Autos {
     }
   }
 
+  /**
+   * 
+   * @return the ReefSide that is closest to the robot's current pose
+   */
   public ReefSide closestSide() {
     var reef = POI.REEF.flippedPose();
     var pose = m_drivebase.getPose();
@@ -344,6 +345,10 @@ public class Autos {
     return defer(() -> m_drivebase.driveToPoseSupC(selectedClimb()::flippedPose), Set.of(m_drivebase));
   }
 
+  /**
+   * moves the arm to the station intake position, using different positions depending on operator board toggle
+   * @return goToPosition() arm command
+   */
   public Command intakePositionWithToggle() {
     return Commands.either(
       m_arm.goToPosition(Arm.Positions.INTAKE_CORAL).until(m_board.toggle().negate()),
@@ -397,13 +402,6 @@ public class Autos {
     m_arm.goToPosition(finalPosition)
     );
   }
-
-
-// TODO: implement safetoreefalign
-/*public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
-  m_drivebase.safeToReefAlign(this::selectedReefPose);
-  return frc.robot.Autos.safeToReefAlign();
-}*/
 
 
   private Trigger drivetrainAtReefTargetTrig;
