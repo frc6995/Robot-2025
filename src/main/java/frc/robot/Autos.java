@@ -42,8 +42,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -190,12 +188,16 @@ public class Autos {
     return m_coralSensor.hasCoral();
   }
 
+  public final double centerToCoralEnd = 1;
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
     // TODO reduce allocations
     // TODO angle instead of sideways?
+    // return () -> original
+    //     .get()
+    //     .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
     return () -> original
         .get()
-        .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
+        .rotateBy(null);
   }
 
   public POI selectedReefPOI() {
