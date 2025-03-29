@@ -4,9 +4,10 @@
 
 package frc.robot.util;
 
+import java.util.Objects;
+
 import edu.wpi.first.math.MathSharedStore;
 import edu.wpi.first.math.MathUsageId;
-import java.util.Objects;
 
 /**
  * A trapezoid-shaped velocity profile.

@@ -1,16 +1,17 @@
 
 package frc.robot;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
 import choreo.Choreo;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ChoreoVariables;
-
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 public enum POI {
     REEF(false),
@@ -26,6 +27,18 @@ public enum POI {
     J(true),
     K(true),
     L(true),
+    L1_B(true),
+    L1_D(L1_B, Rotation2d.fromDegrees(60)),
+    L1_F(L1_B, Rotation2d.fromDegrees(120)),
+    L1_H(L1_B, Rotation2d.fromDegrees(180)),
+    L1_J(L1_B, Rotation2d.fromDegrees(240)),
+    L1_L(L1_B, Rotation2d.fromDegrees(300)),
+    L1_A(true),
+    L1_C(L1_A, Rotation2d.fromDegrees(60)),
+    L1_E(L1_A, Rotation2d.fromDegrees(120)),
+    L1_G(L1_A, Rotation2d.fromDegrees(180)),
+    L1_I(L1_A, Rotation2d.fromDegrees(240)),
+    L1_K(L1_A, Rotation2d.fromDegrees(300)),
     // Intake left, right
     SL1(false),
     SL2(false),
@@ -46,6 +59,7 @@ public enum POI {
     R3(false),
     R4(false),
     R5(false),
+    
     R6(false),
     PROC(false),
     // Climb
@@ -58,7 +72,7 @@ public enum POI {
     public final boolean isReef;
 
     private static List<String> TRAJECTORIES = List.of(Choreo.availableTrajectories());
-
+    
     private POI(boolean isReef) {
         this.isReef = isReef;
         bluePose = ChoreoVariables.getPose(this.name());
@@ -68,6 +82,15 @@ public enum POI {
     private POI(boolean isReef, Pose2d bluePose) {
         this.isReef = isReef;
         this.bluePose = bluePose;
+        redPose = AllianceFlipUtil.flip(bluePose);
+    }
+    private POI(POI base, Rotation2d rotateAroundReef) {
+        this.isReef = true;
+        final Pose2d blueReef = ChoreoVariables.getPose("REEF");
+        this.bluePose = blueReef.plus(
+            base.bluePose.relativeTo(blueReef).rotateBy(rotateAroundReef)
+            .minus(Pose2d.kZero)
+        );
         redPose = AllianceFlipUtil.flip(bluePose);
     }
 

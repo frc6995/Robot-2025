@@ -1,10 +1,24 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.*;
-import static frc.robot.logging.PowerDistributionSim.Channel.*;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.logging.PowerDistributionSim.Channel.c04_FL_Drive;
+import static frc.robot.logging.PowerDistributionSim.Channel.c05_FL_Steer;
+import static frc.robot.logging.PowerDistributionSim.Channel.c08_FR_Steer;
+import static frc.robot.logging.PowerDistributionSim.Channel.c09_FR_Drive;
+import static frc.robot.logging.PowerDistributionSim.Channel.c10_BR_Steer;
+import static frc.robot.logging.PowerDistributionSim.Channel.c11_BR_Drive;
+import static frc.robot.logging.PowerDistributionSim.Channel.c12_BR_Steer;
+import static frc.robot.logging.PowerDistributionSim.Channel.c15_BL_Drive;
 
-import choreo.trajectory.SwerveSample;
-import choreo.trajectory.Trajectory;
+import java.util.Optional;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -12,36 +26,31 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
-import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
-import frc.robot.util.TrapezoidProfile;
-import frc.robot.util.TrapezoidProfile.Constraints;
-import frc.robot.util.TrapezoidProfile.State;
-import wpilibExt.DCMotorExt;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -54,10 +63,11 @@ import frc.robot.logging.TalonFXPDHChannel;
 import frc.robot.subsystems.drive.Pathing;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.Capture;
 import frc.robot.util.RepulsorFieldPlanner;
-import java.util.Optional;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+import frc.robot.util.TrapezoidProfile;
+import frc.robot.util.TrapezoidProfile.Constraints;
+import frc.robot.util.TrapezoidProfile.State;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -73,7 +83,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
       TunerConstants.kWheelRadius.in(Meters),
       TunerConstants.kSpeedAt12Volts.in(MetersPerSecond), 1.5,
       DCMotor.getKrakenX60Foc(1).withReduction(TunerConstants.BackLeft.DriveMotorGearRatio),
-      120.0, 1),
+      600.0, 1),
       getModuleLocations()
     );
   public com.pathplanner.lib.util.swerve.SwerveSetpointGenerator m_pathPlannerGenerator =
@@ -136,10 +146,11 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
       TalonFXPDHChannel.registerFD(c10_BR_Steer, br.steer());
     }
   }
-
+  @NotLogged
+  public SwerveDriveState state = getState();
   /** Re-expose the state as a method of the subclass so Epilogue finds it. */
   public SwerveDriveState state() {
-    return getState();
+    return state;
   }
 
   private final SwerveDrivetrainConstants constants;
@@ -238,9 +249,13 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   SwerveRequest.ApplyRobotSpeeds idle = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds()).withDriveRequestType(DriveRequestType.Velocity);
-
+  SwerveRequest.ApplyRobotSpeeds brakeMode = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds()).withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+  SwerveRequest.SwerveDriveBrake xBrake = new SwerveRequest.SwerveDriveBrake().withDriveRequestType(DriveRequestType.Velocity);
   public Command stop() {
     return applyRequest(() -> idle);
+  }
+  public Command stopBrakeMode() {
+    return applyRequest(() -> brakeMode);
   }
 
   private final SwerveSample[] emptyTrajectory = new SwerveSample[0];
@@ -250,9 +265,12 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     currentTrajectory = isStarting ? traj.samples().toArray(SwerveSample[]::new) : emptyTrajectory;
   }
 
+  
   @Override
   public void periodic() {
+    state = getStateCopy();
     if (RobotBase.isReal()) {
+      
       m_vision.update();
     }
     /*
@@ -406,7 +424,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
   @NotLogged
   public Pose2d getPose() {
-    return getState().Pose;
+    return state.Pose;
   }
 
   @NotLogged
@@ -452,46 +470,48 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(driveToPoseRotationConstraints);
 
   // For modifying goals from within a lambda
-  private class Capture<T> {
-    public T inner;
 
-    public Capture(T inner) {
-      this.inner = inner;
-    }
-  }
 
   private TrapezoidProfile.State driveToPoseGoal = new State(0, 0);
   private TrapezoidProfile.State driveToPoseRotationGoal = new State(0, 0);
 
 
-  private SwerveSetpoint m_previousSwerveSetpoint;
   private ApplyRobotSpeeds m_pathApplyRobotSpeeds = new ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
-  private PathConstraints m_autoAlignPathConstraints = new PathConstraints(
-    driveToPoseConstraints.maxVelocity, driveToPoseConstraints.maxAcceleration,
-    driveToPoseRotationConstraints.maxVelocity, driveToPoseRotationConstraints.maxAcceleration);
-
   public SwerveRequest calculateFollowRequest(SwerveSetpoint previous, SwerveSample sample) {
     m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
     var pose = state().Pose;
     var targetSpeeds = sample.getChassisSpeeds();
-    targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(pose.getX(), sample.x);
-    targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(pose.getY(), sample.y);
-    targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(pose.getRotation().getRadians(),
-        sample.heading);
+    // Calculate module forces prior to PID correction
     var targetSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
     var swerveSetpoint = m_pathPlannerGenerator.generateSetpoint(
       previous,
       targetSpeedsRobotRelative, null, 0.02);
-    m_previousSwerveSetpoint = swerveSetpoint;
+    //
+    targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(pose.getX(), sample.x);
+    targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(pose.getY(), sample.y);
+    targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(pose.getRotation().getRadians(),
+        sample.heading);
+    targetSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
     return
-
         m_pathApplyRobotSpeeds
-            
             .withSpeeds(targetSpeedsRobotRelative)
-            // .withWheelForceFeedforwardsX(swerveSetpoint.feedforwards().robotRelativeForcesXNewtons())
-            // .withWheelForceFeedforwardsY(swerveSetpoint.feedforwards().robotRelativeForcesYNewtons())
+            .withWheelForceFeedforwardsX(swerveSetpoint.feedforwards().robotRelativeForcesXNewtons())
+            .withWheelForceFeedforwardsY(swerveSetpoint.feedforwards().robotRelativeForcesYNewtons())
             ;
   }
+
+  Capture<Pose2d> start = new Capture<Pose2d>(new Pose2d());
+  // The goal (populated from poseSupplier at command start)
+  Capture<Pose2d> end = new Capture<Pose2d>(new Pose2d());
+  // Distance start-end in meters
+  Capture<Double> dist = new Capture<Double>(1.0);
+  // Unit vector start->end
+  Capture<Translation2d> normDirStartToEnd = new Capture<>(Translation2d.kZero);
+  TrapezoidProfile.State translationState = new State(0, 0);
+  TrapezoidProfile.State rotationState = new State(0, 0);
+
+  // Threshold for "close enough" to avoid microadjustments
+  Trigger atPose = atPose(()->end.inner, Units.inchesToMeters(0.5), Units.degreesToRadians(1));
   /**
    * Drives to a pose with motion profiles on translation and rotation.
    * The translation profile starts at dist(start,end) and drives toward 0. This state is then interpolated 
@@ -502,24 +522,16 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
    * @return
    */
   public Command driveToPoseSupC(Supplier<Pose2d> poseSupplier) {
-    TrapezoidProfile.State state = new State(0, 0);
-    TrapezoidProfile.State rotationState = new State(0, 0);
+    var startTime = Timer.getFPGATimestamp();
 
-    // The pose as of command start
-    Capture<Pose2d> start = new Capture<Pose2d>(new Pose2d());
-    // The goal (populated from poseSupplier at command start)
-    Capture<Pose2d> end = new Capture<Pose2d>(new Pose2d());
-    // Distance start-end in meters
-    Capture<Double> dist = new Capture<Double>(1.0);
-    // Unit vector start->end
-    Capture<Translation2d> normDirStartToEnd = new Capture<>(Translation2d.kZero);
-    // Threshold for "close enough" to avoid microadjustments
-    Trigger atPose = atPose(()->end.inner, Units.inchesToMeters(0.5), Units.degreesToRadians(1));
-    return runOnce(
+    var command = runOnce(
         () -> {
           // save the start pose and target pose
           start.inner = getPose();
+          var getTargetTime = Timer.getFPGATimestamp();
           end.inner = poseSupplier.get();
+          SmartDashboard.putNumber("getTargetTime", Timer.getFPGATimestamp()-getTargetTime);
+          var setupTime = Timer.getFPGATimestamp();
           // save the normalized vector from current to target
           normDirStartToEnd.inner = end.inner.getTranslation().minus(start.inner.getTranslation());
           dist.inner = normDirStartToEnd.inner.getNorm();
@@ -527,9 +539,9 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           // initial position: distance from end
           // initial velocity: component of velocity straight towards end (as a negative number)
 
-          state.position = dist.inner;
+          translationState.position = dist.inner;
           // Pathing.velocityTowards is negative if approaching the target
-          state.velocity = 
+          translationState.velocity = 
           MathUtil.clamp(
               Pathing.velocityTowards(
                   start.inner,
@@ -540,26 +552,23 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           
           rotationState.position = start.inner.getRotation().getRadians();
           rotationState.velocity = state().Speeds.omegaRadiansPerSecond;
-          SmartDashboard.putNumber("driveToPoseTransInterp", state.position);
-          SmartDashboard.putNumber("driveToPoseRotationInterp", rotationState.position);
-          SmartDashboard.putNumber("driveToPoseTransInterpVel", state.velocity);
-          SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
+          SmartDashboard.putNumber("driveToPoseTransInterp", translationState.position);
+          // SmartDashboard.putNumber("driveToPoseRotationInterp", rotationState.position);
+          // SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
+          // SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
           SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
-          // TODO reset previous swerve setpoint
-          m_previousSwerveSetpoint = new SwerveSetpoint(state().Speeds, state().ModuleStates, DriveFeedforwards.zeros(4));
-
+          SmartDashboard.putNumber("setupTime", Timer.getFPGATimestamp()-setupTime);
         })
         .andThen(
             run(
                 () -> {
-                  var setpoint = driveToPoseProfile.calculate(0.02, state, driveToPoseGoal);
-                  var nextSetpoint = driveToPoseProfile.calculate(0.04, state, driveToPoseGoal);
-                  state.position = setpoint.position;
-                  state.velocity = setpoint.velocity;
+                  var setpoint = driveToPoseProfile.calculate(0.02, translationState, driveToPoseGoal);
+                  translationState.position = setpoint.position;
+                  translationState.velocity = setpoint.velocity;
                   // Rotation continuous input
                   // Get error which is the smallest distance between goal and measurement
                   double errorBound = Math.PI;
-                  var measurement = state().Pose.getRotation().getRadians();
+                  var measurement = getPoseHeading().getRadians();
                   double goalMinDistance =
                       MathUtil.inputModulus(driveToPoseRotationGoal.position-measurement, -errorBound, errorBound);
                   double setpointMinDistance =
@@ -579,27 +588,42 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
                   SmartDashboard.putNumber("driveToPoseTransInterp", setpoint.position);
                   SmartDashboard.putNumber("driveToPoseRotationInterp", rotSetpoint.position);
                   SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
-                  SmartDashboard.putNumber("driveToPoseTransInterpVel", state.velocity);
-                  SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
+                  // SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
+                  // SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
                   var startPose = start.inner;
 
                   var interpTrans = end.inner
                       .getTranslation()
                       .interpolate(startPose.getTranslation(), setpoint.position / dist.inner);
-                  var request = calculateFollowRequest(m_previousSwerveSetpoint, RepulsorFieldPlanner.sample(
+                  // var request = calculateFollowRequest(m_previousSwerveSetpoint, RepulsorFieldPlanner.sample(
+                  //   interpTrans,
+                  //   new Rotation2d(rotationState.position),
+                  //   normDirStartToEnd.inner.getX() * -setpoint.velocity,
+                  //   normDirStartToEnd.inner.getY() * -setpoint.velocity,
+                  //   rotationState.velocity));
+                  // if (atPose.getAsBoolean()) {
+                  //   this.setControl(xBrake);
+                  // } else {
+                  //   this.setControl(request);
+                  // }
+
+                  if (atPose.getAsBoolean()) {
+                    this.setControl(idle);
+                  } else {
+                    followPath(RepulsorFieldPlanner.sample(
                     interpTrans,
                     new Rotation2d(rotationState.position),
                     normDirStartToEnd.inner.getX() * -setpoint.velocity,
                     normDirStartToEnd.inner.getY() * -setpoint.velocity,
                     rotationState.velocity));
-                  if (atPose.getAsBoolean()) {
-                    this.setControl(idle);
-                  } else {
-                    this.setControl(request);
                   }
                 }))
 ;
+var endTime = Timer.getFPGATimestamp();
+SmartDashboard.putNumber("driveToPoseTime", endTime-startTime);
+return command;
   }
+
 
   public Command driveToPoseC(Optional<Pose2d> poseOpt) {
     return poseOpt.map((pose) -> driveToPoseSupC(() -> pose)).orElse(Commands.none());
@@ -649,7 +673,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   public Trigger safeToMoveArm(Supplier<Pose2d> poseSup) {
-    return atPose(poseSup, Units.inchesToMeters(36), 2*Math.PI);
+    return atPose(poseSup, Units.inchesToMeters(24), 2*Math.PI);
   }
 
   public Trigger safeToReefAlign(Supplier<Pose2d> reefTargetSup) {
@@ -665,5 +689,70 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 public Command goToPosition(Supplier<Pose2d> target) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'goToPosition'");
+}
+
+
+private final SwerveRequest.RobotCentric m_characterisationReq = new SwerveRequest.RobotCentric()
+.withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+private double lastGyroYawRads = 0;
+private double accumGyroYawRads = 0;
+
+private double[] startWheelPositions = new double[4];
+private double currentEffectiveWheelRadius = 0;
+private DoubleSupplier m_gyroYawRadsSupplier = () -> Units.degreesToRadians(getPigeon2().getAngle());
+private final SlewRateLimiter m_omegaLimiter = new SlewRateLimiter(1);
+
+public Command wheelRadiusCharacterisation(double omegaDirection) {
+  var initialize = runOnce(() -> {
+    lastGyroYawRads = m_gyroYawRadsSupplier.getAsDouble();
+    accumGyroYawRads = 0;
+    currentEffectiveWheelRadius = 0;
+    for (int i = 0; i < 4; i++) {
+      var pos = this.getModule(i).getPosition(true);
+      startWheelPositions[i] = pos.distanceMeters * TunerConstants.kDriveRotationsPerMeter;
+    }
+    m_omegaLimiter.reset(0);
+  });
+
+  var executeEnd = runEnd(
+    () -> {
+      setControl(m_characterisationReq
+        .withRotationalRate(m_omegaLimiter.calculate(1 * omegaDirection)));
+      accumGyroYawRads += MathUtil.angleModulus(m_gyroYawRadsSupplier.getAsDouble() - lastGyroYawRads);
+      lastGyroYawRads = m_gyroYawRadsSupplier.getAsDouble();
+      double averageWheelPositionRotations = 0;
+      double[] wheelPositionRotationss = new double[4];
+      for (int i = 0; i < 4; i++) {
+        var pos = this.getModule(i).getPosition(true);
+        // log("pos"+i, pos.distanceMeters);
+        wheelPositionRotationss[i] = pos.distanceMeters * TunerConstants.kDriveRotationsPerMeter;
+        averageWheelPositionRotations += Math.abs(wheelPositionRotationss[i] - startWheelPositions[i]);
+      }
+      averageWheelPositionRotations /= 4.0;
+      // log("wheelPos", wheelPositionRotationss);
+      // log("avgWheelPos", averageWheelPositionRotations);
+      // log("accumGyroYawRads", accumGyroYawRads);
+      
+      // arc length meters / wheel rotations = wheel circumference
+      currentEffectiveWheelRadius = (accumGyroYawRads * TunerConstants.kDriveRadius) / averageWheelPositionRotations;
+      SmartDashboard.putNumber("currWheelRad", currentEffectiveWheelRadius / (2*Math.PI));
+      // log_lastGyro.accept(lastGyroYawRads);
+      // log_avgWheelPos.accept(averageWheelPosition);
+      // log_accumGyro.accept(accumGyroYawRads);
+      // log_curEffWheelRad.accept(currentEffectiveWheelRadius);
+    }, () -> {
+      setControl(m_characterisationReq.withRotationalRate(0));
+      if (Math.abs(accumGyroYawRads) <= Math.PI * 2.0) {
+        System.out.println("not enough data for characterization " + accumGyroYawRads);
+      } else {
+        System.out.println(
+          "effective wheel radius: "
+            + currentEffectiveWheelRadius
+            + " inches");
+      }
+    });
+
+  return Commands.sequence(
+    initialize, executeEnd);
 }
 }

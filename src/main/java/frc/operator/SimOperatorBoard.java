@@ -1,7 +1,6 @@
 package frc.operator;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -65,5 +64,10 @@ public class SimOperatorBoard extends OperatorBoard {
     @Override
     public boolean getRight() {
         return DriverStation.getStickButton(port, 19);
+    }
+
+    @Override
+    public boolean getToggle() {
+        return DriverStation.getStickButton(port, 20);
     }
 }

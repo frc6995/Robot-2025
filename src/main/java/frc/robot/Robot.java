@@ -4,33 +4,40 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
+import static edu.wpi.first.wpilibj2.command.Commands.either;
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
+import static edu.wpi.first.wpilibj2.command.Commands.sequence;
+import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
+import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
+
+import java.util.ArrayList;
+
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -42,8 +49,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.operator.OperatorBoard;
 import frc.operator.RealOperatorBoard;
 import frc.operator.SimOperatorBoard;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.driver.CommandOperatorKeypad;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ArmBrakeS;
 import frc.robot.subsystems.ClimbHookS;
@@ -51,31 +56,11 @@ import frc.robot.subsystems.ClimbHookS;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.RealHandS;
 import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.NoneArm;
 import frc.robot.subsystems.arm.RealArm;
-import frc.robot.subsystems.arm.Arm.ArmPosition;
-import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
-import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
-import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.OuterStrip.OuterStates;
 import frc.robot.subsystems.led.TopStrip.TopStates;
-import frc.robot.subsystems.NoneHandS;
-import frc.robot.subsystems.Hand;
 import frc.robot.util.AlertsUtil;
-
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.wpilibj2.command.Commands.defer;
-import static edu.wpi.first.wpilibj2.command.Commands.parallel;
-import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
-import static edu.wpi.first.wpilibj2.command.Commands.sequence;
-import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
-import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
-
-import java.util.ArrayList;
-import java.util.Set;
 
 /**
  * The methods in this class are called automatically corresponding to each
@@ -93,11 +78,14 @@ public class Robot extends TimedRobot {
   private final RealArm m_arm = new RealArm();
   private final RealHandS m_hand = new RealHandS();
   private final ClimbHookS m_climbHookS = new ClimbHookS();
+  //private final ClimbWheelsS m_climbWheelsS = new ClimbWheelsS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
-  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_climbHookS, m_armBrakeS,
+  private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_armBrakeS,
       (traj, isStarting) -> {
       });
   private final SwerveRequest.FieldCentric m_driveRequest = new FieldCentric().withDriveRequestType(DriveRequestType.Velocity);
+  public FieldCentricFacingAngle m_headingAlignRequest =
+  new FieldCentricFacingAngle().withHeadingPID(7, 0, 0).withDriveRequestType(DriveRequestType.Velocity);
   private boolean allHomed = false;
   // private final CommandOperatorKeypad m_keypad = new CommandOperatorKeypad(5);
   // private final DrivetrainSysId m_driveId = new DrivetrainSysId(m_drivebaseS);
@@ -125,6 +113,8 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+    SignalLogger.enableAutoLogging(false);
+    LightStripS.start();
     DriverStation.startDataLog(DataLogManager.getLog());
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
     Epilogue.bind(this);
@@ -137,21 +127,36 @@ public class Robot extends TimedRobot {
     AlertsUtil.bind(
         new Alert("Driver Xbox Disconnect", AlertType.kError),
         () -> !m_driverController.isConnected());
+    var intakeAlignButton = m_driverController.a();
+    var algaeAlignButton = m_driverController.x();
     m_drivebaseS.setDefaultCommand(
         // Drivetrain will execute this command periodically
         m_drivebaseS.applyRequest(
-            () -> DriverStation.isAutonomous()
-                ? m_driveRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0)
-                : m_driveRequest
+            () -> {
+              var xSpeed = -m_driverController.getLeftY() * 5;
+              var ySpeed = -m_driverController.getLeftX() * 5;
+              var rotationSpeed = -m_driverController.getRightX() * 2 * Math.PI;
+
+              if (DriverStation.isAutonomous()) {
+                return m_driveRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
+              }
+              if (intakeAlignButton.getAsBoolean()) {
+                return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
+                  m_autos.intakeHeadingAllianceRelative()
+                );
+              }
+              if (algaeAlignButton.getAsBoolean()) {
+                return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
+                  m_autos.closestSide().faceAlgaeHeading
+                );
+              }
+              return m_driveRequest
                     .withVelocityX(
-                        -m_driverController.getLeftY()
-                            * 5) // Drive forward with negative Y (forward)
+                        xSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(
-                        -m_driverController.getLeftX() * 5) // Drive left with negative X (left)
+                        ySpeed) // Drive left with negative X (left)
                     .withRotationalRate(
-                        -m_driverController.getRightX()
-                            * 2
-                            * Math.PI) // Drive counterclockwise with negative X (left)
+                        rotationSpeed);} // Drive counterclockwise with negative X (left)
         ));
 
     RobotVisualizer.setupVisualizer();
@@ -164,8 +169,9 @@ public class Robot extends TimedRobot {
     configureDriverController();
 // Coast mode when disabled
     m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
-      parallel(m_arm.mainPivotS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
-    ).whileTrue(m_climbHookS.coast());
+      parallel(m_arm.mainPivotS.coast(), m_arm.wristS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
+    )
+    .whileTrue(m_climbHookS.coast());
     m_driverController.back().onTrue(m_climbHookS.release().withTimeout(5));
     //Home wrist when disabled
     m_driverController.start().and(RobotModeTriggers.disabled())
@@ -196,14 +202,16 @@ public class Robot extends TimedRobot {
           ))))
     );
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
+    //.onTrue(m_climbWheelsS.stop());
   }
+  
   public void configureDriverController() {
     
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station (or left station if in workshop)
-    m_driverController.a().whileTrue(
-        Commands.defer(() -> m_autos.autoCoralIntake(inWorkshop.getAsBoolean() ? POI.SL3 : m_autos.closestIntake()), Set.of(m_drivebaseS)));
+    m_driverController.a().whileTrue(m_autos.autoCoralIntake());
+    
     // Drive and autoalign to processor
     // If NOT in workshop, drive to processor.
     m_driverController.start()
@@ -215,18 +223,18 @@ public class Robot extends TimedRobot {
         .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
 
     // Align and score in barge; stow
-    m_driverController.y().and(inWorkshop.negate())
-        .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
-        .onTrue(m_hand.inAlgae())
-        .whileTrue(
-            parallel(
-              m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4),
-              waitUntil(m_autos::atBargeLine).andThen(
-                m_autos.bargeUpAndOut()
-              )
-            )
-            );
-      m_driverController.y().and(inWorkshop)
+    // m_driverController.y().and(inWorkshop.negate())
+    //     .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
+    //     .onTrue(m_hand.inAlgae())
+    //     .whileTrue(
+    //         parallel(
+    //           m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4),
+    //           waitUntil(m_autos::atBargeLine).andThen(
+    //             m_autos.bargeUpAndOut()
+    //           )
+    //         )
+    //         );
+      m_driverController.y()
       .onTrue(m_autos.bargeUpAndOut());
       //.onTrue(m_hand.inAlgae());
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
@@ -235,10 +243,7 @@ public class Robot extends TimedRobot {
     //     defer(() -> m_drivebaseS.driveToPoseSupC(m_autos.closestSide().algae::flippedPose), Set.of(m_drivebaseS))
 
     // )
-    .whileTrue(
-        defer(() -> new ScheduleCommand(
-            m_arm.goToPosition(m_autos.closestSide().algaeArm)),
-            Set.of(m_arm.mainPivotS, m_arm.elevatorS, m_arm.wristS)))
+    .onTrue(m_autos.armToClosestAlgae())
     .onTrue(m_hand.inAlgae());
 
     // Stow
@@ -247,9 +252,13 @@ public class Robot extends TimedRobot {
        // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
     m_driverController.rightBumper().onTrue(
+      either(m_hand.outCoralSlow().withTimeout(2),
+
         m_hand.outCoral().withTimeout(0.5).andThen(
-          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL))
-            )
+          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL))
+            ),
+        ()->m_operatorBoard.getLevel() == 0
+      )
     )
         ;
 
@@ -290,7 +299,10 @@ public class Robot extends TimedRobot {
 
   ArrayList<Translation2d> toGoal = new ArrayList<>();
   Pose3d emptyPose = Pose3d.kZero;
-
+@NotLogged
+  private double lastTimestamp = Timer.getFPGATimestamp();
+  @NotLogged
+  private int lastRobotHeartbeat = 0;
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items
    * like diagnostics
@@ -305,43 +317,17 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     m_operatorBoard.poll();
     m_driverDisplay.update();
-    if (RobotBase.isSimulation()) {
-      toGoal.clear();
-      toGoal.addAll(m_drivebaseS.m_repulsor.getTrajectory(
-          m_drivebaseS.state().Pose.getTranslation(),
-          m_drivebaseS.m_repulsor.goal().getTranslation(), 3 * 0.02));
-      // This needs to be just before pdh.update() so it can't be in
-      // simulationPeriodic, which is after
-      // TalonFXPDHChannel.refresh();
-      // TalonFXPDHChannel.currentSignalsRio.forEach((channel, signal)->{
-      // PowerDistributionSim.instance.setChannelCurrent(channel,
-      // signal.getValueAsDouble());}
-      // );
-      // TalonFXPDHChannel.currentSignalsCanivore.forEach((channel, signal)->{
-      // PowerDistributionSim.instance.setChannelCurrent(channel,
-      // signal.getValueAsDouble());}
-      // );
-    }
-    // toProc.clear();
-    // to_a_left.clear();
-    // to_b_left.clear();
-    // to_proc_stat.clear();
-
-    // toProc.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(),
-    // proc.getTranslation(), 3*0.02));
-    // to_a_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(),
-    // a_left.getTranslation(), 3*0.02));
-    // to_b_left.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(),
-    // b_left.getTranslation(), 3*0.02));
-    // to_proc_stat.addAll(m_drivebaseS.m_repulsor.getTrajectory(m_drivebaseS.state().Pose.getTranslation(),
-    // proc_stat.getTranslation(), 3*0.02));
 
     m_arm.update();
     RobotVisualizer.setArmPosition(m_arm.getPosition());
     Epilogue.talonFXLogger.refreshAll();
     // pdh.update();
+    // if (m_operatorBoard.getToggle()) {
+    //   LightStripS.top.requestState(TopStates.ReadyToIntake);
+    // }
     CommandScheduler.getInstance().run();
     LightStripS.periodic();
+
     DriverStation.getAlliance().ifPresent(alliance->{
       if (alliance == Alliance.Red) {
         LightStripS.top.requestState(TopStates.RedAlliance);
@@ -354,6 +340,12 @@ public class Robot extends TimedRobot {
     if (m_autos.drivetrainSafeToAlignTrig.getAsBoolean()) {
       LightStripS.outer.requestSafeToAlign();
     }
+
+    var loopTime = Timer.getFPGATimestamp()-lastTimestamp;
+    SmartDashboard.putNumber("loopTime", loopTime);
+    lastTimestamp = Timer.getFPGATimestamp();
+    SmartDashboard.putNumber("robotHeartbeat", lastRobotHeartbeat++);
+
 
   }
 
@@ -455,7 +447,7 @@ public class Robot extends TimedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-    m_drivebaseS.stop().ignoringDisable(true).until(() -> true).schedule();
+    m_drivebaseS.stopBrakeMode().ignoringDisable(true).until(() -> true).schedule();
   }
 
   /** This function is called periodically when disabled. */

@@ -2,6 +2,8 @@ package wpilibExt;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
+import java.util.Objects;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -10,7 +12,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.LinearVelocity;
-import java.util.Objects;
 
 public class Velocity3d implements Interpolatable<Velocity3d> {
   private final double m_vx;

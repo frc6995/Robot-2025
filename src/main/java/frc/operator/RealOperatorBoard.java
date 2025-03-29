@@ -32,4 +32,9 @@ public class RealOperatorBoard extends OperatorBoard {
     public boolean getRight() {
         return DriverStation.getStickButton(port, 9);
     }
+
+    @Override
+    public boolean getToggle() {
+        return DriverStation.getStickButton(port, 10);
+    }
 }

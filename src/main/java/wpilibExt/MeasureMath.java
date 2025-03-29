@@ -11,6 +11,8 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
 
+import java.util.function.BiFunction;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.AccelerationUnit;
@@ -31,8 +33,6 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Mult;
 import edu.wpi.first.units.measure.Torque;
 import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.util.struct.Struct;
-import java.util.function.BiFunction;
 
 public class MeasureMath {
 

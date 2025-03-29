@@ -1,6 +1,15 @@
 package frc.robot.util.setpointGenerator3173;
 
-import edu.wpi.first.epilogue.logging.EpilogueBackend;
+import static frc.robot.util.setpointGenerator3173.Util.angleOf;
+import static frc.robot.util.setpointGenerator3173.Util.angularDifference;
+import static frc.robot.util.setpointGenerator3173.Util.epsilonEquals;
+import static frc.robot.util.setpointGenerator3173.Util.findDriveMaxS;
+import static frc.robot.util.setpointGenerator3173.Util.findSteeringMaxS;
+import static frc.robot.util.setpointGenerator3173.Util.rotateBy;
+import static frc.robot.util.setpointGenerator3173.Util.shouldFlipHeading;
+
+import java.util.Optional;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -11,11 +20,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.util.setpointGenerator3173.Types.ChassisConstraints;
 import frc.robot.util.setpointGenerator3173.Util.LocalVars;
-
-import static frc.robot.util.setpointGenerator3173.Util.*;
-
-import java.util.Optional;
-
 import wpilibExt.DCMotorExt;
 import wpilibExt.MutTranslation2d;
 import wpilibExt.Speeds;

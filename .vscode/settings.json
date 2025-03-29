@@ -57,5 +57,8 @@
     "edu.wpi.first.math.**.proto.*",
     "edu.wpi.first.math.**.struct.*",
   ],
-  "C_Cpp.errorSquiggles": "enabled"
+  "C_Cpp.errorSquiggles": "enabled",
+  "editor.codeActionsOnSave": {
+  "source.organizeImports": "always"
+},
 }

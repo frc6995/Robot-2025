@@ -12,6 +12,7 @@
 
 try:
     from typing import Tuple
+
     from .keyboard import Keyboard
 except ImportError:
     pass

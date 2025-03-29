@@ -7,33 +7,33 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 @Logged
-public class ClimbHookS extends SubsystemBase {
-  public class ClimbHookConstants {
-    public static final int CAN_ID = 54;
-    public static final int CURRENT_LIMIT = 9;
-    public static final double OUT_VOLTAGE = 0;
-    public static final double IN_VOLTAGE = 0;
+public class ClimbWheelsS extends SubsystemBase {
+  public class ClimbWheelsConstants {
+    public static final int CAN_ID = 55;
+    public static final int CURRENT_LIMIT = 40;
     public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){
       config.CurrentLimits
         .withStatorCurrentLimit(CURRENT_LIMIT)
         .withStatorCurrentLimitEnable(true)
         ;
       config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+      config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
       return config;
     }
   
   }
-  public Command clamp(){
-    return voltage(-10);
+  public Command in(){
+    return voltage(-6);
   }
-  public Command release(){
-    return voltage(10);
+  public Command out(){
+    return voltage(1);
   }
   public Command stop(){
     return voltage(0);
@@ -43,8 +43,8 @@ public class ClimbHookS extends SubsystemBase {
   }
   
   /** Creates a new ClimbHookS. */
-  public ClimbHookS() {
-    motor.getConfigurator().apply(ClimbHookConstants.configuremotor(new TalonFXConfiguration()));
+  public ClimbWheelsS() {
+    motor.getConfigurator().apply(ClimbWheelsConstants.configuremotor(new TalonFXConfiguration()));
     setDefaultCommand(stop());
   }
 
@@ -61,6 +61,6 @@ public class ClimbHookS extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
   }
-  public final TalonFX motor = new TalonFX(ClimbHookConstants.CAN_ID);
+  public final TalonFX motor = new TalonFX(ClimbWheelsConstants.CAN_ID);
   private final VoltageOut voltageReq = new VoltageOut(0);
 }

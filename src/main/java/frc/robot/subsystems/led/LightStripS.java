@@ -21,12 +21,13 @@ public class LightStripS {
      * The LED strip section along the outer edge of the sponsor panel
      */
     public static final OuterStrip outer;
-    
-    static {
+    public static final void start() {
         led.setLength(buffer.getLength());
 
         led.setData(buffer);
         led.start();
+    }
+    static {
         top = new TopStrip(buffer.createView(0, TOP_STRIP_LENGTH -1));
         outer = new OuterStrip(buffer.createView(TOP_STRIP_LENGTH, TOP_STRIP_LENGTH+OUTER_STRIP_LENGTH - 1));
     }
