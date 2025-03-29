@@ -65,4 +65,9 @@ public class SimOperatorBoard extends OperatorBoard {
     public boolean getRight() {
         return DriverStation.getStickButton(port, 19);
     }
+
+    @Override
+    public boolean getToggle() {
+        return DriverStation.getStickButton(port, 20);
+    }
 }
