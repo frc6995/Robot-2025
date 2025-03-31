@@ -17,9 +17,10 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 @Logged
-public class RealHandS extends Hand {
+public class IntakeS extends SubsystemBase {
     public final MechanismLigament2d TOP_ROLLER =
       new MechanismLigament2d(
           "top-roller", 0.05, 0, 4, new Color8Bit(Color.kWhite));
@@ -34,10 +35,13 @@ public class RealHandS extends Hand {
 
   public static final double OUT_CORAL_VOLTAGE = -3; //worked with -6 but coral bounced
   public static final double OUT_CORAL_VOLTAGE_SLOW = -2; //worked with -6 but coral bounced
-  public static final double IN_ALGAE_VOLTAGE = -10;
+  public static final double IN_ALGAE_VOLTAGE = 10;
 
-  public static final double OUT_ALGAE_VOLTAGE = 4;
-  public static final double OUT_ALGAE_VOLTAGE_SLOW = 2;
+  public static final double OUT_ALGAE_VOLTAGE = -4;
+  public static final double OUT_ALGAE_VOLTAGE_SLOW = -2;
+
+  public static final double CLEAR_SENSOR_OFFSET = -Units.inchesToMeters(5.2);
+  public static final double GROUND_INTAKE_OFFSET = -Units.inchesToMeters(0);
   public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
     config.CurrentLimits.withStatorCurrentLimit(90).withStatorCurrentLimitEnable(true);
     return config;
@@ -67,7 +71,7 @@ public class RealHandS extends Hand {
 
 
   /** Creates a new HandRollerS. */
-  public RealHandS() {
+  public IntakeS() {
    super();
    motor.getConfigurator().apply(HandConstants.configureMotor(new TalonFXConfiguration()));
    setDefaultCommand(stop());
@@ -98,22 +102,30 @@ public class RealHandS extends Hand {
 
   }
 
-  @Override
   public Command inAlgae() {
     return voltage(HandConstants.IN_ALGAE_VOLTAGE);
   }
 
-
-
-
-
-  @Override
   public Command outAlgae() {
     return voltage(HandConstants.OUT_ALGAE_VOLTAGE);
   }
-  @Override
+  
   public Command outAlgaeSlow() {
     return voltage(HandConstants.OUT_ALGAE_VOLTAGE_SLOW);
   }
+
+
+
+  // positive meters means less intaken
+  public void setCoralInlineOffset(double offset) {
+    // TODO Auto-generated method stub
+    coralInlineOffset = offset;
+}
+
+double coralInlineOffset = 0;
+public double getCoralInlineOffset() {
+    // TODO Auto-generated method stub
+    return coralInlineOffset;
+}
 
 }

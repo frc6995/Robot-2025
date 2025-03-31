@@ -55,7 +55,7 @@ import frc.robot.subsystems.ArmBrakeS;
 import frc.robot.subsystems.ClimbHookS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
-import frc.robot.subsystems.RealHandS;
+import frc.robot.subsystems.IntakeS;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.led.LightStripS;
@@ -77,7 +77,7 @@ public class Robot extends TimedRobot {
   private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
-  private final RealHandS m_hand = new RealHandS();
+  private final IntakeS m_hand = new IntakeS();
   private final ClimbHookS m_climbHookS = new ClimbHookS();
   //private final ClimbWheelsS m_climbWheelsS = new ClimbWheelsS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
@@ -141,11 +141,11 @@ public class Robot extends TimedRobot {
               if (DriverStation.isAutonomous()) {
                 return m_driveRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
               }
-              if (intakeAlignButton.getAsBoolean()) {
-                return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
-                  m_autos.intakeHeadingAllianceRelative()
-                );
-              }
+              // if (intakeAlignButton.getAsBoolean()) {
+              //   return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
+              //     m_autos.intakeHeadingAllianceRelative()
+              //   );
+              // }
               if (algaeAlignButton.getAsBoolean()) {
                 return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
                   m_autos.closestSide().faceAlgaeHeading
@@ -210,7 +210,7 @@ public class Robot extends TimedRobot {
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station (or left station if in workshop)
-    m_driverController.a().whileTrue(m_autos.autoCoralIntake());
+    m_driverController.a().whileTrue(m_arm.goToPosition(Arm.Positions.GROUND_CORAL));
     
     // go to processor position
     m_driverController.back()
@@ -338,15 +338,13 @@ public class Robot extends TimedRobot {
 
   }
 
-  private final Rotation3d coral_hand_rotation = new Rotation3d(0, Units.degreesToRadians(20), 0);
-
   public Pose3d getCoralPose() {
     if (m_autos.hasCoral()) {
       return new Pose3d(m_drivebaseS.getPose()).plus(new Transform3d(
           RobotVisualizer.getComponents()[3].getTranslation(),
           RobotVisualizer.getComponents()[3].getRotation())).plus(
               new Transform3d(
-                  -0.04, -m_autos.getDistanceSensorOffset(), 0.18, coral_hand_rotation));
+                  Units.inchesToMeters(6.5) + m_hand.getCoralInlineOffset(), 0.0, -Units.inchesToMeters(9.978+0.25), Rotation3d.kZero));
     } else {
       return Pose3d.kZero;
     }
@@ -357,7 +355,7 @@ public class Robot extends TimedRobot {
         RobotVisualizer.getComponents()[3].getTranslation(),
         RobotVisualizer.getComponents()[3].getRotation())).plus(
             new Transform3d(
-                0.2, 0, 0.3, Rotation3d.kZero));
+                0.42, 0, -0.02, Rotation3d.kZero));
   }
 
   /**

@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.arm.wrist;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
@@ -52,8 +51,8 @@ public class RealWristS extends Wrist {
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
     // rotations per arm rotation.
 
-    public static final Angle CCW_LIMIT = Rotations.of(0.141).minus(Degrees.of(10));
-    public static final Angle CW_LIMIT = Rotations.of(-0.314);
+    public static final Angle CCW_LIMIT = Rotations.of(1);
+    public static final Angle CW_LIMIT = Rotations.of(-1);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
     // Units=volts/pivot rotation/s
     public static final double K_V = 5.01;
@@ -89,10 +88,10 @@ public class RealWristS extends Wrist {
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
           .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
+      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(false)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
-          .withReverseSoftLimitEnable(true);
+          .withReverseSoftLimitEnable(false);
       config.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
       return config;
     }
@@ -127,7 +126,7 @@ public class RealWristS extends Wrist {
         .getConfigurator()
         .apply(WristConstants.configureLeader(new TalonFXConfiguration()));
     m_leader.getSimState().Orientation = ChassisReference.Clockwise_Positive;
-    m_pivotSim.setState(VecBuilder.fill(WristConstants.CCW_LIMIT.in(Radians), 0));
+    m_pivotSim.setState(VecBuilder.fill(0, 0));
     m_setpointSig.setUpdateFrequency(50);
     m_currentSig.setUpdateFrequency(50);
     setDefaultCommand(hold());

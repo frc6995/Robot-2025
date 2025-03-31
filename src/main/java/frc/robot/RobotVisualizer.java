@@ -57,6 +57,6 @@ public class RobotVisualizer {
     components[1] = components[0].transformBy(new Transform3d(new Translation3d(
       (position.elevatorMeters()-ElevatorConstants.MIN_LENGTH.in(Meters))/2  + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
     components[2] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters() - ElevatorConstants.MIN_LENGTH.in(Meters) + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
-    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-(position.wristRadians()-Units.degreesToRadians(40)),0)));
+    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-(position.wristRadians()),0)));
   }
 }

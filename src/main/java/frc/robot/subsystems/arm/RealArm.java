@@ -1,10 +1,13 @@
 package frc.robot.subsystems.arm;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
+
+import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
@@ -61,23 +64,23 @@ public class RealArm extends Arm {
   public Trigger elevatorRetractedEnough = new Trigger(
       () -> elevatorS.getLengthMeters() < SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters) + Units.inchesToMeters(1));
 
-  public Command goToPosition(ArmPosition position) {
+  private Command goToPositionWithoutTuckCheck(ArmPosition position) {
     double positionPivotRadians = position.pivotRadians();
     double positionElevatorMeters = position.elevatorMeters();
     double positionWristRadians = position.wristRadians();
     double postPivotElevator = MathUtil.clamp(positionElevatorMeters, MIN_ELEVATOR_LENGTH.in(Meters),
       SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
-    double retractWristTarget = MathUtil.clamp(positionWristRadians, SAFE_WRIST_MIN.in(Radians),
-      SAFE_WRIST_MAX.in(Radians));
+
+    
     Command command = either(
       goDirectlyTo(
                 positionPivotRadians, positionElevatorMeters, positionWristRadians)
       , sequence(
         // Retract elevator
-        goDirectlyToPivotHold(postPivotElevator, retractWristTarget)
+        goDirectlyToPivotHold(postPivotElevator, positionWristRadians)
             .until(elevatorRetractedEnough),
         // pivot
-        goDirectlyTo(positionPivotRadians, postPivotElevator, retractWristTarget)
+        goDirectlyTo(positionPivotRadians, postPivotElevator, positionWristRadians)
             .until(
                 () -> Math.abs(mainPivotS.getAngleRadians() - positionPivotRadians) < Units.degreesToRadians(10)),
         goDirectlyTo(
@@ -88,12 +91,25 @@ public class RealArm extends Arm {
     return command;
   }
 
+  public Command goToPosition(ArmPosition position) {
+    if (position.pivotRadians() < Units.degreesToRadians(17)) {
+      double shrunkenElevator = MathUtil.clamp(position.elevatorMeters(), MIN_ELEVATOR_LENGTH.in(Meters),
+      SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
+      Angle wristSafeToLower = position.wristAngle().lt(Degrees.of(0)) ? Degrees.of(0) : position.wristAngle();
+      return
+        goToPositionWithoutTuckCheck(new ArmPosition(Degrees.of(17), Meters.of(shrunkenElevator), wristSafeToLower))
+        .until(()->wristS.getAngleRadians() > Units.degreesToRadians(-1))
+        .unless(()->wristS.getAngleRadians() > Units.degreesToRadians(-1))
+        .andThen(goToPositionWithoutTuckCheck(position));
+    } else {
+      return goToPositionWithoutTuckCheck(position);
+    }
+  }
+
   private Command elevatorDirectlyTo(double elevatorMeters) {
     return elevatorS.goToLength(
             () -> {
-              var dontHitDrivetrainTarget = (mainPivotS.getAngleRadians() < Units.degreesToRadians(20))
-                  ? Math.max(elevatorMeters, Arm.Positions.GROUND_ALGAE.elevatorMeters())
-                  : elevatorMeters;
+              var dontHitDrivetrainTarget = elevatorMeters;
               // don't put the wrist axis more than a few inches outside fp
               return MathUtil.clamp(
                   dontHitDrivetrainTarget,
@@ -107,10 +123,10 @@ public class RealArm extends Arm {
         // Math.min(elevatorMeters,Units.inchesToMeters(29)/Math.cos(mainPivotS.getAngleRadians()))
         );
   }
-  private Command wristDirectlyTo(double wristRadians) {
+  private Command wristDirectlyTo(double wristRadians, DoubleSupplier mainPivotRadians) {
     return wristS.goTo(
-      () -> mainPivotS.getAngleRadians() < Units.degreesToRadians(30)
-          ? Math.min(wristRadians, Units.degreesToRadians(-30))
+      () -> (mainPivotRadians.getAsDouble() < Units.degreesToRadians(17)) || mainPivotS.getAngleRadians() < Units.degreesToRadians(17)
+          ? Math.max(wristRadians, 0)
           : wristRadians);
   }
   private Command goDirectlyTo(
@@ -118,15 +134,16 @@ public class RealArm extends Arm {
     return parallel(
         mainPivotS.goTo(() -> mainPivotRadians),
         elevatorDirectlyTo(elevatorMeters),
-        wristDirectlyTo(wristRadians));
+        wristDirectlyTo(wristRadians, ()->mainPivotRadians));
   }
 
   private Command goDirectlyToPivotHold(
+  
     double elevatorMeters, double wristRadians) {
   return parallel(
       mainPivotS.hold(),
       elevatorDirectlyTo(elevatorMeters),
-      wristDirectlyTo(wristRadians));
+      wristDirectlyTo(wristRadians, mainPivotS::getAngleRadians));
 }
 
   @Override

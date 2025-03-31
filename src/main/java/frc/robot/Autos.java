@@ -42,8 +42,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -56,7 +54,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.operator.OperatorBoard;
 import frc.robot.subsystems.ArmBrakeS;
 import frc.robot.subsystems.DriveBaseS;
-import frc.robot.subsystems.Hand;
+import frc.robot.subsystems.IntakeS;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.led.LightStripS;
@@ -68,7 +66,7 @@ import frc.robot.util.Capture;
 public class Autos {
   private final DriveBaseS m_drivebase;
   private final Arm m_arm;
-  private final Hand m_hand;
+  private final IntakeS m_hand;
   private final OperatorBoard m_board;
   private final AutoFactory m_autoFactory;
   public final AutoChooser m_autoChooser;
@@ -78,7 +76,7 @@ public class Autos {
   @Logged
   public final CoralSensor m_coralSensor = new CoralSensor();
 
-  public Autos(DriveBaseS drivebase, Arm arm, Hand hand, OperatorBoard board,
+  public Autos(DriveBaseS drivebase, Arm arm, IntakeS hand, OperatorBoard board,
       ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
@@ -219,11 +217,6 @@ public class Autos {
   }
 
   @Logged
-  public double getDistanceSensorOffset() {
-    return m_coralSensor.distanceOffset();
-  }
-
-  @Logged
   public boolean hasCoral() {
     return m_coralSensor.hasCoral();
   }
@@ -231,16 +224,8 @@ public class Autos {
   
   public final double centerToCoralEnd = 0.61;
 
-  public Supplier<Pose2d> angledSensorOffsetPose(Supplier<Pose2d> original) {
-    return () -> original
-        .get()
-        .transformBy(new Transform2d(Translation2d.kZero, new Rotation2d(centerToCoralEnd, -getDistanceSensorOffset())));
-  }
-
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
-    return () -> original
-        .get()
-        .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
+    return original;
   }
 
   public POI selectedReefPOI() {
@@ -295,8 +280,8 @@ public class Autos {
   }
 
   public enum AlgaeHeight {
-    LOW(Arm.Positions.LOW_ALGAE),
-    HIGH(Arm.Positions.HIGH_ALGAE);
+    LOW(Arm.Positions.LOW_ALGAE_REEF),
+    HIGH(Arm.Positions.HIGH_ALGAE_REEF);
     AlgaeHeight(ArmPosition position) {
           this.position = position;
         }
@@ -305,12 +290,12 @@ public class Autos {
     
   }
   public enum ReefSide {
-    R1(POI.A, POI.B, POI.R1, AlgaeHeight.HIGH, Rotation2d.kZero),
-    R2(POI.C, POI.D, POI.R2, AlgaeHeight.LOW, Rotation2d.fromDegrees(60)),
-    R3(POI.E, POI.F, POI.R3, AlgaeHeight.HIGH, Rotation2d.fromDegrees(120)),
-    R4(POI.G, POI.H, POI.R4, AlgaeHeight.LOW, Rotation2d.fromDegrees(180)),
-    R5(POI.I, POI.J, POI.R5, AlgaeHeight.HIGH, Rotation2d.fromDegrees(240)),
-    R6(POI.K, POI.L, POI.R6, AlgaeHeight.LOW, Rotation2d.fromDegrees(300));
+    R1(POI.A, POI.B, POI.R1, AlgaeHeight.HIGH, Rotation2d.k180deg),
+    R2(POI.C, POI.D, POI.R2, AlgaeHeight.LOW, Rotation2d.fromDegrees(240)),
+    R3(POI.E, POI.F, POI.R3, AlgaeHeight.HIGH, Rotation2d.fromDegrees(300)),
+    R4(POI.G, POI.H, POI.R4, AlgaeHeight.LOW, Rotation2d.kZero),
+    R5(POI.I, POI.J, POI.R5, AlgaeHeight.HIGH, Rotation2d.fromDegrees(60)),
+    R6(POI.K, POI.L, POI.R6, AlgaeHeight.LOW, Rotation2d.fromDegrees(120));
 
     public final POI left;
     public final POI right;
@@ -429,7 +414,7 @@ public class Autos {
       0, new ScheduleCommand(m_arm.goToPosition(Arm.Positions.L1)),
       1, preMoveUntilTarget(target, Arm.Positions.L2),
       2, preMoveUntilTarget(target, Arm.Positions.L3),
-      3, preMoveUntilTarget(target, Arm.Positions.L4)
+      3, preMoveUntilTarget(target, Arm.Positions.L4)      
     ),level);
   }
 
@@ -473,8 +458,8 @@ public class Autos {
     return
       Commands.select(
       Map.of(
-        AlgaeHeight.LOW, new ScheduleCommand(m_arm.goToPosition(Arm.Positions.LOW_ALGAE)),
-        AlgaeHeight.HIGH, new ScheduleCommand(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE))
+        AlgaeHeight.LOW, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.LOW.position)),
+        AlgaeHeight.HIGH, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.HIGH.position))
       ),
       ()->closestSide().algaeHeight);
   }
