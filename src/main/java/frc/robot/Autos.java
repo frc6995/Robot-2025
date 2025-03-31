@@ -111,6 +111,7 @@ public class Autos {
     autos.put("2.Right 3p", () -> flexAuto(POI.STE, POI.SR3, Optional.empty(), POI.E, POI.D, POI.C));
     autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, Optional.empty(), POI.H));
     autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, Optional.empty(), POI.G));
+    autos.put("AB", ()->flexAuto(POI.STA, POI.SL1, Optional.empty(), POI.A, POI.B));
     autos.put("5.MoveOffLine", ()->{
       var move = new SwerveRequest.RobotCentric();
       return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
@@ -124,6 +125,43 @@ public class Autos {
         }
       ), POI.J, POI.K));
       //autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
+
+      autos.put("BacksideMid", () -> flexAuto(POI.STH, POI.SL3, Optional.of(
+        (routine)->{
+          var traj = routine.trajectory("1");
+          var push = routine.trajectory("2");
+          traj.atTime(1).onTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE)).onTrue(m_hand.inAlgae());
+          traj.chain(push);
+          
+          var toScore = routine.trajectory("3");
+          push.chain(toScore);
+          var moveback = routine.trajectory("4");
+          toScore.done().onTrue(bargeUpAndOut()).onTrue(waitSeconds(1.5).andThen(moveback.spawnCmd()));
+
+          
+          var push2 = routine.trajectory("5");
+          moveback.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
+          moveback.atTimeBeforeEnd(0.05).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE)).onTrue(m_hand.inAlgae());
+
+          moveback.chain(push2);
+
+          
+
+          var toScore2 = routine.trajectory("6");
+          toScore2.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
+          push2.chain(toScore2);
+
+
+          var moveOffLineAlgae = (routine.trajectory("7"));
+          toScore2.done().onTrue(bargeUpAndOut()).onTrue(waitSeconds(1.5).andThen(moveOffLineAlgae.spawnCmd()));
+         // toScore2.chain(moveOffLineAlgae);
+          //toScore2.done().onTrue(waitSeconds(2).andThen(moveOffLineAlgae.spawnCmd()));
+
+          return traj;
+        }), POI.H));
+      
+    
+      
 
     // autos.put must be before here
     for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 

@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -190,14 +191,15 @@ public class Robot extends TimedRobot {
         m_climbHookS.release().withTimeout(5)
     );
     m_operatorBoard.center().onTrue(m_climbHookS.clamp())
-    .whileTrue(waitSeconds(2).andThen(
+    .whileTrue(parallel(LightStripS.top.stateC(()->TopStates.Climbing), LightStripS.outer.stateC(()->OuterStates.Climbing),
+      waitSeconds(2).andThen(
       parallel(
         m_arm.mainPivotS.voltage(()->
           (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(30)) ? 0 : -2),
         waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(60))
           .andThen(
             m_arm.wristS.goTo(()->0.0)
-          )))
+          ))))
     );
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
     //.onTrue(m_climbWheelsS.stop());
@@ -314,11 +316,25 @@ public class Robot extends TimedRobot {
     // }
     CommandScheduler.getInstance().run();
     LightStripS.periodic();
+
+    DriverStation.getAlliance().ifPresent(alliance->{
+      if (alliance == Alliance.Red) {
+        LightStripS.top.requestState(TopStates.RedAlliance);
+        LightStripS.outer.requestState(OuterStates.RedAlliance);
+      } else {
+        LightStripS.top.requestState(TopStates.BlueAlliance);
+        LightStripS.outer.requestState(OuterStates.BlueAlliance);
+      }
+    });
+    if (m_autos.drivetrainSafeToAlignTrig.getAsBoolean()) {
+      LightStripS.outer.requestSafeToAlign();
+    }
+
     var loopTime = Timer.getFPGATimestamp()-lastTimestamp;
     SmartDashboard.putNumber("loopTime", loopTime);
     lastTimestamp = Timer.getFPGATimestamp();
     SmartDashboard.putNumber("robotHeartbeat", lastRobotHeartbeat++);
-    
+
 
   }
 
@@ -387,34 +403,34 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    switch (m_autos.selectedReefPOI()) {
-      case A:
-      case B:
-        LightStripS.outer.requestState(OuterStates.AB);
-        break;
-      case C:
-      case D:
-        LightStripS.outer.requestState(OuterStates.CD);
-        break;
-      case E:
-      case F:
-        LightStripS.outer.requestState(OuterStates.EF);
-        break;
-      case G:
-      case H:
-        LightStripS.outer.requestState(OuterStates.GH);
-        break;
-      case I:
-      case J:
-        LightStripS.outer.requestState(OuterStates.IJ);
-        break;
-      case K:
-      case L:
-        LightStripS.outer.requestState(OuterStates.KL);
-        break;
-      default:
-        LightStripS.outer.requestState(OuterStates.Default);
-    }
+    // switch (m_autos.selectedReefPOI()) {
+    //   case A:
+    //   case B:
+    //     LightStripS.outer.requestState(OuterStates.AB);
+    //     break;
+    //   case C:
+    //   case D:
+    //     LightStripS.outer.requestState(OuterStates.CD);
+    //     break;
+    //   case E:
+    //   case F:
+    //     LightStripS.outer.requestState(OuterStates.EF);
+    //     break;
+    //   case G:
+    //   case H:
+    //     LightStripS.outer.requestState(OuterStates.GH);
+    //     break;
+    //   case I:
+    //   case J:
+    //     LightStripS.outer.requestState(OuterStates.IJ);
+    //     break;
+    //   case K:
+    //   case L:
+    //     LightStripS.outer.requestState(OuterStates.KL);
+    //     break;
+    //   default:
+    //     LightStripS.outer.requestState(OuterStates.Default);
+    // }
   }
 
   /** This function is called once when the robot is disabled. */
