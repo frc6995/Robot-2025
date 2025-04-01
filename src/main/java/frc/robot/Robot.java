@@ -134,8 +134,8 @@ public class Robot extends TimedRobot {
         // Drivetrain will execute this command periodically
         m_drivebaseS.applyRequest(
             () -> {
-              var xSpeed = -m_driverController.getLeftY() * 5;
-              var ySpeed = -m_driverController.getLeftX() * 5;
+              var xSpeed = -m_driverController.getLeftY() * 4.2;
+              var ySpeed = -m_driverController.getLeftX() * 4.2;
               var rotationSpeed = -m_driverController.getRightX() * 2 * Math.PI;
 
               if (DriverStation.isAutonomous()) {
@@ -173,7 +173,6 @@ public class Robot extends TimedRobot {
       parallel(m_arm.mainPivotS.coast(), m_arm.wristS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
     )
     .whileTrue(m_climbHookS.coast());
-    m_driverController.back().onTrue(m_climbHookS.release().withTimeout(5));
     //Home wrist when disabled
     m_driverController.start().and(RobotModeTriggers.disabled())
         .onTrue(parallel(
@@ -213,37 +212,26 @@ public class Robot extends TimedRobot {
     // align to closest coral station (or left station if in workshop)
     m_driverController.a().whileTrue(m_autos.autoCoralIntake());
     
-    // Drive and autoalign to processor
-    // If NOT in workshop, drive to processor.
-    m_driverController.start()
+    // go to processor position
+    m_driverController.back()
         .onTrue(m_hand.inAlgae())
         .onTrue(sequence(
             m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR)
         ))
-        .and(inWorkshop.negate())
-        .whileTrue(m_drivebaseS.driveToPoseSupC(POI.PROC::flippedPose));
+        ;
 
-    // Align and score in barge; stow
-    // m_driverController.y().and(inWorkshop.negate())
-    //     .onTrue(m_arm.goToPosition(Arm.Positions.SCORE_BARGE.premove()))
-    //     .onTrue(m_hand.inAlgae())
-    //     .whileTrue(
-    //         parallel(
-    //           m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4),
-    //           waitUntil(m_autos::atBargeLine).andThen(
-    //             m_autos.bargeUpAndOut()
-    //           )
-    //         )
-    //         );
-      m_driverController.y()
+    // Align to barge
+    m_driverController.start().and(inWorkshop.negate())
+        .whileTrue(
+            parallel(
+              m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4)
+            )
+    );
+    m_driverController.y()
       .onTrue(m_autos.bargeUpAndOut());
       //.onTrue(m_hand.inAlgae());
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
     m_driverController.x()
-    // .whileTrue(
-    //     defer(() -> m_drivebaseS.driveToPoseSupC(m_autos.closestSide().algae::flippedPose), Set.of(m_drivebaseS))
-
-    // )
     .onTrue(m_autos.armToClosestAlgae())
     .onTrue(m_hand.inAlgae());
 
@@ -265,7 +253,7 @@ public class Robot extends TimedRobot {
 
     // Score algae and stow if at barge position
     m_driverController.leftTrigger().onTrue(parallel(
-        m_hand.outAlgae().withTimeout(0.5)).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
+        m_hand.outAlgaeSlow().withTimeout(0.5)).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
         .onlyIf(()->
             m_arm.getPosition().elevatorMeters()>Arm.Positions.L3.elevatorMeters())));
     // Auto align to operator selected position on reef for coral scoring

@@ -84,7 +84,7 @@ public class MainPivotS extends SubsystemBase {
     public static final double K_G_RETRACTED = 0.35;
     public static final double K_G_EXTENDED = 0.35;
     public static final double K_S = 0.1;
-    public static final double K_P = 80.0;
+    public static final double K_P = 140.0;
     // arm plus hand
     public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(4);

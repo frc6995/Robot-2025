@@ -63,6 +63,11 @@ public class AllianceFlipUtil {
     return () -> shouldFlip() ? flipped : pose;
   }
 
+  public static Supplier<Rotation2d> getFlipped(Rotation2d pose) {
+    Rotation2d flipped = flip(pose);
+    return () -> shouldFlip() ? flipped : pose;
+  }
+
   public static boolean shouldFlip() {
     return DriverStation.getAlliance().isPresent()
         && DriverStation.getAlliance().get() == DriverStation.Alliance.Red;

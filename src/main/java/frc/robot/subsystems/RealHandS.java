@@ -37,7 +37,7 @@ public class RealHandS extends Hand {
   public static final double IN_ALGAE_VOLTAGE = -10;
 
   public static final double OUT_ALGAE_VOLTAGE = 4;
-
+  public static final double OUT_ALGAE_VOLTAGE_SLOW = 2;
   public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
     config.CurrentLimits.withStatorCurrentLimit(90).withStatorCurrentLimitEnable(true);
     return config;
@@ -110,6 +110,10 @@ public class RealHandS extends Hand {
   @Override
   public Command outAlgae() {
     return voltage(HandConstants.OUT_ALGAE_VOLTAGE);
+  }
+  @Override
+  public Command outAlgaeSlow() {
+    return voltage(HandConstants.OUT_ALGAE_VOLTAGE_SLOW);
   }
 
 }

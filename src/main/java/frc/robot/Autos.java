@@ -107,10 +107,11 @@ public class Autos {
   }
 
   public void addAutos() {
-    autos.put("1.Left 3p (Home)", () -> flexAuto(POI.STJ, POI.SL3, Optional.empty(), POI.J, POI.K, POI.L, POI.J));
+    autos.put("1.Left 3p (Home)", () -> flexAuto(POI.STJ, POI.SL3, Optional.empty(), POI.J, POI.K, POI.L, POI.I));
     autos.put("2.Right 3p", () -> flexAuto(POI.STE, POI.SR3, Optional.empty(), POI.E, POI.D, POI.C));
     autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, Optional.empty(), POI.H));
     autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, Optional.empty(), POI.G));
+    autos.put("AB", ()->flexAuto(POI.STA, POI.SL1, Optional.empty(), POI.A, POI.B));
     autos.put("5.MoveOffLine", ()->{
       var move = new SwerveRequest.RobotCentric();
       return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
@@ -123,7 +124,44 @@ public class Autos {
           return traj;
         }
       ), POI.J, POI.K));
-      autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
+      //autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
+
+      autos.put("BacksideMid", () -> flexAuto(POI.STH, POI.SL3, Optional.of(
+        (routine)->{
+          var traj = routine.trajectory("1");
+          var push = routine.trajectory("2");
+          traj.atTime(1).onTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE)).onTrue(m_hand.inAlgae());
+          traj.chain(push);
+          
+          var toScore = routine.trajectory("3");
+          push.chain(toScore);
+          var moveback = routine.trajectory("4");
+          toScore.done().onTrue(bargeUpAndOut()).onTrue(waitSeconds(1.5).andThen(moveback.spawnCmd()));
+
+          
+          var push2 = routine.trajectory("5");
+          moveback.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
+          moveback.atTimeBeforeEnd(0.05).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE)).onTrue(m_hand.inAlgae());
+
+          moveback.chain(push2);
+
+          
+
+          var toScore2 = routine.trajectory("6");
+          toScore2.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
+          push2.chain(toScore2);
+
+
+          var moveOffLineAlgae = (routine.trajectory("7"));
+          toScore2.done().onTrue(bargeUpAndOut()).onTrue(waitSeconds(1.5).andThen(moveOffLineAlgae.spawnCmd()));
+         // toScore2.chain(moveOffLineAlgae);
+          //toScore2.done().onTrue(waitSeconds(2).andThen(moveOffLineAlgae.spawnCmd()));
+
+          return traj;
+        }), POI.H));
+      
+    
+      
 
     // autos.put must be before here
     for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
@@ -190,9 +228,16 @@ public class Autos {
     return m_coralSensor.hasCoral();
   }
 
+  
+  public final double centerToCoralEnd = 0.61;
+
+  public Supplier<Pose2d> angledSensorOffsetPose(Supplier<Pose2d> original) {
+    return () -> original
+        .get()
+        .transformBy(new Transform2d(Translation2d.kZero, new Rotation2d(centerToCoralEnd, -getDistanceSensorOffset())));
+  }
+
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
-    // TODO reduce allocations
-    // TODO angle instead of sideways?
     return () -> original
         .get()
         .plus(new Transform2d(new Translation2d(0, getDistanceSensorOffset()), Rotation2d.kZero));
@@ -467,19 +512,16 @@ public class Autos {
     );
   }
   private double bargeTargetX() {
-    final double blueX = 8.21 - Units.inchesToMeters(18);
+    final double blueX = 7;
     return AllianceFlipUtil.shouldFlip() ? AllianceFlipUtil.applyX(blueX) : blueX;
   }
 
+  private final Supplier<Rotation2d> bargeTargetHeading = AllianceFlipUtil.getFlipped(Rotation2d.fromDegrees(30));
   public Rotation2d bargeTargetHeading() {
-    return AllianceFlipUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero;
+    return bargeTargetHeading.get();
   }
   public Command alignToBarge(DoubleSupplier lateralSpeed) {
-    return m_drivebase.driveToPoseSupC(()->{
-      var start = m_drivebase.getPose();
-      var target = new Pose2d(bargeTargetX(), start.getY(), bargeTargetHeading());
-      return target;
-    });
+    return m_drivebase.driveToX(this::bargeTargetX, lateralSpeed, bargeTargetHeading);
   }
 
   public boolean atBargeLine() {
@@ -575,7 +617,7 @@ public class Autos {
   }
 
   private final double TIME_INTAKE_TO_L4 = 1.4;
-  private final double AUTO_OUTTAKE_TIME = 0.25;
+  private final double AUTO_OUTTAKE_TIME = 0.17;
 
   private final ArmPosition autoScoringPosition = Arm.Positions.L4;
   private AutoTrajectory bindAutoScorePremove(AutoTrajectory trajectory) {

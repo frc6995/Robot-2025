@@ -12,4 +12,5 @@ public abstract class Hand extends SubsystemBase{
   public abstract Command outCoral();
   public abstract Command inAlgae();
   public abstract Command outAlgae();
+  public abstract Command outAlgaeSlow();
 }
