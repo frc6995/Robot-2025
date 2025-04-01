@@ -37,12 +37,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -55,7 +53,7 @@ import frc.robot.subsystems.ArmBrakeS;
 import frc.robot.subsystems.ClimbHookS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
-import frc.robot.subsystems.RealHandS;
+import frc.robot.subsystems.IntakeS;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.led.LightStripS;
@@ -77,7 +75,7 @@ public class Robot extends TimedRobot {
   private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
-  private final RealHandS m_hand = new RealHandS();
+  private final IntakeS m_hand = new IntakeS();
   private final ClimbHookS m_climbHookS = new ClimbHookS();
   //private final ClimbWheelsS m_climbWheelsS = new ClimbWheelsS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
@@ -141,11 +139,11 @@ public class Robot extends TimedRobot {
               if (DriverStation.isAutonomous()) {
                 return m_driveRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
               }
-              if (intakeAlignButton.getAsBoolean()) {
-                return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
-                  m_autos.intakeHeadingAllianceRelative()
-                );
-              }
+              // if (intakeAlignButton.getAsBoolean()) {
+              //   return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
+              //     m_autos.intakeHeadingAllianceRelative()
+              //   );
+              // }
               if (algaeAlignButton.getAsBoolean()) {
                 return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
                   m_autos.closestSide().faceAlgaeHeading
@@ -210,7 +208,7 @@ public class Robot extends TimedRobot {
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station (or left station if in workshop)
-    m_driverController.a().whileTrue(m_autos.autoCoralIntake());
+    m_driverController.a().whileTrue(m_autos.autoCoralGroundIntake());
     
     // go to processor position
     m_driverController.back()
@@ -237,15 +235,23 @@ public class Robot extends TimedRobot {
 
     // Stow
     m_driverController.b().onTrue(m_arm.goToPosition(Arm.Positions.GROUND_ALGAE)).onTrue(m_hand.inAlgae());
-    m_driverController.leftBumper().onTrue(m_arm.algaeStowWithHome());
+    m_driverController.leftBumper().onTrue(m_arm.goToPosition(Arm.Positions.STOW));
        // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
+    boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
+      
       either(m_hand.outCoralSlow().withTimeout(2),
-
+        either(
+        // if scoring out battery side
+        m_hand.outCoralReverse().withTimeout(0.5).andThen(
+          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL))
+        ),
+        // if scoring out pivot side
         m_hand.outCoral().withTimeout(0.5).andThen(
           new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL))
             ),
+        ()->true),
         ()->m_operatorBoard.getLevel() == 0
       )
     )
@@ -338,15 +344,13 @@ public class Robot extends TimedRobot {
 
   }
 
-  private final Rotation3d coral_hand_rotation = new Rotation3d(0, Units.degreesToRadians(20), 0);
-
   public Pose3d getCoralPose() {
     if (m_autos.hasCoral()) {
       return new Pose3d(m_drivebaseS.getPose()).plus(new Transform3d(
           RobotVisualizer.getComponents()[3].getTranslation(),
           RobotVisualizer.getComponents()[3].getRotation())).plus(
               new Transform3d(
-                  -0.04, -m_autos.getDistanceSensorOffset(), 0.18, coral_hand_rotation));
+                  Units.inchesToMeters(6.5-5) + m_hand.getCoralInlineOffset(), 0.0, -Units.inchesToMeters(9.978-0.25), Rotation3d.kZero));
     } else {
       return Pose3d.kZero;
     }
@@ -357,7 +361,7 @@ public class Robot extends TimedRobot {
         RobotVisualizer.getComponents()[3].getTranslation(),
         RobotVisualizer.getComponents()[3].getRotation())).plus(
             new Transform3d(
-                0.2, 0, 0.3, Rotation3d.kZero));
+                0.42, 0, -0.02, Rotation3d.kZero));
   }
 
   /**
@@ -379,15 +383,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    if (RobotBase.isSimulation()) {
-      Commands.waitSeconds(15)
-          .andThen(
-              () -> {
-                DriverStationSim.setEnabled(false);
-                DriverStationSim.notifyNewData();
-              }).onlyWhile(DriverStation::isAutonomousEnabled)
-          .schedule();
-    }
+    // if (RobotBase.isSimulation()) {
+    //   Commands.waitSeconds(15)
+    //       .andThen(
+    //           () -> {
+    //             DriverStationSim.setEnabled(false);
+    //             DriverStationSim.notifyNewData();
+    //           }).onlyWhile(DriverStation::isAutonomousEnabled)
+    //       .schedule();
+    // }
   }
 
   /** This function is called periodically during autonomous. */

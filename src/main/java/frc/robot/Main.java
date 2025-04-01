@@ -20,14 +20,6 @@ public final class Main {
    * <p>If you change your main robot class, change the parameter type.
    */
   public static void main(String... args) {
-    // if (RobotBase.isReal()) {
-    //   if (RobotBase.getRuntimeType() == RuntimeType.kRoboRIO) {
-    //     RobotBase.startRobot(AlphaRobot::new);
-    //   } else {
-    //     RobotBase.startRobot(Robot::new);
-    //   }
-    // } else {
       RobotBase.startRobot(Robot::new);
-    //}
   }
 }
