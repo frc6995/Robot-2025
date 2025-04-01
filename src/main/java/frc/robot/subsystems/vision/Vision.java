@@ -103,22 +103,22 @@ public class Vision {
                         Units.degreesToRadians(170))),
                 "OV9281-FR",
                 new Transform3d(
-                  -(Units.inchesToMeters(14.25) - 0.142),
+                  Units.inchesToMeters(14.25) - 0.102,
                   -(Units.inchesToMeters(14.25) - 0.112),
                     Units.inchesToMeters(8.5),
                     new Rotation3d(
                         Units.degreesToRadians(0),
-                        Units.degreesToRadians(-45),
-                        Units.degreesToRadians(0))),
+                        Units.degreesToRadians(-13.65),
+                        Units.degreesToRadians(10))),
                 "OV9281-FL",
                 new Transform3d(
-                  -(Units.inchesToMeters(14.25) - 0.150),
-                  (Units.inchesToMeters(14.25) - 0.116),
+                  (Units.inchesToMeters(14.25) - 0.102),
+                  (Units.inchesToMeters(14.25) - 0.066),
                     Units.inchesToMeters(8.5),
                     new Rotation3d(
                         Units.degreesToRadians(0),
-                        Units.degreesToRadians(-45),
-                        Units.degreesToRadians(0)))
+                        Units.degreesToRadians(-13.65),
+                        Units.degreesToRadians(-10)))
         );
     public static final AprilTagFieldLayout FIELD_LAYOUT =
         AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
