@@ -125,9 +125,18 @@ public class RealArm extends Arm {
   }
   private Command wristDirectlyTo(double wristRadians, DoubleSupplier mainPivotRadians) {
     return wristS.goTo(
-      () -> (mainPivotRadians.getAsDouble() < Units.degreesToRadians(17)) || mainPivotS.getAngleRadians() < Units.degreesToRadians(17)
-          ? Math.max(wristRadians, 0)
-          : wristRadians);
+      () -> {
+        double dontGoIntoBumperMinLimit = 
+        mainPivotRadians.getAsDouble() < Units.degreesToRadians(17) || mainPivotS.getAngleRadians() < Units.degreesToRadians(17)
+          ? 0
+          : WristConstants.CW_LIMIT.in(Radians);
+        // Only if nearly fully extended can the wrist go to its full limit, since the algae roller touches the tube
+        double dontGoIntoElevatorMaxLimit = elevatorS.getLengthMeters() < ElevatorConstants.MAX_LENGTH.in(Meters)-Units.inchesToMeters(6)
+        ? WristConstants.CCW_LIMIT.in(Radians)-Units.degreesToRadians(25) : WristConstants.CCW_LIMIT.in(Radians);
+        return MathUtil.clamp(wristRadians, dontGoIntoBumperMinLimit, dontGoIntoElevatorMaxLimit);
+
+      }
+      );
   }
   private Command goDirectlyTo(
       double mainPivotRadians, double elevatorMeters, double wristRadians) {

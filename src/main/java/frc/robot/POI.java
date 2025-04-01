@@ -39,6 +39,18 @@ public enum POI {
     L1_G(L1_A, Rotation2d.fromDegrees(180)),
     L1_I(L1_A, Rotation2d.fromDegrees(240)),
     L1_K(L1_A, Rotation2d.fromDegrees(300)),
+    L2_B(true),
+    L2_D(L2_B, Rotation2d.fromDegrees(60)),
+    L2_F(L2_B, Rotation2d.fromDegrees(120)),
+    L2_H(L2_B, Rotation2d.fromDegrees(180)),
+    L2_J(L2_B, Rotation2d.fromDegrees(240)),
+    L2_L(L2_B, Rotation2d.fromDegrees(300)),
+    L2_A(true),
+    L2_C(L2_A, Rotation2d.fromDegrees(60)),
+    L2_E(L2_A, Rotation2d.fromDegrees(120)),
+    L2_G(L2_A, Rotation2d.fromDegrees(180)),
+    L2_I(L2_A, Rotation2d.fromDegrees(240)),
+    L2_K(L2_A, Rotation2d.fromDegrees(300)),
     // Intake left, right
     SL1(false),
     SL2(false),
@@ -68,7 +80,10 @@ public enum POI {
     CL1(false),
     
     CL2(false),
-    CL3(false);
+    CL3(false),
+    LP1(false),
+    LP2(false),
+    LP3(false);
 
     public final Pose2d bluePose;
     public final Pose2d redPose;

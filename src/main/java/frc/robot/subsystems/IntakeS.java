@@ -35,6 +35,7 @@ public class IntakeS extends SubsystemBase {
 
   public static final double OUT_CORAL_VOLTAGE = -3; //worked with -6 but coral bounced
   public static final double OUT_CORAL_VOLTAGE_SLOW = -2; //worked with -6 but coral bounced
+  public static final double OUT_CORAL_VOLTAGE_REVERSE = 3;
   public static final double IN_ALGAE_VOLTAGE = 10;
 
   public static final double OUT_ALGAE_VOLTAGE = -4;
@@ -95,6 +96,10 @@ public class IntakeS extends SubsystemBase {
   }
   public Command outCoral(){
     return voltage(HandConstants.OUT_CORAL_VOLTAGE);
+
+  }
+  public Command outCoralReverse(){
+    return voltage(HandConstants.OUT_CORAL_VOLTAGE_REVERSE);
 
   }
   public Command outCoralSlow(){

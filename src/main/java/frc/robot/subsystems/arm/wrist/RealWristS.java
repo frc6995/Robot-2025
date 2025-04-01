@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.arm.wrist;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
@@ -51,8 +52,8 @@ public class RealWristS extends Wrist {
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
     // rotations per arm rotation.
 
-    public static final Angle CCW_LIMIT = Rotations.of(1);
-    public static final Angle CW_LIMIT = Rotations.of(-1);
+    public static final Angle CCW_LIMIT = Degrees.of(146.8);
+    public static final Angle CW_LIMIT = Degrees.of(-70);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
     // Units=volts/pivot rotation/s
     public static final double K_V = 5.01;

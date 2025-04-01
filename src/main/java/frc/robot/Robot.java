@@ -37,12 +37,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -210,7 +208,7 @@ public class Robot extends TimedRobot {
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station (or left station if in workshop)
-    m_driverController.a().whileTrue(m_arm.goToPosition(Arm.Positions.GROUND_CORAL));
+    m_driverController.a().whileTrue(m_autos.autoCoralGroundIntake());
     
     // go to processor position
     m_driverController.back()
@@ -237,15 +235,23 @@ public class Robot extends TimedRobot {
 
     // Stow
     m_driverController.b().onTrue(m_arm.goToPosition(Arm.Positions.GROUND_ALGAE)).onTrue(m_hand.inAlgae());
-    m_driverController.leftBumper().onTrue(m_arm.algaeStowWithHome());
+    m_driverController.leftBumper().onTrue(m_arm.goToPosition(Arm.Positions.STOW));
        // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
+    boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
+      
       either(m_hand.outCoralSlow().withTimeout(2),
-
+        either(
+        // if scoring out battery side
+        m_hand.outCoralReverse().withTimeout(0.5).andThen(
+          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL))
+        ),
+        // if scoring out pivot side
         m_hand.outCoral().withTimeout(0.5).andThen(
           new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL))
             ),
+        ()->true),
         ()->m_operatorBoard.getLevel() == 0
       )
     )
@@ -344,7 +350,7 @@ public class Robot extends TimedRobot {
           RobotVisualizer.getComponents()[3].getTranslation(),
           RobotVisualizer.getComponents()[3].getRotation())).plus(
               new Transform3d(
-                  Units.inchesToMeters(6.5) + m_hand.getCoralInlineOffset(), 0.0, -Units.inchesToMeters(9.978+0.25), Rotation3d.kZero));
+                  Units.inchesToMeters(6.5-5) + m_hand.getCoralInlineOffset(), 0.0, -Units.inchesToMeters(9.978-0.25), Rotation3d.kZero));
     } else {
       return Pose3d.kZero;
     }
@@ -377,15 +383,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    if (RobotBase.isSimulation()) {
-      Commands.waitSeconds(15)
-          .andThen(
-              () -> {
-                DriverStationSim.setEnabled(false);
-                DriverStationSim.notifyNewData();
-              }).onlyWhile(DriverStation::isAutonomousEnabled)
-          .schedule();
-    }
+    // if (RobotBase.isSimulation()) {
+    //   Commands.waitSeconds(15)
+    //       .andThen(
+    //           () -> {
+    //             DriverStationSim.setEnabled(false);
+    //             DriverStationSim.notifyNewData();
+    //           }).onlyWhile(DriverStation::isAutonomousEnabled)
+    //       .schedule();
+    // }
   }
 
   /** This function is called periodically during autonomous. */
