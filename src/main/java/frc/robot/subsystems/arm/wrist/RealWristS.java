@@ -145,7 +145,7 @@ public class RealWristS extends Wrist {
     return m_setpointSig.getValueAsDouble();
   }
   public Command home() {
-    return this.runOnce(()->m_leader.getConfigurator().setPosition(WristConstants.CCW_LIMIT)).ignoringDisable(true);
+    return this.runOnce(()->m_leader.getConfigurator().setPosition(WristConstants.CW_LIMIT)).ignoringDisable(true);
   }
 
   public void simulationPeriodic() {

@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -54,12 +55,14 @@ import frc.robot.subsystems.ClimbHookS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.IntakeS;
+import frc.robot.subsystems.IntakeS.HandConstants;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.OuterStrip.OuterStates;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.AlertsUtil;
+import frc.robot.util.Capture;
 
 /**
  * The methods in this class are called automatically corresponding to each
@@ -179,6 +182,8 @@ public class Robot extends TimedRobot {
           runOnce(()->this.setAllHomed(true)).ignoringDisable(true)).ignoringDisable(true));
         m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
     configureOperatorController();
+    new Trigger(m_hand.m_coralSensor::hasCoral).onFalse(
+      Commands.runOnce(()->{lastCoralPose.inner = getCoralPoseIfInHand();}).ignoringDisable(true));
     DriverStation.silenceJoystickConnectionWarning(true);
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
@@ -208,7 +213,7 @@ public class Robot extends TimedRobot {
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station (or left station if in workshop)
-    m_driverController.a().whileTrue(m_autos.autoCoralGroundIntake());
+    m_driverController.a().onTrue(m_autos.autoCoralGroundIntake());
     
     // go to processor position
     m_driverController.back()
@@ -240,20 +245,12 @@ public class Robot extends TimedRobot {
     // Score coral and stow
     boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
-      
-      either(m_hand.outCoralSlow().withTimeout(2),
-        either(
-        // if scoring out battery side
-        m_hand.outCoralReverse().withTimeout(0.5).andThen(
-          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL))
-        ),
-        // if scoring out pivot side
-        m_hand.outCoral().withTimeout(0.5).andThen(
-          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL))
-            ),
-        ()->true),
-        ()->m_operatorBoard.getLevel() == 0
-      )
+      either(m_hand.outCoralSlow().withTimeout(0.5),// spit out if not safe to 
+
+      m_hand.voltage(()->m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5), 
+
+      ()->m_arm.wristS.getAngleRadians() < Units.degreesToRadians(20)
+      ).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)))
     )
         ;
 
@@ -263,7 +260,7 @@ public class Robot extends TimedRobot {
         .onlyIf(()->
             m_arm.getPosition().elevatorMeters()>Arm.Positions.L3.elevatorMeters())));
     // Auto align to operator selected position on reef for coral scoring
-    m_driverController.rightTrigger().whileTrue(m_autos.autoScore());
+    m_driverController.rightTrigger().whileTrue(m_autos.autoScoreMap());
 
     /*
      * m_driverController.leftStick().whileTrue(Commands.none());
@@ -344,15 +341,19 @@ public class Robot extends TimedRobot {
 
   }
 
+  Capture<Pose3d> lastCoralPose = new Capture<Pose3d>(Pose3d.kZero);
+  private Pose3d getCoralPoseIfInHand() {
+    return new Pose3d(m_drivebaseS.getPose()).plus(new Transform3d(
+      RobotVisualizer.getComponents()[3].getTranslation(),
+      RobotVisualizer.getComponents()[3].getRotation())).plus(
+          new Transform3d(
+              HandConstants.CORAL_LENGTH_METERS/2.0 - Units.inchesToMeters(0.9) - m_hand.getCoralInlineOffset(), 0.0, -Units.inchesToMeters(9.978-0.25), Rotation3d.kZero));
+  }
   public Pose3d getCoralPose() {
     if (m_autos.hasCoral()) {
-      return new Pose3d(m_drivebaseS.getPose()).plus(new Transform3d(
-          RobotVisualizer.getComponents()[3].getTranslation(),
-          RobotVisualizer.getComponents()[3].getRotation())).plus(
-              new Transform3d(
-                  Units.inchesToMeters(6.5-5) + m_hand.getCoralInlineOffset(), 0.0, -Units.inchesToMeters(9.978-0.25), Rotation3d.kZero));
+      return getCoralPoseIfInHand();
     } else {
-      return Pose3d.kZero;
+      return lastCoralPose.inner;
     }
   }
 
