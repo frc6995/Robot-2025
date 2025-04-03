@@ -6,7 +6,6 @@ package frc.robot.subsystems.arm.wrist;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
@@ -73,8 +72,8 @@ public class RealWristS extends Wrist {
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
 
-    public static final double K_G = 0.25;
-    public static final Angle K_G_ANGLE = Rotations.of(-0.072);
+    public static final double K_G = 0.45;
+    public static final Angle K_G_ANGLE = Degrees.of(35.06);//Rotations.of(-0.072);
     public static final double K_S = 0;
     // arm plus hand
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
@@ -88,11 +87,11 @@ public class RealWristS extends Wrist {
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
           .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
-      config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(false)
+      config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
-          .withReverseSoftLimitEnable(false);
+          .withReverseSoftLimitEnable(true);
       config.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
       return config;
     }
@@ -126,7 +125,7 @@ public class RealWristS extends Wrist {
     m_leader
         .getConfigurator()
         .apply(WristConstants.configureLeader(new TalonFXConfiguration()));
-    m_leader.getSimState().Orientation = ChassisReference.Clockwise_Positive;
+    m_leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
     m_pivotSim.setState(VecBuilder.fill(0, 0));
     m_setpointSig.setUpdateFrequency(50);
     m_currentSig.setUpdateFrequency(50);

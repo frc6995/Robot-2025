@@ -58,7 +58,7 @@ public class RealArm extends Arm {
   public RealElevatorS elevatorS = new RealElevatorS();
   public RealWristS wristS = new RealWristS();
   private static final Distance SAFE_PIVOT_ELEVATOR_LENGTH = ArmPosition.SAFE_PIVOT_ELEVATOR_LENGTH;
-  private static final Distance MIN_ELEVATOR_LENGTH = ElevatorConstants.MIN_PADDED_LENGTH;
+  private static final Distance MIN_ELEVATOR_LENGTH = ElevatorConstants.MIN_LENGTH;
   private static final Angle SAFE_WRIST_MIN = WristConstants.CW_LIMIT;
   private static final Angle SAFE_WRIST_MAX = WristConstants.CCW_LIMIT;
   public Trigger elevatorRetractedEnough = new Trigger(
@@ -98,8 +98,8 @@ public class RealArm extends Arm {
       Angle wristSafeToLower = position.wristAngle().lt(Degrees.of(0)) ? Degrees.of(0) : position.wristAngle();
       return
         goToPositionWithoutTuckCheck(new ArmPosition(Degrees.of(17), Meters.of(shrunkenElevator), wristSafeToLower))
-        .until(()->wristS.getAngleRadians() > Units.degreesToRadians(-1))
-        .unless(()->wristS.getAngleRadians() > Units.degreesToRadians(-1))
+        .until(()->wristS.getAngleRadians() > Units.degreesToRadians(-3))
+        .unless(()->wristS.getAngleRadians() > Units.degreesToRadians(-3))
         .andThen(goToPositionWithoutTuckCheck(position));
     } else {
       return goToPositionWithoutTuckCheck(position);

@@ -63,6 +63,7 @@ import frc.robot.subsystems.IntakeS;
 import frc.robot.subsystems.IntakeS.HandConstants;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.Arm.ArmPosition;
+import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.AllianceFlipUtil;
@@ -364,34 +365,53 @@ public class Autos {
   public enum ReefScoringOption{
     L1(
       Autos::selectedL1POI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L1),
-      HandConstants.OUT_CORAL_VOLTAGE_SLOW, Arm.Positions.L1, 0),
+      HandConstants.OUT_CORAL_VOLTAGE_SLOW, Arm.Positions.L1, 0,
+      (autos)->autos.m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)
+      ),
+      
     L2(
       Autos::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L2_OPP),
-      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L2_OPP, 0),
+      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L2_OPP, 0,
+      (autos)->autos.m_arm.goToPosition(
+        // intentional, we want a pivot up
+        new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L2_OPP.wristAngle()))
+      ),
     L3(
       Autos::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3_OPP),
-      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L3_OPP, 0),
+      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L3_OPP, 0,
+      (autos)->autos.m_arm.goToPosition(
+        new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L3_OPP.wristAngle()))
+    ),
     L4(
       Autos::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L4_OPP),
-      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L4_OPP, -Units.inchesToMeters(2)),
+      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L4_OPP, -Units.inchesToMeters(2),
+      (autos)->autos.m_arm.goToPosition(
+        new ArmPosition(Arm.Positions.L4_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L4_OPP.wristAngle()))),
     L3_PIV(
       Autos::selectedPivotSidePOI, (autos)->autos.goToPositionWristLast(Arm.Positions.L3),
-      HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L3, 0),
+      HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L3, 0,
+      (autos)->autos.m_arm.goToPosition(
+        new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L3.wristAngle()))
+    ),
     L4_PIV(
       Autos::selectedPivotSidePOI, (autos)->autos.goToPositionWristLast(Arm.Positions.L4),
-      HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L4, 0)
+      HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L4, 0,
+      (autos)->autos.m_arm.goToPosition(
+        new ArmPosition(Arm.Positions.L4_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L4.wristAngle())))
     ;
     public final Function<Integer,POI> selectedPOI;
     public final Function<Autos,Command> scoringPosition;
     public final double outtakeVoltage;
     public final ArmPosition arm;
     public final double coralOffsetMeters;
-    private ReefScoringOption(Function<Integer,POI> selectedPOI, Function<Autos,Command> scoringPosition, double outtakeVoltage, ArmPosition arm, double coralOffsetMeters){
+    public final Function<Autos,Command> stow;
+    private ReefScoringOption(Function<Integer,POI> selectedPOI, Function<Autos,Command> scoringPosition, double outtakeVoltage, ArmPosition arm, double coralOffsetMeters, Function<Autos,Command> stow){
       this.selectedPOI = selectedPOI;
       this.scoringPosition = scoringPosition;
       this.outtakeVoltage = outtakeVoltage;
       this.arm = arm;
       this.coralOffsetMeters = coralOffsetMeters;
+      this.stow = stow;
     }
   }
 
@@ -441,6 +461,17 @@ public class Autos {
       ReefScoringOption.L3_PIV, autoScoreOption(ReefScoringOption.L3_PIV),
       ReefScoringOption.L4_PIV, autoScoreOption(ReefScoringOption.L4_PIV)
     ), this::selectedScoringOption);
+  }
+
+  public Command stowAfterCoral(Supplier<ReefScoringOption> option) {
+    return select(Map.of(
+      ReefScoringOption.L1, ReefScoringOption.L1.stow.apply(this),
+      ReefScoringOption.L2, ReefScoringOption.L2.stow.apply(this),
+      ReefScoringOption.L3, ReefScoringOption.L3.stow.apply(this),
+      ReefScoringOption.L4, ReefScoringOption.L4.stow.apply(this),
+      ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.stow.apply(this),
+      ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.stow.apply(this)
+    ), option);
   }
 
   // public POI selectedReefPOI() {
@@ -709,14 +740,19 @@ public class Autos {
   //   );
   // }
 
-  public Command autoCoralGroundIntake() {
+  public Command autoCoralGroundIntake(Trigger end) {
     return parallel(
         new ScheduleCommand(m_arm.goToPosition(Arm.Positions.GROUND_CORAL)),
         new ScheduleCommand(
-            m_hand.inCoral().until(this::hasCoral).unless(this::hasCoral).andThen(
+          
+            sequence(
+              m_hand.inCoral().until(this::hasCoral),
+              m_hand.inCoral().withTimeout(1.5)
+            ).unless(this::hasCoral).andThen(
                 parallel(
-                  new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
-                  new ScheduleCommand(m_hand.driveToOffset(0)),
+                  new ScheduleCommand(m_arm.goToPosition(Arm.Positions.CORAL_STOW)),
+                  
+                  //new ScheduleCommand(m_hand.driveToOffset(0)),
                   new ScheduleCommand(
 
                     LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(1)
