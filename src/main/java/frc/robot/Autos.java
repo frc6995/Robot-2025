@@ -168,42 +168,60 @@ public class Autos {
         }), POI.H));
       
     autos.put("Ground A4-B4-A2-B2", ()->flexGroundAuto(
-      new GroundAutoCycle(POI.STA, POI.A, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(POI.LP1, POI.B, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(POI.LP2, POI.L2_A, ReefScoringOption.L2),
-      new GroundAutoCycle(POI.LP3, POI.L2_B, ReefScoringOption.L2)
+      new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.L2_A, POI.B, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_A, ReefScoringOption.L2),
+      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
       ));
       
+    autos.put("Ground A4-B4-R1-B3", ()->flexGroundAuto(
+      new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.of(
+              (AutoRoutine routine)->{
+              
+                      var spin = routine.trajectory("A1");
+                      var pushin = routine.trajectory("A2");
+                      spin.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE)).onTrue(m_hand.inAlgae());
+                      spin.chain(pushin);
 
-    // autos.put must be before here
-    for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
-      m_autoChooser.addCmd(entry.getKey(), entry.getValue());
-    }
-
+                      var expel = routine.trajectory("A3");
+                      expel.atTime(0.5).onTrue(m_hand.outAlgae());
+                      pushin.chain(expel);
+                      return spin;
+              }), POI.LP2, POI.B, ReefScoringOption.L3_PIV)
+            ));
+      
+          // autos.put must be before here
+          for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
+            m_autoChooser.addCmd(entry.getKey(), entry.getValue());
+          }
+      
+        }
+      
+        private Alert successfulAutoTest = new Alert("Successfully Checked Autos", AlertType.kInfo);
+      
+        public void testAutos() {
+          for (Entry<String, Supplier<Command>> entry : autos.entrySet()) {
+            entry.getValue().get();
+          }
+          successfulAutoTest.set(true);
+        }
+      
+        
+        public Command outtakeCoralEitherSide() {
+          return either(
+              // if scoring out battery side
+              m_hand.outCoralReverse(),
+              // if scoring out pivot side
+              m_hand.outCoral(),
+              ()->m_arm.position.wristRadians() > 0);
+        }
+        private record GroundAutoCycle(Optional<Function<AutoRoutine, AutoTrajectory>> after, POI start, POI score, ReefScoringOption scoreArm){
   }
 
-  private Alert successfulAutoTest = new Alert("Successfully Checked Autos", AlertType.kInfo);
 
-  public void testAutos() {
-    for (Entry<String, Supplier<Command>> entry : autos.entrySet()) {
-      entry.getValue().get();
-    }
-    successfulAutoTest.set(true);
-  }
-
-  
-  public Command outtakeCoralEitherSide() {
-    return either(
-        // if scoring out battery side
-        m_hand.outCoralReverse(),
-        // if scoring out pivot side
-        m_hand.outCoral(),
-        ()->m_arm.position.wristRadians() > 0);
-  }
-  private record GroundAutoCycle(POI start, POI score, ReefScoringOption scoreArm){
-  }
-
-  public Command flexGroundAuto(GroundAutoCycle first, GroundAutoCycle...rest){
+  public Command flexGroundAuto(GroundAutoCycle first, GroundAutoCycle second, /*Optional<Function<AutoRoutine, AutoTrajectory>> after,*/ GroundAutoCycle...rest){
     var routine = m_autoFactory.newRoutine("flexGroundAuto");
     var start = first.start;
     var firstScore = first.score;
