@@ -213,7 +213,7 @@ public class Robot extends TimedRobot {
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station (or left station if in workshop)
-    m_driverController.a().onTrue(m_autos.autoCoralGroundIntake());
+    m_driverController.a().onTrue(m_autos.autoCoralGroundIntake(m_driverController.a().negate()));
     
     // go to processor position
     m_driverController.back()
@@ -250,7 +250,7 @@ public class Robot extends TimedRobot {
       m_hand.voltage(()->m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5), 
 
       ()->m_arm.wristS.getAngleRadians() < Units.degreesToRadians(20)
-      ).andThen(new ScheduleCommand(m_arm.goToPosition(Arm.Positions.INTAKE_CORAL)))
+      ).andThen(new ScheduleCommand(m_autos.stowAfterCoral(m_autos.lastScoringOption)))
     )
         ;
 

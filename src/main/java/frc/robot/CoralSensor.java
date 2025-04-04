@@ -23,7 +23,9 @@ public class CoralSensor {
             .onTrue(Commands.runOnce(()->this.setHasCoral(false)).ignoringDisable(true));
 
     }
-    
+    public boolean isValid() {
+        return tof.isRangeValid();
+    }
     private double rawDistanceMeter(){
         if(RobotBase.isSimulation()) {
             return simDistance;
@@ -45,6 +47,6 @@ public class CoralSensor {
         public static final double CENTER_DISTANCE = 0.179 - Units.inchesToMeters(0.7-0.6);
     }
     public boolean hasCoral(){
-        return rawDistanceMeter() < Units.inchesToMeters(1);
+        return rawDistanceMeter() < 0.1 && (RobotBase.isSimulation()  || (tof.getRangeSigma() < 5 && isValid())) ;
     }
 }
