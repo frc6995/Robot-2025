@@ -747,7 +747,7 @@ public class Autos {
           
             sequence(
               m_hand.inCoral().until(this::hasCoral),
-              m_hand.inCoral().withTimeout(1.5)
+              m_hand.inCoral().withTimeout(0.5)
             ).unless(this::hasCoral).andThen(
                 parallel(
                   new ScheduleCommand(m_arm.goToPosition(Arm.Positions.CORAL_STOW)),
