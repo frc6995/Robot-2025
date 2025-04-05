@@ -60,6 +60,7 @@ public enum POI {
     SR3(false),
     // Starting for corresponding pose
     STA(false),
+    STC(false),
     STE(false),
     STF(false),
     STG(false),
@@ -67,6 +68,9 @@ public enum POI {
     STH(false),
     STJ(false),
     STI(false),
+    STL(false),
+    STLW(false),
+    STCW(false),
     // Algae lineup for intake
     R1(false),
     R2(false),

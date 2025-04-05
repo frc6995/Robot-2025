@@ -6,9 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
-import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
-import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import java.util.ArrayList;
@@ -37,6 +35,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -51,7 +50,7 @@ import frc.operator.RealOperatorBoard;
 import frc.operator.SimOperatorBoard;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ArmBrakeS;
-import frc.robot.subsystems.ClimbHookS;
+import frc.robot.subsystems.ClimbWheelsS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.IntakeS;
@@ -79,8 +78,8 @@ public class Robot extends TimedRobot {
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
   private final IntakeS m_hand = new IntakeS();
-  private final ClimbHookS m_climbHookS = new ClimbHookS();
-  //private final ClimbWheelsS m_climbWheelsS = new ClimbWheelsS();
+  //private final ClimbHookS m_climbHookS = new ClimbHookS();
+  private final ClimbWheelsS m_climbWheelsS = new ClimbWheelsS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
   private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_armBrakeS,
       (traj, isStarting) -> {
@@ -147,11 +146,11 @@ public class Robot extends TimedRobot {
               //     m_autos.intakeHeadingAllianceRelative()
               //   );
               // }
-              if (algaeAlignButton.getAsBoolean()) {
-                return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
-                  m_autos.closestSide().faceAlgaeHeading
-                );
-              }
+              // if (algaeAlignButton.getAsBoolean()) {
+              //   return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
+              //     m_autos.closestSide().faceAlgaeHeading
+              //   );
+              // }
               return m_driveRequest
                     .withVelocityX(
                         xSpeed) // Drive forward with negative Y (forward)
@@ -172,14 +171,14 @@ public class Robot extends TimedRobot {
 // Coast mode when disabled
     m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
       parallel(m_arm.mainPivotS.coast(), m_arm.wristS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
-    )
-    .whileTrue(m_climbHookS.coast());
+    );
+    //.whileTrue(m_climbHookS.coast());
     //Home wrist when disabled
     m_driverController.start().and(RobotModeTriggers.disabled())
         .onTrue(parallel(
           m_arm.elevatorS.home(),
           m_arm.wristS.home(),
-          runOnce(()->this.setAllHomed(true)).ignoringDisable(true)).ignoringDisable(true));
+          Commands.runOnce(()->this.setAllHomed(true)).ignoringDisable(true)).ignoringDisable(true));
         m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
     configureOperatorController();
     new Trigger(m_hand.m_coralSensor::hasCoral).onFalse(
@@ -190,22 +189,23 @@ public class Robot extends TimedRobot {
 
   private void configureOperatorController() {
     m_operatorBoard.left().onTrue(
-      m_arm.goToPosition(Arm.Positions.PRE_CLIMB)).onTrue(
-        m_climbHookS.release().withTimeout(5)
-    );
-    m_operatorBoard.center().onTrue(m_climbHookS.clamp())
+      m_arm.goToPosition(Arm.Positions.PRE_CLIMB))
+      .onTrue(m_climbWheelsS.in());
+    //   .onTrue(
+    //     m_climbHookS.release().withTimeout(5)
+    // );
+    m_operatorBoard.center().onTrue(m_climbWheelsS.in())//.onTrue(m_climbHookS.clamp())
     .whileTrue(parallel(LightStripS.top.stateC(()->TopStates.Climbing), LightStripS.outer.stateC(()->OuterStates.Climbing),
-      waitSeconds(2).andThen(
       parallel(
         m_arm.mainPivotS.voltage(()->
-          (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(30)) ? 0 : -2),
+          (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(25)) ? 0 : -2),
         waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(60))
           .andThen(
-            m_arm.wristS.goTo(()->0.0)
-          ))))
+            m_arm.wristS.goTo(()->Units.degreesToRadians(30))
+          )))
     );
-    m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
-    //.onTrue(m_climbWheelsS.stop());
+    m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release())
+    .onTrue(m_climbWheelsS.stop());
   }
   
   public void configureDriverController() {
@@ -224,7 +224,7 @@ public class Robot extends TimedRobot {
         ;
 
     // Align to barge
-    m_driverController.start().and(inWorkshop.negate())
+    m_driverController.start()//.and(inWorkshop.negate())
         .whileTrue(
             parallel(
               m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4)
@@ -384,15 +384,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    // if (RobotBase.isSimulation()) {
-    //   Commands.waitSeconds(15)
-    //       .andThen(
-    //           () -> {
-    //             DriverStationSim.setEnabled(false);
-    //             DriverStationSim.notifyNewData();
-    //           }).onlyWhile(DriverStation::isAutonomousEnabled)
-    //       .schedule();
-    // }
+    if (RobotBase.isSimulation()) {
+      Commands.waitSeconds(15)
+          .andThen(
+              () -> {
+                DriverStationSim.setEnabled(false);
+                DriverStationSim.notifyNewData();
+              }).onlyWhile(DriverStation::isAutonomousEnabled)
+          .schedule();
+    }
   }
 
   /** This function is called periodically during autonomous. */

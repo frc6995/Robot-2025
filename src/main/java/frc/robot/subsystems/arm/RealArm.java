@@ -62,7 +62,7 @@ public class RealArm extends Arm {
   private static final Angle SAFE_WRIST_MIN = WristConstants.CW_LIMIT;
   private static final Angle SAFE_WRIST_MAX = WristConstants.CCW_LIMIT;
   public Trigger elevatorRetractedEnough = new Trigger(
-      () -> elevatorS.getLengthMeters() < SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters) + Units.inchesToMeters(1));
+      () -> elevatorS.getLengthMeters() < SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters) + Units.inchesToMeters(10));
 
   private Command goToPositionWithoutTuckCheck(ArmPosition position) {
     double positionPivotRadians = position.pivotRadians();
@@ -70,7 +70,6 @@ public class RealArm extends Arm {
     double positionWristRadians = position.wristRadians();
     double postPivotElevator = MathUtil.clamp(positionElevatorMeters, MIN_ELEVATOR_LENGTH.in(Meters),
       SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
-
     
     Command command = either(
       goDirectlyTo(
@@ -123,7 +122,7 @@ public class RealArm extends Arm {
         // Math.min(elevatorMeters,Units.inchesToMeters(29)/Math.cos(mainPivotS.getAngleRadians()))
         );
   }
-  private Command wristDirectlyTo(double wristRadians, DoubleSupplier mainPivotRadians) {
+  private Command wristDirectlyTo(double wristRadians, double elevatorSetpointMeters, DoubleSupplier mainPivotRadians) {
     return wristS.goTo(
       () -> {
         double dontGoIntoBumperMinLimit = 
@@ -131,7 +130,7 @@ public class RealArm extends Arm {
           ? 0
           : WristConstants.CW_LIMIT.in(Radians);
         // Only if nearly fully extended can the wrist go to its full limit, since the algae roller touches the tube
-        double dontGoIntoElevatorMaxLimit = elevatorS.getLengthMeters() < ElevatorConstants.MAX_LENGTH.in(Meters)-Units.inchesToMeters(6)
+        double dontGoIntoElevatorMaxLimit = Math.min(elevatorS.getLengthMeters(), elevatorSetpointMeters) < ElevatorConstants.MAX_LENGTH.in(Meters)-Units.inchesToMeters(6)
         ? WristConstants.CCW_LIMIT.in(Radians)-Units.degreesToRadians(25) : WristConstants.CCW_LIMIT.in(Radians);
         return MathUtil.clamp(wristRadians, dontGoIntoBumperMinLimit, dontGoIntoElevatorMaxLimit);
 
@@ -143,7 +142,7 @@ public class RealArm extends Arm {
     return parallel(
         mainPivotS.goTo(() -> mainPivotRadians),
         elevatorDirectlyTo(elevatorMeters),
-        wristDirectlyTo(wristRadians, ()->mainPivotRadians));
+        wristDirectlyTo(wristRadians, elevatorMeters, ()->mainPivotRadians));
   }
 
   private Command goDirectlyToPivotHold(
@@ -152,7 +151,7 @@ public class RealArm extends Arm {
   return parallel(
       mainPivotS.hold(),
       elevatorDirectlyTo(elevatorMeters),
-      wristDirectlyTo(wristRadians, mainPivotS::getAngleRadians));
+      wristDirectlyTo(wristRadians, elevatorMeters, mainPivotS::getAngleRadians));
 }
 
   @Override

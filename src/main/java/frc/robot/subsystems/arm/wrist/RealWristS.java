@@ -33,6 +33,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -56,7 +57,7 @@ public class RealWristS extends Wrist {
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
     // Units=volts/pivot rotation/s
     public static final double K_V = 5.01;
-    public static final double K_A = 0.2;
+    public static final double K_A = 0.2 * 0.45/0.25;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
@@ -82,7 +83,7 @@ public class RealWristS extends Wrist {
       config.CurrentLimits.withStatorCurrentLimitEnable(true).withStatorCurrentLimit(120)
       .withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(60);
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(50).withKD(0);
-      config.MotionMagic.withMotionMagicCruiseVelocity(4).withMotionMagicAcceleration(10);
+      config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(2);
       config.Feedback
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
@@ -137,6 +138,10 @@ public class RealWristS extends Wrist {
     BaseStatusSignal.refreshAll(m_currentSig, m_angleSig);
     // This method will be called once per scheduler run
     WRIST.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
+    if (DriverStation.isDisabled()) {
+      m_leader.set(0);
+    }
+
   }
 
   public double setpoint() {

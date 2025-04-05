@@ -42,7 +42,7 @@ public class IntakeS extends SubsystemBase {
     public static final double CORAL_LENGTH_METERS = Units.inchesToMeters(11.875);
     public static final int CAN_ID = 51;
 
-    public static final double IN_CORAL_VOLTAGE = 4;
+    public static final double IN_CORAL_VOLTAGE = 8;
 
     public static final double OUT_CORAL_VOLTAGE = -6; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_SLOW = -4; // worked with -6 but coral bounced
@@ -57,7 +57,7 @@ public class IntakeS extends SubsystemBase {
     public static final double CORAL_METERS_PER_WHEEL_ROT = (Units.inchesToMeters(2.375)/(0.443-0.201));
 
     public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
-      config.CurrentLimits.withStatorCurrentLimit(60).withStatorCurrentLimitEnable(true);
+      config.CurrentLimits.withStatorCurrentLimit(90).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
       // volts per wheel rotation = 8-9 inches of coral
       config.Slot0.withKP(6);
@@ -194,7 +194,7 @@ public class IntakeS extends SubsystemBase {
   }
 
   public Command outAlgae() {
-    return voltage(HandConstants.OUT_ALGAE_VOLTAGE);
+    return voltage(10);//HandConstants.OUT_ALGAE_VOLTAGE);
   }
 
   public Command outAlgaeSlow() {

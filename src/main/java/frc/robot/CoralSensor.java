@@ -46,7 +46,8 @@ public class CoralSensor {
         public static final double MAX_DISTANCE = 0.39;
         public static final double CENTER_DISTANCE = 0.179 - Units.inchesToMeters(0.7-0.6);
     }
+
     public boolean hasCoral(){
-        return rawDistanceMeter() < 0.1 && (RobotBase.isSimulation()  || (tof.getRangeSigma() < 5 && isValid())) ;
+        return rawDistanceMeter() < 0.1 && (RobotBase.isSimulation()  || (tof.getRangeSigma() < 10 && isValid())) ;
     }
 }

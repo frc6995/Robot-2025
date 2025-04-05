@@ -40,6 +40,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.VariableLengthArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -60,7 +61,7 @@ public class MainPivotS extends SubsystemBase {
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651 * 14.0/9.0;
     // Units=volts/pivot rotation/s
     public static final double K_V = 12.0 / (100 / MOTOR_ROTATIONS_PER_ARM_ROTATION);
-    public static final double K_A = 0.22 /*v/oldRot/s^2 */ * 9.0/14.0; /* newRot/oldRot */;
+    public static final double K_A = 0.25 /*v/oldRot/s^2 */ * 9.0/14.0; /* newRot/oldRot */;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
@@ -81,8 +82,8 @@ public class MainPivotS extends SubsystemBase {
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
 
-    public static final double K_G_RETRACTED = 0.35;
-    public static final double K_G_EXTENDED = 0.35;
+    public static final double K_G_RETRACTED = 0.38;
+    public static final double K_G_EXTENDED = 0.38;
     public static final double K_S = 0.1;
     public static final double K_P = 140.0;
     // arm plus hand
@@ -94,7 +95,7 @@ public class MainPivotS extends SubsystemBase {
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(K_P).withKD(0).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
       //TEMP
-      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(0.75);
+      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(0.66);
       //config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.Feedback
@@ -223,6 +224,10 @@ public class MainPivotS extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     MAIN_PIVOT.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
+    
+        if (DriverStation.isDisabled()) {
+      m_leader.set(0);
+    }
   }
 
   public double simulatedAngleRotations() {
