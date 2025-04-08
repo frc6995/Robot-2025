@@ -115,7 +115,7 @@ public class RealElevatorS extends Elevator {
         VoltsPerRotationPerSecond.ofNative(0.15 * 1.508/1.4397);
 
     public static final Per<VoltageUnit, AngularAccelerationUnit> K_A =
-        VoltsPerRotationPerSecondSquared.ofNative(0.006 * 1.508/1.4397 * 1.1);
+        VoltsPerRotationPerSecondSquared.ofNative(0.006 * 1.508/1.4397 * 1.15);
 
     public static final double K_C = -0.17 * 1.508/1.4397;
     public static final LinearSystem<N2, N1, N2> PLANT =

@@ -68,8 +68,15 @@ public enum ReefScoringOption{
       HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L4, 0,
       (autos)->Commands.sequence(
         autos.m_arm.goToPosition(
-          new ArmPosition(Arm.Positions.L4.mainPivotAngle().minus(Degrees.of(5)), Arm.Positions.L4.elevatorLength(), Arm.Positions.L3.wristAngle()))
-          .until(()->autos.m_arm.position.pivotRadians() < Arm.Positions.L4.pivotRadians()-Units.degreesToRadians(3)),
+          new ArmPosition(
+            Arm.Positions.L4.mainPivotAngle().minus(Degrees.of(5)),
+            Arm.Positions.L4.elevatorLength(),
+            Degrees.of(0)))
+          .until(()->
+            autos.m_arm.position.pivotRadians() < Arm.Positions.L4.pivotRadians()-Units.degreesToRadians(4)// &&
+            //autos.m_arm.position.wristRadians() < Units.degreesToRadians(5)
+          )
+          .withTimeout(1),
       autos.m_arm.goToPosition(
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3_OPP.wristAngle()))),
         (autos)->autos.m_arm.goToPosition(
