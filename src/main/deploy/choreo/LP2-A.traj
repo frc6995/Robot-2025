@@ -12,7 +12,7 @@
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":1, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":2, "to":3, "data":{"type":"MaxVelocity", "props":{"max":0.5}}, "enabled":true},
-    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":3.001}}, "enabled":true},
+    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":3.0}}, "enabled":true},
     {"from":2, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":false}],
   "targetDt":0.05
  },
@@ -27,7 +27,7 @@
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":1, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":2, "to":3, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"0.5 m / s", "val":0.5}}}, "enabled":true},
-    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MAX_VEL", "val":3.001}}}, "enabled":true},
+    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MAX_VEL", "val":3.0}}}, "enabled":true},
     {"from":2, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":false}],
   "targetDt":{
    "exp":"0.05 s",

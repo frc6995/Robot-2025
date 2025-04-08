@@ -87,13 +87,13 @@ public class MainPivotS extends SubsystemBase {
     public static final double K_S = 0.1;
     public static final double K_P = 140.0;
     // arm plus hand
-    public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(9.2));
+    public static final Mass ARM_MASS = Pounds.of(16).plus(Pounds.of(13.9));
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(4);
 
     public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375 + 0.125;
 
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(K_P).withKD(0).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(K_P).withKD(0.4).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
       //TEMP
       config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(0.66);
       //config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
@@ -147,12 +147,17 @@ public class MainPivotS extends SubsystemBase {
 
   private DoubleSupplier m_lengthSupplier = () -> ElevatorConstants.MIN_LENGTH.in(Meters);
   private DoubleSupplier m_moiSupplier = () -> ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters));
+  private DoubleSupplier m_accelerationSupplier = () -> 0;
   public void setLengthSupplier(DoubleSupplier lengthSupplier) {
     m_lengthSupplier = lengthSupplier;
   }
 
   public void setMoISupplier(DoubleSupplier moiSupplier) {
     m_moiSupplier = moiSupplier;
+  }
+
+  public void setAccelerationSupplier(DoubleSupplier accelerationSupplier) {
+    m_accelerationSupplier = accelerationSupplier;
   }
 
   public final MechanismLigament2d MAIN_PIVOT =
@@ -295,6 +300,35 @@ public class MainPivotS extends SubsystemBase {
     return Math.cos(getAngleRadians())
         * getLengthKg();
   }
+
+  //public double getDrivebasePivotAcceleration(double db_vx, double db_ax, double cg_dist, double moi_piv) {
+
+    //A_drive x_drive + B_drive u_drive = [db_vx db_ax]
+    //A_arm x_arm + B_arm u_arm = [arm_v arm_a]
+
+    // u_arm = B_arm^-1 ([arm_v arm_a]-A_arm x_arm)
+
+    // var cg_dist = m_lengthSupplier.getAsDouble() / 2.0;
+    // var fx = 
+    // //moi around pivot = moi_cg * cg_dist^2
+    // var moi_cg = m_moiSupplier.getAsDouble() / (cg_dist*cg_dist);
+    // var torque_around_cg = 
+    // var alpha_rad_per_s = ax_base * cg_dist; // radians/second;
+    // return Units.radiansToRotations(alpha_rad_per_s);
+
+    /*
+      [ cos th           l    ]  [ax]  = [-g sin theta]
+      [ m1+m2      m_2l cos th]  [ath]  = F+m_2 l vth^2 sin th]
+
+     */
+    // var l = getLengthMeters();
+    // var m2 = Units.lbsToKilograms(13.2);
+    // var m1 = Units.lbsToKilograms(50);
+    // var sin_th = Math.sin(getAngleRadians());
+    // var cos_th = Math.cos(getAngleRadians());
+    // var alpha = (-db_ax*cos_th)/l;
+    //Math.cos(getAngleRadians())*db_ax + alpha*l = -g*Math.sin(getAngleRadians());
+  //}
 
   public void setAngleRadians(double angle) {
     m_goalRotations = Units.radiansToRotations(angle);

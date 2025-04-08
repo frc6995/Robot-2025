@@ -146,4 +146,59 @@ public enum POI {
         }
         return option;
     }
+
+    public static POI selectedL1POI(int branch) {
+        return switch (branch) {
+          case 0 -> POI.L1_A;
+          case 1 -> POI.L1_B;
+          case 2 -> POI.L1_C;
+          case 3 -> POI.L1_D;
+          case 4 -> POI.L1_E;
+          case 5 -> POI.L1_F;
+          case 6 -> POI.L1_G;
+          case 7 -> POI.L1_H;
+          case 8 -> POI.L1_I;
+          case 9 -> POI.L1_J;
+          case 10 -> POI.L1_K;
+          case 11 -> POI.L1_L;
+          default -> POI.L1_A;
+        };
+      }
+    
+      public static POI selectedPivotSidePOI(int branch) {
+        return switch (branch) {
+          case 0 -> POI.A;
+          case 1 -> POI.B;
+          case 2 -> POI.C;
+          case 3 -> POI.D;
+          case 4 -> POI.E;
+          case 5 -> POI.F;
+          case 6 -> POI.G;
+          case 7 -> POI.H;
+          case 8 -> POI.I;
+          case 9 -> POI.J;
+          case 10 -> POI.K;
+          case 11 -> POI.L;
+          default -> POI.A;
+        };
+      }
+      public static POI selectedBatterySidePOI(int branch){
+        return switch (branch) {
+          case 0 -> POI.L2_A;
+          case 1 -> POI.L2_B;
+          case 2 -> POI.L2_C;
+          case 3 -> POI.L2_D;
+          case 4 -> POI.L2_E;
+          case 5 -> POI.L2_F;
+          case 6 -> POI.L2_G;
+          case 7 -> POI.L2_H;
+          case 8 -> POI.L2_I;
+          case 9 -> POI.L2_J;
+          case 10 -> POI.L2_K;
+          case 11 -> POI.L2_L;
+          default -> POI.L2_A;
+        };
+      }
+    
+    
 }

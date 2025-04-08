@@ -85,7 +85,7 @@ public class RealArm extends Arm {
         goDirectlyTo(
             positionPivotRadians, positionElevatorMeters, positionWristRadians))
       , ()->
-        Math.abs(positionPivotRadians - mainPivotS.getAngleRadians()) < Units.degreesToRadians(4)
+        Math.abs(positionPivotRadians - mainPivotS.getAngleRadians()) < Units.degreesToRadians(6)
       );
     return command;
   }

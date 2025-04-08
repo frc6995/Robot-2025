@@ -22,7 +22,7 @@
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":1, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
-    {"from":0, "to":2, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MAX_VEL", "val":3.001}}}, "enabled":true}],
+    {"from":0, "to":2, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MAX_VEL", "val":3.0}}}, "enabled":true}],
   "targetDt":{
    "exp":"0.05 s",
    "val":0.05

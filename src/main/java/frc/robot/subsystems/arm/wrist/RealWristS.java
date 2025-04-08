@@ -56,7 +56,7 @@ public class RealWristS extends Wrist {
     public static final Angle CW_LIMIT = Degrees.of(-70);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
     // Units=volts/pivot rotation/s
-    public static final double K_V = 5.01;
+    public static final double K_V = 4.548;
     public static final double K_A = 0.2 * 0.45/0.25;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
@@ -75,6 +75,8 @@ public class RealWristS extends Wrist {
 
     public static final double K_G = 0.45;
     public static final Angle K_G_ANGLE = Degrees.of(35.06);//Rotations.of(-0.072);
+
+    public static final Angle K_G_ANGLE_WITH_CORAL = Degrees.of(40);
     public static final double K_S = 0;
     // arm plus hand
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);

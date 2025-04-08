@@ -30,6 +30,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.Choreo.TrajectoryLogger;
@@ -44,8 +45,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -60,10 +60,8 @@ import frc.operator.OperatorBoard;
 import frc.robot.subsystems.ArmBrakeS;
 import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.IntakeS;
-import frc.robot.subsystems.IntakeS.HandConstants;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.Arm.ArmPosition;
-import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.AllianceFlipUtil;
@@ -71,11 +69,11 @@ import frc.robot.util.Capture;
 
 @Logged(strategy = Strategy.OPT_IN)
 public class Autos {
-  private final DriveBaseS m_drivebase;
-  private final Arm m_arm;
-  private final IntakeS m_hand;
-  private final OperatorBoard m_board;
-  private final AutoFactory m_autoFactory;
+  protected final DriveBaseS m_drivebase;
+  protected final Arm m_arm;
+  protected final IntakeS m_hand;
+  protected final OperatorBoard m_board;
+  protected final AutoFactory m_autoFactory;
   public final AutoChooser m_autoChooser;
 
   public final HashMap<String, Supplier<Command>> autos = new HashMap<>();
@@ -112,7 +110,7 @@ public class Autos {
 
   }
 
-  public Capture<ReefScoringOption> lastScoringOption = new Capture<Autos.ReefScoringOption>(ReefScoringOption.L1);
+  public Capture<ReefScoringOption> lastScoringOption = new Capture<ReefScoringOption>(ReefScoringOption.L1);
 
   public void addAutos() {
     // autos.put("1.Left 3p (Home)", () -> flexAuto(POI.STJ, POI.SL3, Optional.empty(), POI.J, POI.K, POI.L, POI.I));
@@ -247,6 +245,9 @@ public class Autos {
 
 
   public Command flexGroundAuto(GroundAutoCycle first, /*Optional<Function<AutoRoutine, AutoTrajectory>> after,*/ GroundAutoCycle...rest){
+    SwerveRequest lollipopPickupRequest = new SwerveRequest.ApplyRobotSpeeds()
+      .withDriveRequestType(DriveRequestType.Velocity)
+      .withSpeeds(new ChassisSpeeds(0.5, 0, 0));
     var routine = m_autoFactory.newRoutine("flexGroundAuto");
     var start = first.start;
     var firstScore = first.score;
@@ -293,9 +294,7 @@ public class Autos {
       .done()
           .onTrue(
               sequence(
-                  deadline(
-                      waitUntil(this::hasCoral),
-                      m_drivebase.driveToPoseSupC(intake::flippedPose)),
+                  m_drivebase.applyRequest(()->lollipopPickupRequest).until(this::hasCoral).withTimeout(1),
                   nextToReef.spawnCmd()
       ));
       toReef = nextToReef;
@@ -352,137 +351,6 @@ public class Autos {
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
     return original;
   }
-  private Transform2d k180 = new Transform2d(Translation2d.kZero, Rotation2d.k180deg);
-
-  public static POI selectedL1POI(int branch) {
-    return switch (branch) {
-      case 0 -> POI.L1_A;
-      case 1 -> POI.L1_B;
-      case 2 -> POI.L1_C;
-      case 3 -> POI.L1_D;
-      case 4 -> POI.L1_E;
-      case 5 -> POI.L1_F;
-      case 6 -> POI.L1_G;
-      case 7 -> POI.L1_H;
-      case 8 -> POI.L1_I;
-      case 9 -> POI.L1_J;
-      case 10 -> POI.L1_K;
-      case 11 -> POI.L1_L;
-      default -> POI.L1_A;
-    };
-  }
-
-  public static POI selectedPivotSidePOI(int branch) {
-    return switch (branch) {
-      case 0 -> POI.A;
-      case 1 -> POI.B;
-      case 2 -> POI.C;
-      case 3 -> POI.D;
-      case 4 -> POI.E;
-      case 5 -> POI.F;
-      case 6 -> POI.G;
-      case 7 -> POI.H;
-      case 8 -> POI.I;
-      case 9 -> POI.J;
-      case 10 -> POI.K;
-      case 11 -> POI.L;
-      default -> POI.A;
-    };
-  }
-  public static POI selectedBatterySidePOI(int branch){
-    return switch (branch) {
-      case 0 -> POI.L2_A;
-      case 1 -> POI.L2_B;
-      case 2 -> POI.L2_C;
-      case 3 -> POI.L2_D;
-      case 4 -> POI.L2_E;
-      case 5 -> POI.L2_F;
-      case 6 -> POI.L2_G;
-      case 7 -> POI.L2_H;
-      case 8 -> POI.L2_I;
-      case 9 -> POI.L2_J;
-      case 10 -> POI.L2_K;
-      case 11 -> POI.L2_L;
-      default -> POI.L2_A;
-    };
-  }
-
-  public enum ReefScoringOption{
-    L1(
-      Autos::selectedL1POI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L1),
-      HandConstants.OUT_CORAL_VOLTAGE_SLOW, Arm.Positions.L1, 0,
-      (autos)->autos.m_arm.goToPosition(Arm.Positions.INTAKE_CORAL),
-      (autos)->new ScheduleCommand(autos.m_arm.goToPosition(Arm.Positions.L1)) // so tapping the align button goes to L1
-      ),
-      
-    L2(
-      Autos::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L2_OPP),
-      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L2_OPP, 0,
-      (autos)->autos.m_arm.goToPosition(
-        // intentional, we want a pivot up
-        new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L2_OPP.wristAngle())),
-      
-      (autos)->new ScheduleCommand(autos.m_arm.goToPosition(Arm.Positions.L2_OPP)) // so tapping the align button goes to L1
-      ),
-    L3(
-      Autos::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3_OPP),
-      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L3_OPP, 0,
-      (autos)->autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L3_OPP.wristAngle())),
-      (autos)->autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L3_OPP.wristAngle()))
-    ),
-    L3_HIGH_ALG(
-      Autos::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3_HIGH_ALG),
-      HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L3_HIGH_ALG, 0,
-      (autos)->autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L3_HIGH_ALG.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Radians.of(0))),
-      (autos)->autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L3_HIGH_ALG.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Radians.of(0)))
-    ),
-    L4(
-      Autos::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L4_OPP),
-      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L4_OPP, -Units.inchesToMeters(2),
-      (autos)->autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L4_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L4_OPP.wristAngle())),
-      (autos)->autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L4_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L4_OPP.wristAngle()))
-    ),
-    L3_PIV(
-      Autos::selectedPivotSidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3),
-      HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L3, 0,
-      (autos)->autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L3.wristAngle())),
-      (autos)->autos.m_arm.goToPosition(
-        Arm.Positions.L3)
-    ),
-    L4_PIV(
-      Autos::selectedPivotSidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L4),
-      HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L4, 0,
-      (autos)->autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L4_OPP.mainPivotAngle(), ElevatorConstants.MIN_LENGTH, Arm.Positions.L3_OPP.wristAngle())),
-      (autos)->autos.m_arm.goToPosition(
-        Arm.Positions.L3.premove())
-    )
-    ;
-    public final Function<Integer,POI> selectedPOI;
-    public final Function<Autos,Command> scoringPosition;
-    public final double outtakeVoltage;
-    public final ArmPosition arm;
-    public final double coralOffsetMeters;
-    public final Function<Autos,Command> stow;
-    public final Function<Autos,Command> premove;
-    private ReefScoringOption(Function<Integer,POI> selectedPOI, Function<Autos,Command> scoringPosition, double outtakeVoltage, ArmPosition arm, double coralOffsetMeters, Function<Autos,Command> stow,
-    Function<Autos,Command> premove){
-      this.selectedPOI = selectedPOI;
-      this.scoringPosition = scoringPosition;
-      this.outtakeVoltage = outtakeVoltage;
-      this.arm = arm;
-      this.coralOffsetMeters = coralOffsetMeters;
-      this.stow = stow;
-      this.premove = premove;
-    }
-  }
 
   @Logged
   public ReefScoringOption selectedScoringOption() {
@@ -509,7 +377,6 @@ public class Autos {
     Capture<Integer> branch = new Capture<Integer>(m_board.getBranch());
     Supplier<Pose2d> targetSup = ()->option.selectedPOI.apply(branch.get()).flippedPose();
   return 
-
   parallel(
       runOnce(()->lastScoringOption.inner = option),
       new ScheduleCommand(m_hand.driveToOffset(option.coralOffsetMeters)),
@@ -517,9 +384,7 @@ public class Autos {
         preMoveUntilTarget(targetSup, option).asProxy())
   .beforeStarting(()->{
     branch.inner = m_board.getBranch();
-  })
-      
-      .asProxy();
+  }).asProxy();
 }
   public Command autoScoreMap() {
     return select(Map.of(
@@ -714,14 +579,6 @@ public class Autos {
     return defer(() -> m_drivebase.driveToPoseSupC(selectedClimb()::flippedPose), Set.of(m_drivebase));
   }
 
-  public Command intakePositionWithToggle() {
-    return Commands.either(
-      m_arm.goToPosition(Arm.Positions.INTAKE_CORAL).until(m_board.toggle().negate()),
-      m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL).until(m_board.toggle()),
-      
-     m_board.toggle()).repeatedly();
-  }
-
   public POI closestIntake() {
     if (onLeftHalf()) {
       return POI.SL3;
@@ -750,7 +607,7 @@ public class Autos {
         );
   }
 
-  private Command goToPositionWristLast(ArmPosition finalPosition) {
+  public Command goToPositionWristLast(ArmPosition finalPosition) {
     return sequence(
       m_arm.goToPosition(finalPosition.safeWrist()).until(
       ()->m_arm.getPosition().withinTolerance(finalPosition.safeWrist(),
