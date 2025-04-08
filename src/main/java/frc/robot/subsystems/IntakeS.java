@@ -52,7 +52,7 @@ public class IntakeS extends SubsystemBase {
     public static final double OUT_ALGAE_VOLTAGE = 4;
     public static final double OUT_ALGAE_VOLTAGE_SLOW = 2;
 
-    public static final double CLEAR_SENSOR_OFFSET = -Units.inchesToMeters(5.2);
+    public static final double CLEAR_SENSOR_OFFSET = -Units.inchesToMeters(7.2);
     public static final double GROUND_INTAKE_OFFSET = -Units.inchesToMeters(0);
     public static final double CORAL_METERS_PER_WHEEL_ROT = (Units.inchesToMeters(2.375)/(0.443-0.201));
 
@@ -119,9 +119,9 @@ public class IntakeS extends SubsystemBase {
     m_positionSig.refresh();
     lastRotationsAtSensorTrip = Optional.of(m_positionSig.getValueAsDouble());
     if (m_voltageSig.getValueAsDouble() >= 0) {
-      coralPositionAtSensorTrip = Optional.of(-HandConstants.CORAL_LENGTH_METERS / 2.0);
+      coralPositionAtSensorTrip = Optional.of(-HandConstants.CORAL_LENGTH_METERS / 2.0+Units.inchesToMeters(2.0));
     } else {
-      coralPositionAtSensorTrip = Optional.of(HandConstants.CORAL_LENGTH_METERS / 2.0);
+      coralPositionAtSensorTrip = Optional.of(HandConstants.CORAL_LENGTH_METERS / 2.0+Units.inchesToMeters(2));
     }
 
   }

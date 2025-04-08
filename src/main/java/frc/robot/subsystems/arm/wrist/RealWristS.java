@@ -76,7 +76,7 @@ public class RealWristS extends Wrist {
     public static final double K_G = 0.45;
     public static final Angle K_G_ANGLE = Degrees.of(35.06);//Rotations.of(-0.072);
 
-    public static final Angle K_G_ANGLE_WITH_CORAL = Degrees.of(40);
+    public static final Angle K_G_ANGLE_WITH_CORAL = Degrees.of(45);
     public static final double K_S = 0;
     // arm plus hand
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);

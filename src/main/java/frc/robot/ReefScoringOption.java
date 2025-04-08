@@ -13,6 +13,7 @@ import frc.robot.subsystems.IntakeS.HandConstants;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
+import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 
 public enum ReefScoringOption{
     L1(
@@ -64,23 +65,22 @@ public enum ReefScoringOption{
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle()))
     ),
     L4_PIV(
-      POI::selectedPivotSidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L4),
+      POI::selectedPivotSidePOI, (autos)->autos.goToPositionWristLast(Arm.Positions.L4),
       HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L4, 0,
       (autos)->Commands.sequence(
         autos.m_arm.goToPosition(
           new ArmPosition(
             Arm.Positions.L4.mainPivotAngle().minus(Degrees.of(5)),
             Arm.Positions.L4.elevatorLength(),
-            Degrees.of(0)))
+            Arm.Positions.L3.wristAngle()))
           .until(()->
-            autos.m_arm.position.pivotRadians() < Arm.Positions.L4.pivotRadians()-Units.degreesToRadians(4)// &&
-            //autos.m_arm.position.wristRadians() < Units.degreesToRadians(5)
+            autos.m_arm.position.pivotRadians() < Arm.Positions.L4.pivotRadians()-Units.degreesToRadians(4)
           )
           .withTimeout(1),
       autos.m_arm.goToPosition(
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3_OPP.wristAngle()))),
         (autos)->autos.m_arm.goToPosition(
-          new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle()))
+          new ArmPosition(Arm.Positions.L4.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.K_G_ANGLE_WITH_CORAL))
     )
     ;
     public final Function<Integer,POI> selectedPOI;

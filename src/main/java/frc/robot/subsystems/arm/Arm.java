@@ -66,7 +66,8 @@ public abstract class Arm {
         Degrees.of(-30));
     public static final ArmPosition POST_INTAKE_CORAL = new ArmPosition(Degrees.of(85),
         ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), Degrees.of(5));
-    public static final ArmPosition L4 = new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH, Degrees.of(145));
+    //public static final ArmPosition L4_CLOSE = new ArmPosition(Degrees.of(86), ElevatorConstants.MAX_LENGTH, Degrees.of(135));
+    public static final ArmPosition L4 = new ArmPosition(Degrees.of(87), ElevatorConstants.MAX_LENGTH, Degrees.of(140));
     public static final ArmPosition L3 = new ArmPosition(Degrees.of(88), Meters.of(1.025).minus(Inches.of(5)),
         Degrees.of(90 + 35));
     public static final ArmPosition L2 = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH,
@@ -99,6 +100,8 @@ public abstract class Arm {
     public static final ArmPosition SCORE_BARGE_VERTICAL = new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH,
         Degrees.of(-20));
     public static final ArmPosition SCORE_BARGE = new ArmPosition(Degrees.of(70), ElevatorConstants.MAX_LENGTH,
+        Degrees.of(0));
+    public static final ArmPosition SCORE_BARGE_PRE = new ArmPosition(Degrees.of(70), Meters.of(0.75),
         Degrees.of(0));
     public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(Degrees.of(21),
         ElevatorConstants.MIN_PADDED_LENGTH, Degrees.of(-23));

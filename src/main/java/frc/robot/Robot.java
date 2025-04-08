@@ -231,7 +231,7 @@ public class Robot extends TimedRobot {
             )
     );
     m_driverController.y()
-      .onTrue(m_autos.bargeUpAndOut());
+      .onTrue(m_autos.bargeUpAndOutVoltage());
       //.onTrue(m_hand.inAlgae());
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
     m_driverController.x()

@@ -62,6 +62,7 @@ import frc.robot.subsystems.DriveBaseS;
 import frc.robot.subsystems.IntakeS;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.Arm.ArmPosition;
+import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.AllianceFlipUtil;
@@ -70,7 +71,7 @@ import frc.robot.util.Capture;
 @Logged(strategy = Strategy.OPT_IN)
 public class Autos {
   protected final DriveBaseS m_drivebase;
-  protected final Arm m_arm;
+  protected final RealArm m_arm;
   protected final IntakeS m_hand;
   protected final OperatorBoard m_board;
   protected final AutoFactory m_autoFactory;
@@ -81,7 +82,7 @@ public class Autos {
   @Logged
   public final CoralSensor m_coralSensor;
 
-  public Autos(DriveBaseS drivebase, Arm arm, IntakeS hand, OperatorBoard board,
+  public Autos(DriveBaseS drivebase, RealArm arm, IntakeS hand, OperatorBoard board,
       ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
@@ -707,6 +708,37 @@ public class Autos {
         new ScheduleCommand(m_hand.inAlgae())
       )
     );
+  }
+  public Command bargeUpAndOutVoltage() {
+    BooleanSupplier release = ()-> m_arm.position.elevatorMeters() > 
+    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(12);
+    return
+      sequence(
+        // prep position
+        parallel(
+          m_arm.goToPosition(Arm.Positions.SCORE_BARGE_PRE),
+          m_hand.inAlgae()
+        ).until(
+          ()->m_arm.position.withinTolerance(Arm.Positions.SCORE_BARGE_PRE,
+          Units.degreesToRadians(2), Units.inchesToMeters(3), Units.degreesToRadians(3))),
+        // extend
+        parallel(
+          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE_PRE::pivotRadians),
+          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE_PRE::wristRadians),
+          m_arm.elevatorS.voltage(()->5)
+        ).alongWith(m_hand.inAlgae()).until(release),
+        // stop
+        parallel(
+          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE_PRE::pivotRadians),
+          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE_PRE::wristRadians),
+          m_arm.elevatorS.voltage(()->0)
+        ).alongWith(m_hand.outAlgae()).withTimeout(0.5),
+        // retract
+        parallel(
+          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
+          new ScheduleCommand(m_hand.inAlgae())
+        )
+      );
   }
   private double bargeTargetX() {
     final double blueX = 7.53;
