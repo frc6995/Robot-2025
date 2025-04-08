@@ -174,9 +174,9 @@ public class Autos {
       //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
       ));
     autos.put("Ground L-A-B", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STL, POI.L, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP1, POI.A, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
+      new GroundAutoCycle(Optional.empty(), POI.STL, POI.L, ReefScoringOption.L3_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP1, POI.A, ReefScoringOption.L3_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L3_PIV)
       //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
       ));
       autos.put("Ground L-A-B WALL", ()->flexGroundAuto(
@@ -763,7 +763,8 @@ public class Autos {
   // }
 
   public AutoTrajectory bindScore(AutoTrajectory self, ReefScoringOption scoringPosition, Optional<AutoTrajectory> next, ArmPosition intakeAfterScore, Optional<BooleanSupplier> readyToMoveOn) {
-    BooleanSupplier readyToNext = readyToMoveOn.orElse(() -> m_arm.position.elevatorLength().lt(Arm.Positions.L3.elevatorLength().plus(Inches.of(1))));
+    BooleanSupplier elevatorRetractedEnough = () -> m_arm.position.elevatorLength().lt(Arm.Positions.L3.elevatorLength().plus(Inches.of(1)));
+    BooleanSupplier readyToNext = readyToMoveOn.orElse(elevatorRetractedEnough);
     var finalPoseUnflipped = self.getRawTrajectory().getFinalPose(false).get();
     var finalPoseFlipped = self.getFinalPose().get();
     System.out.println(DriverStation.getAlliance());
@@ -785,7 +786,10 @@ public class Autos {
               sensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME
             ),
             //Commands.waitSeconds(AUTO_OUTTAKE_TIME),
-            new ScheduleCommand(m_arm.goToPosition(intakeAfterScore)),
+            new ScheduleCommand(sequence(
+              scoringPosition.stow.apply(this).until(elevatorRetractedEnough),
+              m_arm.goToPosition(intakeAfterScore)
+            )),
             next.map((Function<AutoTrajectory, Command>) (nextTraj)->
               waitUntil(
                   readyToNext)
@@ -847,7 +851,7 @@ public class Autos {
   }
 
   private final double TIME_INTAKE_TO_L4 = 1.4;
-  private final double AUTO_OUTTAKE_TIME = 0.17;
+  private final double AUTO_OUTTAKE_TIME = 0.23;
 
   // private final ArmPosition autoScoringPosition = Arm.Positions.L4;
   private AutoTrajectory bindAutoScorePremove(AutoTrajectory trajectory, ReefScoringOption option) {

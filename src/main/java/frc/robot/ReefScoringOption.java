@@ -62,7 +62,7 @@ public enum ReefScoringOption{
       (autos)->autos.m_arm.goToPosition(
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle())),
       (autos)->autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle()))
+        new ArmPosition(Arm.Positions.L3.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle()))
     ),
     L4_PIV(
       POI::selectedPivotSidePOI, (autos)->autos.goToPositionWristLast(Arm.Positions.L4),
