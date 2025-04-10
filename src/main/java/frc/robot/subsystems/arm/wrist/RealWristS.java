@@ -85,7 +85,7 @@ public class RealWristS extends Wrist {
       config.CurrentLimits.withStatorCurrentLimitEnable(true).withStatorCurrentLimit(120)
       .withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(60);
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(50).withKD(0);
-      config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(2);
+      config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(2.8);
       config.Feedback
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)

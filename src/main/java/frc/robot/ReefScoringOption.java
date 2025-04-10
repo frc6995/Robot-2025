@@ -19,7 +19,7 @@ public enum ReefScoringOption{
     L1(
       POI::selectedL1POI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L1),
       HandConstants.OUT_CORAL_VOLTAGE_SLOW, Arm.Positions.L1, 0,
-      (autos)->autos.m_arm.goToPosition(Arm.Positions.INTAKE_CORAL),
+      (autos)->autos.m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL),
       (autos)->new ScheduleCommand(autos.m_arm.goToPosition(Arm.Positions.L1)) // so tapping the align button goes to L1
       ),
       
@@ -65,8 +65,8 @@ public enum ReefScoringOption{
         new ArmPosition(Arm.Positions.L3.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle()))
     ),
     L4_PIV(
-      POI::selectedPivotSidePOI, (autos)->autos.goToPositionWristLast(Arm.Positions.L4),
-      HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L4, 0,
+      POI::selectedPivotSidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L4),
+      -10, Arm.Positions.L4, 0,
       (autos)->Commands.sequence(
         autos.m_arm.goToPosition(
           new ArmPosition(

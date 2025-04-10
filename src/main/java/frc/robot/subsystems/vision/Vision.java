@@ -220,7 +220,7 @@ public class Vision {
       } 
       double tdist = tgt.getBestCameraToTarget().getTranslation().getNorm();
       if (pose.targetsUsed.size() < 2) {
-        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(8) : Units.feetToMeters(8);
+        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(6) : Units.feetToMeters(6);
         if (tdist > trustedDistance){
           return;
         
@@ -233,7 +233,7 @@ public class Vision {
         closestDistance = tdist;
       }
       if (pose.targetsUsed.size() >= 2) {
-        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(8) : Units.feetToMeters(8);
+        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(10) : Units.feetToMeters(8);
         
       if (tdist <= trustedDistance) {
         closeEnoughTgts++;

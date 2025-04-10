@@ -5,10 +5,7 @@ import com.playingwithfusion.TimeOfFlight.RangingMode;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 @Logged
 public class CoralSensor {
@@ -17,10 +14,6 @@ public class CoralSensor {
     public CoralSensor(){
         tof.setRangingMode(RangingMode.Short, 24);
         tof.setRangeOfInterest(8,8,12,12);
-        new Trigger(()->DriverStation.getStickButton(4,1))
-            .onTrue(Commands.runOnce(()->this.setHasCoral(true)).ignoringDisable(true));
-        new Trigger(()->DriverStation.getStickButton(4,2))
-            .onTrue(Commands.runOnce(()->this.setHasCoral(false)).ignoringDisable(true));
 
     }
     public boolean isValid() {
@@ -48,6 +41,6 @@ public class CoralSensor {
     }
 
     public boolean hasCoral(){
-        return rawDistanceMeter() < 0.1 && (RobotBase.isSimulation()  || (tof.getRangeSigma() < 10 && isValid())) ;
+        return rawDistanceMeter() < 0.1 && (RobotBase.isSimulation()  || (tof.getRangeSigma() < 10)) ;
     }
 }

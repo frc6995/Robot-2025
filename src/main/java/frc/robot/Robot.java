@@ -213,7 +213,11 @@ public class Robot extends TimedRobot {
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station (or left station if in workshop)
-    m_driverController.a().onTrue(m_autos.autoCoralGroundIntake(m_driverController.a().negate()));
+    m_driverController.a().onTrue(Commands.either(
+      m_autos.autoCoralIntake(),
+      m_autos.autoCoralGroundIntake(m_driverController.a().negate())
+      , m_operatorBoard.toggle())
+      );
     
     // go to processor position
     m_driverController.back()

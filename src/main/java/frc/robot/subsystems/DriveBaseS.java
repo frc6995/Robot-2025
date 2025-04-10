@@ -467,7 +467,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   /* DRIVE TO POSE using Trapezoid Profiles */
-  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 1);
+  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2.5, 1.75);
   private TrapezoidProfile.Constraints driveToPoseRotationConstraints = new Constraints(3, 6);
   private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(driveToPoseConstraints);
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(driveToPoseRotationConstraints);

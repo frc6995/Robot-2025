@@ -57,7 +57,7 @@ public class IntakeS extends SubsystemBase {
     public static final double CORAL_METERS_PER_WHEEL_ROT = (Units.inchesToMeters(2.375)/(0.443-0.201));
 
     public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
-      config.CurrentLimits.withStatorCurrentLimit(90).withStatorCurrentLimitEnable(true);
+      config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
       // volts per wheel rotation = 8-9 inches of coral
       config.Slot0.withKP(6);
@@ -90,6 +90,7 @@ public class IntakeS extends SubsystemBase {
 
   public StatusSignal<Angle> m_positionSig = motor.getPosition();
   public StatusSignal<Voltage> m_voltageSig = motor.getMotorVoltage();
+  
   private Optional<Double> lastRotationsAtSensorTrip = Optional.empty();
 
   public double lastRotationsAtSensorTrip() {
@@ -153,7 +154,6 @@ public class IntakeS extends SubsystemBase {
     //       waitUntil(m_coralSensor::hasCoral)
     //     ).repeatedly();
   }
-
   public Command voltage(DoubleSupplier voltage) {
     return this.run(() -> motor.setControl(voltageRequest.withOutput(voltage.getAsDouble())));
   }
@@ -171,7 +171,7 @@ public class IntakeS extends SubsystemBase {
   }
 
   public Command inCoralSlow() {
-    return voltage(4);
+    return voltage(2.5);
   }
 
   public Command outCoral() {
