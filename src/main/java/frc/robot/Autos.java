@@ -125,14 +125,14 @@ public class Autos {
       var move = new SwerveRequest.RobotCentric();
       return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
 
-    // autos.put("Left 2.5p Push", ()->flexAuto(POI.STJ, POI.SL3, Optional.of(
-    //     (routine)->{
-    //       var traj = routine.trajectory("K-PUSH");
-    //       traj.atTimeBeforeEnd(1).onTrue(
-    //         m_hand.inCoral().until(new Trigger(this::hasCoral)).andThen(m_hand.driveToOffset(0)));
-    //       return traj;
-    //     }
-    //   ), POI.J, POI.K));
+    autos.put("Left 2.5p Push", ()->flexAuto(POI.STJ, POI.SL3, Optional.of(
+         (routine)->{
+           var traj = routine.trajectory("K-PUSH");
+           traj.atTimeBeforeEnd(1).onTrue(
+             m_hand.inCoral().until(new Trigger(this::hasCoral)).andThen(m_hand.driveToOffset(0)));
+           return traj;
+         }
+       ), POI.J, POI.K));
       //autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
 
       autos.put("BacksideMid", () -> flexAuto(POI.STH, POI.SL3, Optional.of(
@@ -199,6 +199,22 @@ public class Autos {
       //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
       //   ));
       
+    autos.put("Ground A-B", ()->flexGroundAuto(
+      new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L3_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.B, ReefScoringOption.L3_PIV)
+   ));
+    autos.put("Push_Ground A-B", ()->flexGroundAuto(
+      new GroundAutoCycle(Optional.of(
+            (AutoRoutine routine)->{
+                    var pushBot = routine.trajectory("8");
+      return pushBot;
+      }), POI.STA, POI.A, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L3_PIV)
+      
+    ));
+
+
     autos.put("Ground A4-B4-R1-B3", ()->flexGroundAuto(
       new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
       new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
@@ -246,7 +262,7 @@ public class Autos {
   }
 
 
-  public Command flexGroundAuto(GroundAutoCycle first, /*Optional<Function<AutoRoutine, AutoTrajectory>> after,*/ GroundAutoCycle...rest){
+  public Command flexGroundAuto(GroundAutoCycle first, GroundAutoCycle second, /*Optional<Function<AutoRoutine, AutoTrajectory>> after,*/ GroundAutoCycle...rest){
     SwerveRequest lollipopPickupRequest = new SwerveRequest.ApplyRobotSpeeds()
       .withDriveRequestType(DriveRequestType.Velocity)
       .withSpeeds(new ChassisSpeeds(0.5, 0, 0));
@@ -267,6 +283,7 @@ public class Autos {
       
     List<GroundAutoCycle> scores = new LinkedList<GroundAutoCycle>();
     scores.add(first);
+    scores.add(second);
     scores.addAll(List.of(rest));
     // from [0].score to [1].start to [1.score]
     List<Pair<GroundAutoCycle,GroundAutoCycle>> scorePairs = new LinkedList<>();
