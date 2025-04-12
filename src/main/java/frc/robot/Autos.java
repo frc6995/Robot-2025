@@ -726,29 +726,12 @@ public class Autos {
       )
     );
   }
-
-  public Command bargeUpAndOutVoltageTest() {
-    return deadline(
-      m_hand.inAlgae().until(()-> m_arm.position.elevatorMeters() > 
-        Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(12))
-          .andThen(m_hand.outAlgae().withTimeout(0.5)),
-      parallel(
-          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE_PRE::pivotRadians),
-          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE_PRE::wristRadians),
-          m_arm.elevatorS.voltage(()->5).until(()-> m_arm.position.elevatorMeters() > 
-          Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(3))
-      )
-    ).andThen(
-      parallel(
-        new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
-        new ScheduleCommand(m_hand.inAlgae())
-      )
-    );
-  }
   
   public Command bargeUpAndOutVoltage() {
     BooleanSupplier release = ()-> m_arm.position.elevatorMeters() > 
-    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(12);
+    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(16);
+    BooleanSupplier nohardstop = ()-> m_arm.position.elevatorMeters() > 
+    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(10);
     return
       sequence(
         // prep position
@@ -762,20 +745,19 @@ public class Autos {
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->5)
+          m_arm.elevatorS.voltage(()->4)
         ).alongWith(m_hand.inAlgae()).until(release),
         // stop
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->5)
-        ).alongWith(m_hand.outAlgae()).withTimeout(0.1),
+          m_arm.elevatorS.voltage(()->4)
+        ).alongWith(m_hand.outAlgae()).until(nohardstop),
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
           m_arm.elevatorS.voltage(()->0)
-        ),
-        
+        ).withTimeout(0.2),
         // retract
         parallel(
           new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
@@ -783,6 +765,7 @@ public class Autos {
         )
       );
   }
+  
   private double bargeTargetX() {
     final double blueX = 7.53;
     return (m_drivebase.getPose().getX() > AllianceFlipUtil.fieldLength/2.0) ? AllianceFlipUtil.flipX(blueX) : blueX;
