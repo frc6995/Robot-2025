@@ -766,10 +766,12 @@ public class Autos {
         ).alongWith(m_hand.inAlgae()).until(release),
         // stop
         parallel(
+
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE_PRE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE_PRE::wristRadians),
           m_arm.elevatorS.voltage(()->0)
         ).alongWith(m_hand.outAlgae()).withTimeout(0.5),
+
         // retract
         parallel(
           new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
