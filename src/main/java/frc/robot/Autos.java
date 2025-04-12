@@ -748,14 +748,16 @@ public class Autos {
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->0)
-        ).alongWith(m_hand.outAlgae()).withTimeout(0.5),
+          Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(6)
+          .andThen(m_arm.elevatorS.voltage(()->0)
+        ).alongWith((m_hand.outAlgae()).withTimeout(0.5),
+        
         // retract
         parallel(
           new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
           new ScheduleCommand(m_hand.inAlgae())
         )
-      );
+      ));
   }
   private double bargeTargetX() {
     final double blueX = 7.53;
