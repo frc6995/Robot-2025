@@ -726,6 +726,26 @@ public class Autos {
       )
     );
   }
+
+  public Command bargeUpAndOutVoltageTest() {
+    return deadline(
+      m_hand.inAlgae().until(()-> m_arm.position.elevatorMeters() > 
+        Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(12))
+          .andThen(m_hand.outAlgae().withTimeout(0.5)),
+      parallel(
+          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE_PRE::pivotRadians),
+          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE_PRE::wristRadians),
+          m_arm.elevatorS.voltage(()->5).until(()-> m_arm.position.elevatorMeters() > 
+          Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(3))
+      )
+    ).andThen(
+      parallel(
+        new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
+        new ScheduleCommand(m_hand.inAlgae())
+      )
+    );
+  }
+  
   public Command bargeUpAndOutVoltage() {
     BooleanSupplier release = ()-> m_arm.position.elevatorMeters() > 
     Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(12);
@@ -740,14 +760,14 @@ public class Autos {
           Units.degreesToRadians(2), Units.inchesToMeters(3), Units.degreesToRadians(3))),
         // extend
         parallel(
-          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
-          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
+          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE_PRE::pivotRadians),
+          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE_PRE::wristRadians),
           m_arm.elevatorS.voltage(()->5)
         ).alongWith(m_hand.inAlgae()).until(release),
         // stop
         parallel(
-          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
-          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
+          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE_PRE::pivotRadians),
+          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE_PRE::wristRadians),
           m_arm.elevatorS.voltage(()->0)
         ).alongWith(m_hand.outAlgae()).withTimeout(0.5),
         // retract
