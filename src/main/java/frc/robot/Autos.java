@@ -769,7 +769,7 @@ public class Autos {
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
           m_arm.elevatorS.voltage(()->5)
-        ).alongWith(m_hand.outAlgae()).withTimeout(0.1),
+        ).alongWith(m_hand.outAlgae()).withTimeout(0),
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
@@ -783,6 +783,7 @@ public class Autos {
         )
       );
   }
+      
   private double bargeTargetX() {
     final double blueX = 7.53;
     return (m_drivebase.getPose().getX() > AllianceFlipUtil.fieldLength/2.0) ? AllianceFlipUtil.flipX(blueX) : blueX;
