@@ -51,7 +51,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
@@ -378,10 +377,6 @@ public class Autos {
     var pivotSideTarget = ReefScoringOption.L3_PIV.selectedPOI.apply(m_board.getBranch()).flippedPose().getRotation();
     var batterySideTarget = ReefScoringOption.L3.selectedPOI.apply(m_board.getBranch()).flippedPose().getRotation();
     var currentHeading = m_drivebase.getPoseHeading();
-    var deltaToPivot=Math.abs(pivotSideTarget.minus(currentHeading).getRadians());
-    var deltaToBattery = Math.abs(batterySideTarget.minus(currentHeading).getRadians());
-    SmartDashboard.putNumber("deltaToPivot", deltaToPivot);
-    SmartDashboard.putNumber("deltaToBattery", deltaToBattery);
     if (Math.abs(pivotSideTarget.minus(currentHeading).getRadians())
         < Math.abs(batterySideTarget.minus(currentHeading).getRadians())) {
       if(m_board.getLevel() == 2) {return ReefScoringOption.L3_PIV;}
@@ -502,13 +497,15 @@ public class Autos {
   }
 
   public enum AlgaeHeight {
-    LOW(Arm.Positions.LOW_ALGAE_REEF),
-    HIGH(Arm.Positions.HIGH_ALGAE_REEF);
-    AlgaeHeight(ArmPosition position) {
-          this.position = position;
+    LOW(Arm.Positions.LOW_ALGAE_REEF, Arm.Positions.LOW_ALGAE),
+    HIGH(Arm.Positions.HIGH_ALGAE_REEF, Arm.Positions.HIGH_ALGAE);
+    AlgaeHeight(ArmPosition pivotPosition, ArmPosition batteryPosition) {
+          this.pivotPosition = pivotPosition;
+          this.batteryPosition = batteryPosition;
         }
     
-        public final ArmPosition position;
+        public final ArmPosition pivotPosition;
+        public final ArmPosition batteryPosition;
     
   }
   public enum ReefSide {
@@ -523,16 +520,20 @@ public class Autos {
     public final POI right;
     public final POI algae;
     public final AlgaeHeight algaeHeight;
-    public final ArmPosition algaeArm;
-    public final Rotation2d faceAlgaeHeading;
 
-    private ReefSide(POI left, POI right, POI algae, AlgaeHeight height, Rotation2d allianceRelativeFaceAlgae) {
+    public final Rotation2d batteryFaceAlgaeBlueHeading;
+    public final Rotation2d pivotFaceAlgaeBlueHeading;
+    public final Supplier<Rotation2d> batteryFaceAlgaeFlippedHeading;
+    public final Supplier<Rotation2d> pivotFaceAlgaeFlippedHeading;
+    private ReefSide(POI left, POI right, POI algae, AlgaeHeight height, Rotation2d batteryFaceAlgaeBlueHeading) {
       this.left = left;
       this.right = right;
       this.algae = algae;
       this.algaeHeight = height;
-      this.algaeArm = height.position;
-      this.faceAlgaeHeading = allianceRelativeFaceAlgae;
+      this.batteryFaceAlgaeBlueHeading = batteryFaceAlgaeBlueHeading;
+      this.pivotFaceAlgaeBlueHeading = AllianceFlipUtil.flip(batteryFaceAlgaeBlueHeading);
+      this.batteryFaceAlgaeFlippedHeading = AllianceFlipUtil.getFlipped(batteryFaceAlgaeBlueHeading);
+      this.pivotFaceAlgaeFlippedHeading = AllianceFlipUtil.getFlipped(pivotFaceAlgaeBlueHeading);
     }
 
   }
@@ -661,14 +662,46 @@ public class Autos {
   //             .asProxy();
   // }
 
-  public Command armToClosestAlgae(){
+  @Logged
+  public boolean pivotSideCloserToReef() {
+    var closestSide = closestSide();
+    var pivotSideTarget = closestSide.pivotFaceAlgaeFlippedHeading.get();
+    var batterySideTarget = closestSide.batteryFaceAlgaeFlippedHeading.get();
+    var currentHeading = m_drivebase.getPoseHeading();
+    var pivotSideIsCloser = (Math.abs(pivotSideTarget.minus(currentHeading).getRadians())
+        < Math.abs(batterySideTarget.minus(currentHeading).getRadians()));
+    return pivotSideIsCloser;
+  }
+  public Command armToClosestAlgaePivot(){
     return
       Commands.select(
       Map.of(
-        AlgaeHeight.LOW, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.LOW.position)),
-        AlgaeHeight.HIGH, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.HIGH.position))
+        AlgaeHeight.LOW, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.LOW.pivotPosition)),
+        AlgaeHeight.HIGH, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.HIGH.pivotPosition))
       ),
       ()->closestSide().algaeHeight);
+  }
+
+  public Command armToClosestAlgaeBattery(){
+    return
+      Commands.select(
+      Map.of(
+        AlgaeHeight.LOW, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.LOW.batteryPosition)),
+        AlgaeHeight.HIGH, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.HIGH.batteryPosition))
+      ),
+      ()->closestSide().algaeHeight);
+  }
+
+  public Command armToClosestAlgae() {
+    return either(
+      armToClosestAlgaePivot(),
+      armToClosestAlgaeBattery(),
+      this::pivotSideCloserToReef);
+  }
+
+  public Rotation2d closerAlgaeAlignHeadingAllianceRelative() {
+    var closestSide = closestSide();
+    return pivotSideCloserToReef() ? closestSide.pivotFaceAlgaeBlueHeading : closestSide.batteryFaceAlgaeBlueHeading;
   }
 
   public Command coralIntakeSelfCenter() {

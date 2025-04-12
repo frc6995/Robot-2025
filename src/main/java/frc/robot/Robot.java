@@ -146,11 +146,11 @@ public class Robot extends TimedRobot {
               //     m_autos.intakeHeadingAllianceRelative()
               //   );
               // }
-              // if (algaeAlignButton.getAsBoolean()) {
-              //   return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
-              //     m_autos.closestSide().faceAlgaeHeading
-              //   );
-              // }
+              if (algaeAlignButton.getAsBoolean()) {
+                return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
+                  m_autos.closerAlgaeAlignHeadingAllianceRelative()
+                );
+              }
               return m_driveRequest
                     .withVelocityX(
                         xSpeed) // Drive forward with negative Y (forward)
