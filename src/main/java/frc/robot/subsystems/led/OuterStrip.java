@@ -4,6 +4,9 @@
 
 package frc.robot.subsystems.led;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.InchesPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.wpilibj.LEDPattern.rainbow;
 import static edu.wpi.first.wpilibj.LEDPattern.solid;
@@ -17,18 +20,6 @@ import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.InchesPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Value;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 public class OuterStrip {
 
@@ -85,7 +76,7 @@ public class OuterStrip {
     }
     private LEDPattern safeToReefAlignPattern = (reader, writer) -> {
         reader.forEach((i, r, g, b)->{
-            if (i % 2 == 0) {
+            if (i % 4 == 0 || i % 4 == 1) {
                 writer.setRGB(i, 32, 32, 32);
             } else {
 

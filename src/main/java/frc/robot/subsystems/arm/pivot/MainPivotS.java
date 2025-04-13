@@ -56,7 +56,7 @@ public class MainPivotS extends SubsystemBase {
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
     // rotations per arm rotation.
 
-    public static final Angle CCW_LIMIT = Degrees.of(100);
+    public static final Angle CCW_LIMIT = Degrees.of(110);
     public static final Angle CW_LIMIT = Degrees.of(40);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651 * 14.0/9.0;
     // Units=volts/pivot rotation/s

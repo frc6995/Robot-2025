@@ -120,9 +120,9 @@ public class Autos {
     // autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, Optional.empty(), POI.H));
     // autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, Optional.empty(), POI.G));
     //autos.put("AB", ()->flexAuto(POI.STA, POI.SL1, Optional.empty(), POI.A, POI.B));
-    autos.put("5.MoveOffLine", ()->{
-      var move = new SwerveRequest.RobotCentric();
-      return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
+    // autos.put("5.MoveOffLine", ()->{
+    //   var move = new SwerveRequest.RobotCentric();
+    //   return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
 
     autos.put("Left 2.5p Push", ()->flexAuto(POI.STJ, POI.SL3, Optional.of(
          (routine)->{
@@ -134,7 +134,7 @@ public class Autos {
        ), POI.J, POI.K));
       //autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
 
-      autos.put("BacksideMid", () -> flexAuto(POI.STH, POI.SL3, Optional.of(
+      autos.put("Backside H-2Alg", () -> flexAuto(POI.STH, POI.SL3, Optional.of(
         (routine)->{
           var traj = routine.trajectory("1");
           traj.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE_REEF)).onTrue(m_hand.inAlgae());
@@ -143,12 +143,12 @@ public class Autos {
           traj.chain(toScore);
           var moveback = routine.trajectory("4");
           toScore.atTime(0.3).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
-          toScore.done().onTrue(bargeUpAndOutVoltage()).onTrue(waitSeconds(1.5).andThen(moveback.spawnCmd()));
+          toScore.done().onTrue(bargeUpAndOutVoltage()).onTrue(waitSeconds(1.2).andThen(moveback.spawnCmd()));
 
           
           //var push2 = routine.trajectory("5");
           //moveback.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
-          moveback.atTimeBeforeEnd(0.9).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE_REEF)).onTrue(m_hand.inAlgae());
+          moveback.atTimeBeforeEnd(1.4).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE_REEF)).onTrue(m_hand.inAlgae());
 
           //moveback.chain(push2);
 
@@ -160,37 +160,37 @@ public class Autos {
 
 
           var moveOffLineAlgae = (routine.trajectory("7"));
-          toScore2.done().onTrue(bargeUpAndOutVoltage()).onTrue(waitSeconds(1.5).andThen(moveOffLineAlgae.spawnCmd()));
+          toScore2.done().onTrue(bargeUpAndOutVoltage()).onTrue(waitSeconds(1.2).andThen(moveOffLineAlgae.spawnCmd()));
          // toScore2.chain(moveOffLineAlgae);
           //toScore2.done().onTrue(waitSeconds(2).andThen(moveOffLineAlgae.spawnCmd()));
 
           return traj;
         }), POI.H));
       
-    autos.put("Ground A4-B4-A2-B2", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L3_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L3_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_A, ReefScoringOption.L2)
-      //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
+    // autos.put("Ground A4-B4-A2-B2", ()->flexGroundAuto(
+    //   new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L3_PIV),
+    //   new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L3_PIV),
+    //   new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_A, ReefScoringOption.L2)
+    //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
+    //   ));
+    autos.put("Left Frontside AB", ()->flexGroundAuto(
+      new GroundAutoCycle(Optional.empty(), POI.STAP, POI.A, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
+      // ,
+      // new GroundAutoCycle(Optional.empty(), POI.LP1, POI.L2_B, ReefScoringOption.L2)
       ));
-    autos.put("Ground L-A-B", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STL, POI.L, ReefScoringOption.L3_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP1, POI.A, ReefScoringOption.L3_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L3_PIV)
-      //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
-      ));
-      autos.put("Ground L-A-B WALL", ()->flexGroundAuto(
-        new GroundAutoCycle(Optional.empty(), POI.STLW, POI.L, ReefScoringOption.L4_PIV),
-        new GroundAutoCycle(Optional.empty(), POI.LP1, POI.A, ReefScoringOption.L4_PIV),
-        new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
-        //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
-        ));
-    autos.put("Ground C-B-A", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STC, POI.C, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.B, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.A, ReefScoringOption.L4_PIV)
-      //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
-      ));
+    //   autos.put("Ground L-A-B WALL", ()->flexGroundAuto(
+    //     new GroundAutoCycle(Optional.empty(), POI.STLW, POI.L, ReefScoringOption.L4_PIV),
+    //     new GroundAutoCycle(Optional.empty(), POI.LP1, POI.A, ReefScoringOption.L4_PIV),
+    //     new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
+    //     //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
+    //     ));
+    // autos.put("Ground C-B-A", ()->flexGroundAuto(
+    //   new GroundAutoCycle(Optional.empty(), POI.STC, POI.C, ReefScoringOption.L4_PIV),
+    //   new GroundAutoCycle(Optional.empty(), POI.LP3, POI.B, ReefScoringOption.L4_PIV),
+    //   new GroundAutoCycle(Optional.empty(), POI.LP2, POI.A, ReefScoringOption.L4_PIV)
+    //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
+    //   ));
       // autos.put("Ground C-B-A WALL", ()->flexGroundAuto(
       //   new GroundAutoCycle(Optional.empty(), POI.STCW, POI.C, ReefScoringOption.L4_PIV),
       //   new GroundAutoCycle(Optional.empty(), POI.LP3, POI.B, ReefScoringOption.L4_PIV),
@@ -198,39 +198,38 @@ public class Autos {
       //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
       //   ));
       
-    autos.put("Ground A-B", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L3_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.B, ReefScoringOption.L3_PIV)
-   ));
-    autos.put("Push_Ground A-B", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.of(
-            (AutoRoutine routine)->{
-                    var pushBot = routine.trajectory("8");
-      return pushBot;
-      }), POI.STA, POI.A, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L3_PIV)
-      
-    ));
+  //   autos.put("Ground A-B-BL2", ()->flexGroundAuto(
+  //     new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
+  //     new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
+  //     new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_B, ReefScoringOption.L2)
+  //  ));
+    autos.put("Push_Ground A-B", ()->
+    sequence(
+      m_autoFactory.resetOdometry("8").asProxy(),
+      m_autoFactory.trajectoryCmd("8").asProxy(),
+    flexGroundAuto(
+      new GroundAutoCycle(Optional.empty(), POI.STAP, POI.A, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
+    )));
 
 
-    autos.put("Ground A4-B4-R1-B3", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.of(
-              (AutoRoutine routine)->{
+    // autos.put("Ground A4-B4-R1-B3", ()->flexGroundAuto(
+    //   new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
+    //   new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
+    //   new GroundAutoCycle(Optional.of(
+    //           (AutoRoutine routine)->{
                   
-                      var spin = routine.trajectory("A1");
-                      var pushin = routine.trajectory("A2");
-                      spin.atTime(0.1).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE_REEF)).onTrue(m_hand.inAlgae());
-                      spin.chain(pushin);
+    //                   var spin = routine.trajectory("A1");
+    //                   var pushin = routine.trajectory("A2");
+    //                   spin.atTime(0.1).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE_REEF)).onTrue(m_hand.inAlgae());
+    //                   spin.chain(pushin);
 
-                      var expel = routine.trajectory("A3");
-                      expel.atTime(0.5).onTrue(m_hand.outAlgae());
-                      pushin.chain(expel);
-                      return spin;
-              }), POI.LP2, POI.B, ReefScoringOption.L3_PIV)
-            ));
+    //                   var expel = routine.trajectory("A3");
+    //                   expel.atTime(0.5).onTrue(m_hand.outAlgae());
+    //                   pushin.chain(expel);
+    //                   return spin;
+    //           }), POI.LP2, POI.B, ReefScoringOption.L3_PIV)
+    //         ));
       
           // autos.put must be before here
           for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
@@ -789,18 +788,19 @@ public class Autos {
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->0)
+          m_arm.elevatorS.voltage(()->0),
+          m_hand.stop()
         ).withTimeout(0.2),
         // retract
         parallel(
           new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
-          new ScheduleCommand(m_hand.inAlgae())
+          new ScheduleCommand(m_hand.stop())
         )
       );
   }
   
   private double bargeTargetX() {
-    final double blueX = 7.53;
+    final double blueX = 7.53-Units.inchesToMeters(10);
     return (m_drivebase.getPose().getX() > AllianceFlipUtil.fieldLength/2.0) ? AllianceFlipUtil.flipX(blueX) : blueX;
   }
 

@@ -60,6 +60,7 @@ public enum POI {
     SR3(false),
     // Starting for corresponding pose
     STA(false),
+    STAP(false),
     STC(false),
     STE(false),
     STF(false),
