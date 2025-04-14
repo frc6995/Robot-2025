@@ -174,10 +174,10 @@ public class Autos {
     //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
     //   ));
     autos.put("Left Frontside AB", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STAP, POI.A, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
       new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
-      // ,
-      // new GroundAutoCycle(Optional.empty(), POI.LP1, POI.L2_B, ReefScoringOption.L2)
+      ,
+      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
       ));
     //   autos.put("Ground L-A-B WALL", ()->flexGroundAuto(
     //     new GroundAutoCycle(Optional.empty(), POI.STLW, POI.L, ReefScoringOption.L4_PIV),
@@ -298,7 +298,7 @@ public class Autos {
           .get();
       bindScore(toReef, pair.getFirst().scoreArm, Optional.of(toIntake), Arm.Positions.GROUND_CORAL,
       Optional.of(
-        () -> m_arm.position.pivotRadians()<Units.degreesToRadians(60)
+        () -> m_arm.position.pivotRadians()<Units.degreesToRadians(85) && m_arm.position.elevatorMeters()<0.8
       ));
 
       var nextToReef = intake.toChecked(pair.getSecond().score, routine)
