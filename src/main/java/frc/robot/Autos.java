@@ -174,6 +174,13 @@ public class Autos {
     //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
     //   ));
     autos.put("Left Frontside AB", ()->flexGroundAuto(
+      new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
+      ,
+      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
+      ));
+
+    autos.put("Left Wall AB", ()->flexGroundAuto(
       new GroundAutoCycle(Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
       new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
       ,
@@ -203,13 +210,26 @@ public class Autos {
   //     new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
   //     new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_B, ReefScoringOption.L2)
   //  ));
-    autos.put("Push_Ground A-B", ()->
+    autos.put("Push Left Front A-B", ()->
     sequence(
       m_autoFactory.resetOdometry("8").asProxy(),
       m_autoFactory.trajectoryCmd("8").asProxy(),
     flexGroundAuto(
       new GroundAutoCycle(Optional.empty(), POI.STAP, POI.A, ReefScoringOption.L4_PIV),
       new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
+      ,
+      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
+    )));
+
+    autos.put("Push Left Wall A-B", ()->
+    sequence(
+      m_autoFactory.resetOdometry("STAW_PUSH").asProxy(),
+      m_autoFactory.trajectoryCmd("STAW_PUSH").asProxy(),
+    flexGroundAuto(
+      new GroundAutoCycle(Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
+      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
+      ,
+      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
     )));
 
 
@@ -836,9 +856,11 @@ public class Autos {
     // .onTrue(
     //   goToPositionWristLast(scoringPosition)
     // );
+    self.atTimeBeforeEnd(0.01)
+    .onTrue(scoringPosition.scoringPosition.apply(this));
     self.done()
         .onTrue(print("Inside Scoring Radius"))
-        .onTrue(scoringPosition.scoringPosition.apply(this))
+        
         .onTrue(
           sequence(
             alignAndDrop(
@@ -913,7 +935,7 @@ public class Autos {
     return routine.cmd();
   }
 
-  private final double TIME_INTAKE_TO_L4 = 1.4;
+  private final double TIME_INTAKE_TO_L4 = 5;
   private final double AUTO_OUTTAKE_TIME = 0.15;
 
   // private final ArmPosition autoScoringPosition = Arm.Positions.L4;
