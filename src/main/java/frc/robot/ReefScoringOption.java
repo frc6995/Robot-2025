@@ -18,7 +18,8 @@ import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 public enum ReefScoringOption{
     L1(
       POI::selectedL1POI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L1),
-      HandConstants.OUT_CORAL_VOLTAGE_SLOW, Arm.Positions.L1, 0,
+      -1,//ignored by bindings
+      Arm.Positions.L1, 0,
       (autos)->autos.m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL),
       (autos)->new ScheduleCommand(autos.m_arm.goToPosition(Arm.Positions.L1)) // so tapping the align button goes to L1
       ),
