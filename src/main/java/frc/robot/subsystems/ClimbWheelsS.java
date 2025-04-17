@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class ClimbWheelsS extends SubsystemBase {
   public class ClimbWheelsConstants {
     public static final int CAN_ID = 55;
-    public static final int CURRENT_LIMIT = 40;
+    public static final int CURRENT_LIMIT = 80;
     public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){
       config.CurrentLimits
         .withStatorCurrentLimit(CURRENT_LIMIT)

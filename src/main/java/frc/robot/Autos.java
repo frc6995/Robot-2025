@@ -34,10 +34,10 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.Choreo.TrajectoryLogger;
-import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
+import choreo.auto.NOMADAutoChooser;
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
@@ -74,7 +74,7 @@ public class Autos {
   protected final IntakeS m_hand;
   protected final OperatorBoard m_board;
   protected final AutoFactory m_autoFactory;
-  public final AutoChooser m_autoChooser;
+  public final NOMADAutoChooser m_autoChooser;
 
   public final HashMap<String, Supplier<Command>> autos = new HashMap<>();
   public final ArmBrakeS m_ArmBrakeS;
@@ -89,7 +89,7 @@ public class Autos {
     m_coralSensor = hand.m_coralSensor;
     m_board = board;
     m_ArmBrakeS = armBrakeS;
-    m_autoChooser = new AutoChooser();
+    m_autoChooser = new NOMADAutoChooser();
     m_autoFactory = new AutoFactory(
         () -> m_drivebase.state().Pose,
         m_drivebase::resetOdometry,
@@ -120,9 +120,11 @@ public class Autos {
     // autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, Optional.empty(), POI.H));
     // autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, Optional.empty(), POI.G));
     //autos.put("AB", ()->flexAuto(POI.STA, POI.SL1, Optional.empty(), POI.A, POI.B));
-    // autos.put("5.MoveOffLine", ()->{
-    //   var move = new SwerveRequest.RobotCentric();
-    //   return m_drivebase.applyRequest(()->move.withVelocityX(-1)).withTimeout(1);});
+    m_autoChooser.setDefaultCmd(()->{
+      var moveField = new SwerveRequest.FieldCentric();
+      var moveRobot = new SwerveRequest.RobotCentric();
+      return m_drivebase.applyRequest(()->moveField.withVelocityX(-1)).withTimeout(1)
+      .andThen(m_drivebase.applyRequest(()->moveRobot.withVelocityY(-1)).withTimeout(1));});
 
     autos.put("Left 2.5p Push", ()->flexAuto(POI.STJ, POI.SL3, Optional.of(
          (routine)->{
