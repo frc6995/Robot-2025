@@ -7,7 +7,6 @@ package frc.robot;
 import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
-import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import java.util.ArrayList;
 
@@ -199,10 +198,16 @@ public class Robot extends TimedRobot {
       parallel(
         m_arm.mainPivotS.voltage(()->
           (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(25)) ? 0 : -2),
-        waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(60))
+          Commands.waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(70))
           .andThen(
-            m_arm.wristS.goTo(()->Units.degreesToRadians(30))
-          )))
+            m_arm.wristS.goTo(()->Units.degreesToRadians(90 + 35))
+          ),
+          Commands.waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(40))
+          .andThen(
+            m_arm.elevatorS.goToLength(()->1.05)
+          )
+        
+      ))
     );
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release())
     .onTrue(m_climbWheelsS.stop());
@@ -249,7 +254,7 @@ public class Robot extends TimedRobot {
     // Score coral and stow
     boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
-      either(m_hand.voltage(()->-1).withTimeout(0.5),// spit out if not safe to 
+      either(m_hand.voltage(()->-2).withTimeout(0.5),// spit out if not safe to 
 
       m_hand.voltage(()->m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5), 
 
