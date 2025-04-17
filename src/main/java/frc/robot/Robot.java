@@ -197,7 +197,7 @@ public class Robot extends TimedRobot {
     .whileTrue(parallel(LightStripS.top.stateC(()->TopStates.Climbing), LightStripS.outer.stateC(()->OuterStates.Climbing),
       parallel(
         m_arm.mainPivotS.voltage(()->
-          (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(25)) ? 0 : -2),
+          (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(25)) ? 0 : -5),
           Commands.waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(70))
           .andThen(
             m_arm.wristS.goTo(()->Units.degreesToRadians(90 + 35))
@@ -254,7 +254,7 @@ public class Robot extends TimedRobot {
     // Score coral and stow
     boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
-      either(m_hand.voltage(()->-2).withTimeout(0.5),// spit out if not safe to 
+      either(m_hand.voltage(()->-3).withTimeout(0.5),// spit out if not safe to 
 
       m_hand.voltage(()->m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5), 
 

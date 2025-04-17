@@ -35,7 +35,7 @@ public enum ReefScoringOption{
       ),
     L3(
       POI::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3_OPP),
-      -4, Arm.Positions.L3_OPP, 0,
+      4, Arm.Positions.L3_OPP, 0,
       (autos)->autos.m_arm.goToPosition(
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3_OPP.wristAngle())),
       (autos)->autos.m_arm.goToPosition(
