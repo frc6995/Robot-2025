@@ -94,7 +94,7 @@ public abstract class Arm {
 
     public static final ArmPosition STOW = new ArmPosition(Degrees.of(70), Meters.of(0.75),
         Radians.of(0));
-    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(102), ElevatorConstants.MIN_PADDED_LENGTH,
+    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(92), ElevatorConstants.MIN_PADDED_LENGTH,
         Degrees.of(-50));
     public static final ArmPosition SCORE_BARGE_VERTICAL = new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH,
         Degrees.of(-20));
