@@ -20,7 +20,7 @@ public enum ReefScoringOption{
       POI::selectedL1POI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L1),
       -1,//ignored by bindings
       Arm.Positions.L1, 0,
-      (autos)->autos.m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL),
+      (autos)->autos.m_arm.goToPosition(Arm.Positions.L1),
       (autos)->new ScheduleCommand(autos.m_arm.goToPosition(Arm.Positions.L1)) // so tapping the align button goes to L1
       ),
       

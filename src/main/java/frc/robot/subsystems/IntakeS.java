@@ -162,6 +162,10 @@ public class IntakeS extends SubsystemBase {
     return voltage(() -> voltage);
   }
 
+  public double getVoltage() {
+    m_voltageSig.refresh();
+    return m_voltageSig.getValueAsDouble();
+  }
   public Command stop() {
     return voltage(0);
   }

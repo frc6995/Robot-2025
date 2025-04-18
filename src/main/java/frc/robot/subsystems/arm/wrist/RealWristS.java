@@ -32,6 +32,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
@@ -91,10 +92,10 @@ public class RealWristS extends Wrist {
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
           .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
       config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
+      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(false)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
-          .withReverseSoftLimitEnable(true);
+          .withReverseSoftLimitEnable(false);
       config.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
       return config;
     }
@@ -115,6 +116,7 @@ public class RealWristS extends Wrist {
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private VoltageOut m_voltageReqHome = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();
+  private StatusSignal<AngularVelocity> m_velocitySig = m_leader.getVelocity();
   private StatusSignal<Double> m_setpointSig = m_leader.getClosedLoopReference();
   private StatusSignal<Current> m_currentSig = m_leader.getStatorCurrent();
   private double m_goalRotations;
@@ -221,27 +223,15 @@ public class RealWristS extends Wrist {
   public Trigger currentHomed = new Trigger(
     ()->{
       m_currentSig.refresh();
-      return m_currentSig.getValueAsDouble() > 7;
+      m_velocitySig.refresh();
+      return m_currentSig.getValueAsDouble() > 7 && Math.abs(m_velocitySig.getValueAsDouble()) < 0.05;
     }
   ).debounce(0.25);
 
   public Command driveToHome() {
     var existingConfig = new SoftwareLimitSwitchConfigs();
     return sequence(
-      runOnce(()-> {
-    
-      m_leader.getConfigurator().refresh(existingConfig);
-      existingConfig.withForwardSoftLimitEnable(false);
-      var statusCode = m_leader.getConfigurator().apply(existingConfig);
-      }
-      ),
-      voltage(()->1).until(currentHomed),
-      runOnce(()-> {
-        m_leader.getConfigurator().refresh(existingConfig);
-        existingConfig.withForwardSoftLimitEnable(true);
-        var statusCode = m_leader.getConfigurator().apply(existingConfig);
-        }
-        ),
+      voltage(()->-1),//.until(currentHomed),
       home(),
       waitSeconds(0.5),
       new ScheduleCommand(

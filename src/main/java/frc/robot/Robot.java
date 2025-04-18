@@ -220,7 +220,10 @@ public class Robot extends TimedRobot {
     // align to closest coral station (or left station if in workshop)
     m_driverController.a().onTrue(Commands.either(
       m_autos.autoCoralIntake(),
-      m_autos.autoCoralGroundIntake(m_driverController.a().negate())
+      sequence(
+        m_hand.voltage(2).withTimeout(0.1).onlyIf(()->m_hand.getVoltage() > 0.02).asProxy(),
+        m_autos.autoCoralGroundIntake().asProxy()
+      )
       , m_operatorBoard.toggle())
       );
     

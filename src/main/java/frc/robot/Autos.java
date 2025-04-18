@@ -743,13 +743,16 @@ public class Autos {
     );
   }
 
-  public Command autoCoralGroundIntake(Trigger end) {
+  public Command autoCoralGroundIntake() {
     return parallel(
         new ScheduleCommand(m_arm.goToPosition(Arm.Positions.GROUND_CORAL)),
         new ScheduleCommand(
           
             sequence(
-              m_hand.inCoral().until(this::hasCoral)//,
+              m_hand.inCoral()
+ 
+              
+              .until(this::hasCoral)//,
               //m_hand.inCoral().withTimeout(0.1)
             ).unless(this::hasCoral).andThen(
                 parallel(

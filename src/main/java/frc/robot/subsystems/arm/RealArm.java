@@ -16,6 +16,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.arm.elevator.RealElevatorS;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
@@ -165,18 +166,26 @@ public class RealArm extends Arm {
   }
 
   @Override
-  public Command algaeStowWithHome() {
+  public Command processorWithHome() {
+
     return sequence(
-        goToPosition(Arm.Positions.STOW)
-    // .until(
-    // ()->this.position.withinTolerance(Arm.Positions.STOW,
-    // Units.degreesToRadians(2), Units.inchesToMeters(0.5),
-    // Units.degreesToRadians(360)
-    // )),
-    // new ScheduleCommand(
-    // wristS.driveToHome()
-    // )
-    );
+        goToPosition(Arm.Positions.SCORE_PROCESSOR)
+    .until(
+    ()->this.position.withinTolerance(Arm.Positions.SCORE_PROCESSOR,
+    Units.degreesToRadians(5), Units.inchesToMeters(2),
+    Units.degreesToRadians(360)
+    )),
+    parallel(
+    new ScheduleCommand(
+    wristS.driveToHome()
+    ),
+    new ScheduleCommand(
+      elevatorDirectlyTo(Arm.Positions.SCORE_PROCESSOR.elevatorMeters())
+      ),
+      new ScheduleCommand(
+        mainPivotS.goTo(Arm.Positions.SCORE_PROCESSOR::pivotRadians)
+        )
+    ));
   }
 
 }

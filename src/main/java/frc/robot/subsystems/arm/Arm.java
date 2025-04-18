@@ -111,7 +111,7 @@ public abstract class Arm {
 
   public ArmPosition position;
 
-  public Command algaeStowWithHome() {
+  public Command processorWithHome() {
     return Commands.none();
 
   }
