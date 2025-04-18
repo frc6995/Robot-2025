@@ -70,7 +70,7 @@ public class DriverDisplay {
         level.accept(levelSupplier.getAsInt());
         branch.accept(branchSupplier.getAsInt());
         climb.accept(climbSupplier.getAsInt());
-        controller0Entry.accept(DriverStation.isJoystickConnected(0));
-        controller1Entry.accept(DriverStation.isJoystickConnected(1));
+        controller0Entry.accept(DriverStation.isJoystickConnected(0) && DriverStation.getStickAxisCount(0) == 6);
+        controller1Entry.accept(DriverStation.isJoystickConnected(1) && DriverStation.getStickAxisCount(1) == 0);
     }
 }
