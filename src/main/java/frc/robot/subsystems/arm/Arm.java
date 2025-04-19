@@ -71,7 +71,7 @@ public abstract class Arm {
         Degrees.of(90 + 35));
     public static final ArmPosition L2 = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH,
         Degrees.of(90 + 55));
-    public static final ArmPosition L1 = new ArmPosition(Degrees.of(50), ElevatorConstants.MIN_PADDED_LENGTH,
+    public static final ArmPosition L1 = new ArmPosition(Degrees.of(50), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
         Degrees.of(-40));
 
     public static final ArmPosition L4_OPP = new ArmPosition(Degrees.of(68), ElevatorConstants.MAX_LENGTH.minus(Inches.of(0)), Degrees.of(55));
