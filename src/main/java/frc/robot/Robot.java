@@ -231,7 +231,7 @@ public class Robot extends TimedRobot {
     m_driverController.back()
         .onTrue(m_hand.inAlgae())
         .onTrue(sequence(
-            m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR)
+            m_arm.processorWithHome()
         ))
         ;
 

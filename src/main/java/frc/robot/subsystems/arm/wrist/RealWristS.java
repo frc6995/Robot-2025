@@ -7,14 +7,12 @@ package frc.robot.subsystems.arm.wrist;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
-import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -224,16 +222,15 @@ public class RealWristS extends Wrist {
     ()->{
       m_currentSig.refresh();
       m_velocitySig.refresh();
-      return m_currentSig.getValueAsDouble() > 7 && Math.abs(m_velocitySig.getValueAsDouble()) < 0.05;
+      return m_currentSig.getValueAsDouble() > 50 && Math.abs(m_velocitySig.getValueAsDouble()) < 0.05 && m_voltageReq.Output < 0;
     }
   ).debounce(0.25);
 
   public Command driveToHome() {
-    var existingConfig = new SoftwareLimitSwitchConfigs();
     return sequence(
-      voltage(()->-1),//.until(currentHomed),
-      home(),
-      waitSeconds(0.5),
+      voltage(()->-1).until(currentHomed),
+      this.runOnce(()->m_leader.getConfigurator().setPosition(Degrees.of(-70-(70-64.6)))).ignoringDisable(true),
+      voltage(()->-1).withTimeout(0.5),
       new ScheduleCommand(
         LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(0.5)
       )

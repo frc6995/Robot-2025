@@ -172,8 +172,8 @@ public class RealArm extends Arm {
         goToPosition(Arm.Positions.SCORE_PROCESSOR)
     .until(
     ()->this.position.withinTolerance(Arm.Positions.SCORE_PROCESSOR,
-    Units.degreesToRadians(5), Units.inchesToMeters(2),
-    Units.degreesToRadians(360)
+    Units.degreesToRadians(2), Units.inchesToMeters(0.5),
+    Units.degreesToRadians(3600)
     )),
     parallel(
     new ScheduleCommand(
