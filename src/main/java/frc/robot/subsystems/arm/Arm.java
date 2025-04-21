@@ -71,7 +71,7 @@ public abstract class Arm {
         Degrees.of(90 + 35));
     public static final ArmPosition L2 = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH,
         Degrees.of(90 + 55));
-    public static final ArmPosition L1 = new ArmPosition(Degrees.of(50), ElevatorConstants.MIN_PADDED_LENGTH,
+    public static final ArmPosition L1 = new ArmPosition(Degrees.of(50), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
         Degrees.of(-40));
 
     public static final ArmPosition L4_OPP = new ArmPosition(Degrees.of(68), ElevatorConstants.MAX_LENGTH.minus(Inches.of(0)), Degrees.of(55));
@@ -94,7 +94,7 @@ public abstract class Arm {
 
     public static final ArmPosition STOW = new ArmPosition(Degrees.of(70), Meters.of(0.75),
         Radians.of(0));
-    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(102), ElevatorConstants.MIN_PADDED_LENGTH,
+    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(92), ElevatorConstants.MIN_PADDED_LENGTH,
         Degrees.of(-50));
     public static final ArmPosition SCORE_BARGE_VERTICAL = new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH,
         Degrees.of(-20));
@@ -111,7 +111,7 @@ public abstract class Arm {
 
   public ArmPosition position;
 
-  public Command algaeStowWithHome() {
+  public Command processorWithHome() {
     return Commands.none();
 
   }

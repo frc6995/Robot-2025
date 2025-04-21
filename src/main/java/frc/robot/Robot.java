@@ -7,7 +7,6 @@ package frc.robot;
 import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
-import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import java.util.ArrayList;
 
@@ -198,11 +197,17 @@ public class Robot extends TimedRobot {
     .whileTrue(parallel(LightStripS.top.stateC(()->TopStates.Climbing), LightStripS.outer.stateC(()->OuterStates.Climbing),
       parallel(
         m_arm.mainPivotS.voltage(()->
-          (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(25)) ? 0 : -2),
-        waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(60))
+          (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(10)) ? -0.5 : -5),
+          Commands.waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(70))
           .andThen(
-            m_arm.wristS.goTo(()->Units.degreesToRadians(30))
-          )))
+            m_arm.wristS.goTo(()->Units.degreesToRadians(90 + 35))
+          ),
+          Commands.waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(40))
+          .andThen(
+            m_arm.elevatorS.goToLength(()->1.05)
+          )
+        
+      ))
     );
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release())
     .onTrue(m_climbWheelsS.stop());
@@ -215,7 +220,10 @@ public class Robot extends TimedRobot {
     // align to closest coral station (or left station if in workshop)
     m_driverController.a().onTrue(Commands.either(
       m_autos.autoCoralIntake(),
-      m_autos.autoCoralGroundIntake(m_driverController.a().negate())
+      sequence(
+        m_hand.voltage(2).withTimeout(0.1).onlyIf(()->m_hand.getVoltage() > 0.02).asProxy(),
+        m_autos.autoCoralGroundIntake().asProxy()
+      )
       , m_operatorBoard.toggle())
       );
     
@@ -223,7 +231,7 @@ public class Robot extends TimedRobot {
     m_driverController.back()
         .onTrue(m_hand.inAlgae())
         .onTrue(sequence(
-            m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR)
+            m_arm.processorWithHome()
         ))
         ;
 
@@ -249,7 +257,7 @@ public class Robot extends TimedRobot {
     // Score coral and stow
     boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
-      either(m_hand.outCoralSlow().withTimeout(0.5),// spit out if not safe to 
+      either(m_hand.voltage(()->-1.5).withTimeout(0.5),// spit out if not safe to 
 
       m_hand.voltage(()->m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5), 
 

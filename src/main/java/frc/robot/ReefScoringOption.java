@@ -18,14 +18,15 @@ import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 public enum ReefScoringOption{
     L1(
       POI::selectedL1POI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L1),
-      HandConstants.OUT_CORAL_VOLTAGE_SLOW, Arm.Positions.L1, 0,
-      (autos)->autos.m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL),
+      -1,//ignored by bindings
+      Arm.Positions.L1, 0,
+      (autos)->autos.m_arm.goToPosition(Arm.Positions.L1),
       (autos)->new ScheduleCommand(autos.m_arm.goToPosition(Arm.Positions.L1)) // so tapping the align button goes to L1
       ),
       
     L2(
       POI::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L2_OPP),
-      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L2_OPP, 0,
+      4, Arm.Positions.L2_OPP, 0,
       (autos)->autos.m_arm.goToPosition(
         // intentional, we want a pivot up
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L2_OPP.wristAngle())),
@@ -34,7 +35,7 @@ public enum ReefScoringOption{
       ),
     L3(
       POI::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3_OPP),
-      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L3_OPP, 0,
+      4, Arm.Positions.L3_OPP, 0,
       (autos)->autos.m_arm.goToPosition(
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3_OPP.wristAngle())),
       (autos)->autos.m_arm.goToPosition(
@@ -58,7 +59,7 @@ public enum ReefScoringOption{
     ),
     L3_PIV(
       POI::selectedPivotSidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3),
-      HandConstants.OUT_CORAL_VOLTAGE, Arm.Positions.L3, 0,
+      -4, Arm.Positions.L3, 0,
       (autos)->autos.m_arm.goToPosition(
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle())),
       (autos)->autos.m_arm.goToPosition(
@@ -66,7 +67,7 @@ public enum ReefScoringOption{
     ),
     L4_PIV(
       POI::selectedPivotSidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L4),
-      -10, Arm.Positions.L4, 0,
+      -4, Arm.Positions.L4, 0,
       (autos)->Commands.sequence(
         autos.m_arm.goToPosition(
           new ArmPosition(
