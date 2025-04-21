@@ -72,9 +72,9 @@ public abstract class Arm {
             Degrees.of(85), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), Degrees.of(5));
     // public static final ArmPosition L4_CLOSE = new ArmPosition(Degrees.of(86),
     // ElevatorConstants.MAX_LENGTH, Degrees.of(135));
-    public static final ArmPosition L4 =
+    public static final ArmPosition L4_PIV =
         new ArmPosition(Degrees.of(87), ElevatorConstants.MAX_LENGTH, Degrees.of(140));
-    public static final ArmPosition L3 =
+    public static final ArmPosition L3_PIV =
         new ArmPosition(Degrees.of(88), Meters.of(1.025).minus(Inches.of(6)), Degrees.of(90 + 35));
     public static final ArmPosition L2 =
         new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH, Degrees.of(90 + 55));
@@ -87,7 +87,7 @@ public abstract class Arm {
     public static final ArmPosition L4_OPP =
         new ArmPosition(
             Degrees.of(68), ElevatorConstants.MAX_LENGTH.minus(Inches.of(0)), Degrees.of(55));
-    public static final ArmPosition L3_OPP =
+    public static final ArmPosition L3_BATT =
         new ArmPosition(
             Degrees.of(50), ElevatorConstants.MIN_LENGTH.plus(Inches.of(14)), Degrees.of(95));
     public static final ArmPosition L3_HIGH_ALG =

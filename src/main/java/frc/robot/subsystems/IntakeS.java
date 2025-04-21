@@ -4,11 +4,15 @@
 
 package frc.robot.subsystems;
 
+import java.util.Optional;
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -25,8 +29,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.CoralSensor;
-import java.util.Optional;
-import java.util.function.DoubleSupplier;
 
 @Logged
 public class IntakeS extends SubsystemBase {
@@ -140,25 +142,6 @@ public class IntakeS extends SubsystemBase {
     // TOP_ROLLER.setAngle(TOP_ROLLER.getAngle() + 4 * voltageRequest.Output);
     // BOTTOM_ROLLER.setAngle(BOTTOM_ROLLER.getAngle() - 4 * voltageRequest.Output);
     // This method will be called once per scheduler run
-  }
-
-  public Command driveToOffset(double offsetMeters) {
-    return voltage(0);
-    // Capture<Double> targetMotorRotations = new Capture<Double>(0.0);
-
-    // return either(
-    //     runOnce(() -> {
-    //       targetMotorRotations.inner = m_positionSig.getValueAsDouble()
-    //           + ((offsetMeters - getCoralInlineOffset()) /
-    // HandConstants.CORAL_METERS_PER_WHEEL_ROT);
-    //     }).andThen(run(() ->
-    // motor.setControl(positionRequest.withPosition(targetMotorRotations.inner)))
-
-    //     ),
-    //     voltage(0),
-    //     () -> !lastRotationsAtSensorTrip.isEmpty()).onlyWhile(m_coralSensor::hasCoral).andThen(
-    //       waitUntil(m_coralSensor::hasCoral)
-    //     ).repeatedly();
   }
 
   public Command voltage(DoubleSupplier voltage) {
