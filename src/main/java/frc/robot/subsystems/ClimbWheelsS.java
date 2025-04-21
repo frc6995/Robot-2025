@@ -9,39 +9,40 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 @Logged
 public class ClimbWheelsS extends SubsystemBase {
   public class ClimbWheelsConstants {
     public static final int CAN_ID = 55;
     public static final int CURRENT_LIMIT = 120;
-    public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){
-      config.CurrentLimits
-        .withStatorCurrentLimit(CURRENT_LIMIT)
-        .withStatorCurrentLimitEnable(true)
-        ;
+
+    public static TalonFXConfiguration configuremotor(TalonFXConfiguration config) {
+      config.CurrentLimits.withStatorCurrentLimit(CURRENT_LIMIT).withStatorCurrentLimitEnable(true);
       config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
       config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
       return config;
     }
-  
   }
-  public Command in(){
+
+  public Command in() {
     return voltage(-5);
   }
-  public Command out(){
+
+  public Command out() {
     return voltage(1);
   }
-  public Command stop(){
+
+  public Command stop() {
     return voltage(0);
   }
-  private Command voltage(double volts){
+
+  private Command voltage(double volts) {
     return this.run(() -> motor.setControl(voltageReq.withOutput(volts)));
   }
-  
+
   /** Creates a new ClimbHookS. */
   public ClimbWheelsS() {
     motor.getConfigurator().apply(ClimbWheelsConstants.configuremotor(new TalonFXConfiguration()));
@@ -50,7 +51,9 @@ public class ClimbWheelsS extends SubsystemBase {
 
   public Command coast() {
     return this.startEnd(
-      ()->setNeutralMode(NeutralModeValue.Coast), ()->setNeutralMode(NeutralModeValue.Brake)).ignoringDisable(true);
+            () -> setNeutralMode(NeutralModeValue.Coast),
+            () -> setNeutralMode(NeutralModeValue.Brake))
+        .ignoringDisable(true);
   }
 
   private void setNeutralMode(NeutralModeValue value) {
@@ -61,6 +64,7 @@ public class ClimbWheelsS extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
   }
+
   public final TalonFX motor = new TalonFX(ClimbWheelsConstants.CAN_ID);
   private final VoltageOut voltageReq = new VoltageOut(0);
 }

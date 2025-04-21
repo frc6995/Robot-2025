@@ -15,10 +15,8 @@ import static frc.robot.logging.PowerDistributionSim.Channel.c11_BR_Drive;
 import static frc.robot.logging.PowerDistributionSim.Channel.c12_BR_Steer;
 import static frc.robot.logging.PowerDistributionSim.Channel.c15_BL_Drive;
 
-import java.util.Optional;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -29,9 +27,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest.ApplyRobotSpeeds;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
-
-import choreo.trajectory.SwerveSample;
-import choreo.trajectory.Trajectory;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
@@ -68,27 +63,31 @@ import frc.robot.util.RepulsorFieldPlanner;
 import frc.robot.util.TrapezoidProfile;
 import frc.robot.util.TrapezoidProfile.Constraints;
 import frc.robot.util.TrapezoidProfile.State;
+import java.util.Optional;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 /**
- * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
- * Subsystem so it can easily
+ * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
  * be used in command-based projects.
  */
 @Logged
 public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
-  private RobotConfig m_robotConfig = new RobotConfig(
-    Pounds.of(111 + 10 + 13), KilogramSquareMeters.of(6.0),
-    new ModuleConfig(
-      
-      TunerConstants.kWheelRadius.in(Meters),
-      TunerConstants.kSpeedAt12Volts.in(MetersPerSecond), 1.5,
-      DCMotor.getKrakenX60Foc(1).withReduction(TunerConstants.BackLeft.DriveMotorGearRatio),
-      600.0, 1),
-      getModuleLocations()
-    );
+  private RobotConfig m_robotConfig =
+      new RobotConfig(
+          Pounds.of(111 + 10 + 13),
+          KilogramSquareMeters.of(6.0),
+          new ModuleConfig(
+              TunerConstants.kWheelRadius.in(Meters),
+              TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+              1.5,
+              DCMotor.getKrakenX60Foc(1).withReduction(TunerConstants.BackLeft.DriveMotorGearRatio),
+              600.0,
+              1),
+          getModuleLocations());
   public com.pathplanner.lib.util.swerve.SwerveSetpointGenerator m_pathPlannerGenerator =
-    new com.pathplanner.lib.util.swerve.SwerveSetpointGenerator(m_robotConfig,
-      TunerConstants.FrontLeft.SteerMotorGains.kV * 12*2*Math.PI);
+      new com.pathplanner.lib.util.swerve.SwerveSetpointGenerator(
+          m_robotConfig, TunerConstants.FrontLeft.SteerMotorGains.kV * 12 * 2 * Math.PI);
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
@@ -101,19 +100,21 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private boolean m_hasAppliedOperatorPerspective = false;
 
   /** Swerve request to apply during field-centric path following */
-  private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds = new SwerveRequest.ApplyFieldSpeeds()
-      .withDriveRequestType(DriveRequestType.Velocity);
+  private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds =
+      new SwerveRequest.ApplyFieldSpeeds().withDriveRequestType(DriveRequestType.Velocity);
 
   private final PIDController m_pathXController = new PIDController(14, 0, 0.2);
   private final PIDController m_pathYController = new PIDController(14, 0, 0.2);
   private final PIDController m_pathThetaController = new PIDController(7, 0, 0);
-  public final ProfiledPIDController m_profiledThetaController = new ProfiledPIDController(7, 0, 0,
-      new edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints(8, 12));
+  public final ProfiledPIDController m_profiledThetaController =
+      new ProfiledPIDController(
+          7, 0, 0, new edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints(8, 12));
   private final Vision m_vision = new Vision(this::addVisionMeasurement, () -> state().Pose);
 
   // public SwerveSetpointGenerator m_setpointGenerator = new SwerveSetpointGenerator(
   //   getModuleLocations(),
-  //   new DCMotorExt(DCMotor.getKrakenX60Foc(1).withReduction(TunerConstants.BackLeft.DriveMotorGearRatio), 1),
+  //   new
+  // DCMotorExt(DCMotor.getKrakenX60Foc(1).withReduction(TunerConstants.BackLeft.DriveMotorGearRatio), 1),
   //         DCMotor.getKrakenX60(1).withReduction(TunerConstants.BackLeft.SteerMotorGearRatio),
   //   TunerConstants.kSlipCurrent.in(Amps),
   //   TunerConstants.kSlipCurrent.in(Amps),
@@ -146,10 +147,10 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
       TalonFXPDHChannel.registerFD(c10_BR_Steer, br.steer());
     }
   }
-  @NotLogged
-  public SwerveDriveState state = getState();
-  @NotLogged
-  public SwerveDriveState lastState = getState().clone();
+
+  @NotLogged public SwerveDriveState state = getState();
+  @NotLogged public SwerveDriveState lastState = getState().clone();
+
   /** Re-expose the state as a method of the subclass so Epilogue finds it. */
   public SwerveDriveState state() {
     return state;
@@ -183,11 +184,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
    *
-   * <p>
-   * This constructs the underlying hardware devices, so user should not construct
-   * the devices
-   * themselves. If they need the devices, they can access them through getters in
-   * the classes.
+   * <p>This constructs the underlying hardware devices, so user should not construct the devices
+   * themselves. If they need the devices, they can access them through getters in the classes.
    */
   public DriveBaseS(
       SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
@@ -218,8 +216,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   /**
-   * Returns a command that applies the specified control request to this swerve
-   * drivetrain.
+   * Returns a command that applies the specified control request to this swerve drivetrain.
    *
    * @param request Function returning the request to apply
    * @return Command to run
@@ -231,7 +228,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   /**
    * Follows the given field-centric path sample with PID.
    *
-   * @param pose   Current pose of the robot
+   * @param pose Current pose of the robot
    * @param sample Sample along the path to follow
    */
   public void followPath(SwerveSample sample) {
@@ -240,8 +237,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     var targetSpeeds = sample.getChassisSpeeds();
     targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(pose.getX(), sample.x);
     targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(pose.getY(), sample.y);
-    targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(pose.getRotation().getRadians(),
-        sample.heading);
+    targetSpeeds.omegaRadiansPerSecond +=
+        m_pathThetaController.calculate(pose.getRotation().getRadians(), sample.heading);
 
     setControl(
         m_pathApplyFieldSpeeds
@@ -250,12 +247,21 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
             .withWheelForceFeedforwardsY(sample.moduleForcesY()));
   }
 
-  SwerveRequest.ApplyRobotSpeeds idle = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds()).withDriveRequestType(DriveRequestType.Velocity);
-  SwerveRequest.ApplyRobotSpeeds brakeMode = new ApplyRobotSpeeds().withSpeeds(new ChassisSpeeds()).withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-  SwerveRequest.SwerveDriveBrake xBrake = new SwerveRequest.SwerveDriveBrake().withDriveRequestType(DriveRequestType.Velocity);
+  SwerveRequest.ApplyRobotSpeeds idle =
+      new ApplyRobotSpeeds()
+          .withSpeeds(new ChassisSpeeds())
+          .withDriveRequestType(DriveRequestType.Velocity);
+  SwerveRequest.ApplyRobotSpeeds brakeMode =
+      new ApplyRobotSpeeds()
+          .withSpeeds(new ChassisSpeeds())
+          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+  SwerveRequest.SwerveDriveBrake xBrake =
+      new SwerveRequest.SwerveDriveBrake().withDriveRequestType(DriveRequestType.Velocity);
+
   public Command stop() {
     return applyRequest(() -> idle);
   }
+
   public Command stopBrakeMode() {
     return applyRequest(() -> brakeMode);
   }
@@ -267,13 +273,12 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     currentTrajectory = isStarting ? traj.samples().toArray(SwerveSample[]::new) : emptyTrajectory;
   }
 
-  
   @Override
   public void periodic() {
     lastState = state;
     state = getStateCopy();
     if (RobotBase.isReal()) {
-      
+
       m_vision.update();
     }
     /*
@@ -300,59 +305,64 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     }
   }
 
-  private void updateSimCurrents() {
-  }
+  private void updateSimCurrents() {}
 
   private void startSimThread() {
     m_lastSimTime = Utils.getCurrentTimeSeconds();
 
     /* Run simulation at a faster rate so PID gains behave more reasonably */
-    m_simNotifier = new Notifier(
-        () -> {
-          final double currentTime = Utils.getCurrentTimeSeconds();
-          double deltaTime = currentTime - m_lastSimTime;
-          m_lastSimTime = currentTime;
+    m_simNotifier =
+        new Notifier(
+            () -> {
+              final double currentTime = Utils.getCurrentTimeSeconds();
+              double deltaTime = currentTime - m_lastSimTime;
+              m_lastSimTime = currentTime;
 
-          /* use the measured time delta, get battery voltage from WPILib */
-          updateSimState(deltaTime, RobotController.getBatteryVoltage());
-        });
+              /* use the measured time delta, get battery voltage from WPILib */
+              updateSimState(deltaTime, RobotController.getBatteryVoltage());
+            });
     m_simNotifier.startPeriodic(kSimLoopPeriod);
   }
 
   /* SYSID */
 
   /* Swerve requests to apply during SysId characterization */
-  private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
-  private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
-  private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+  private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
+      new SwerveRequest.SysIdSwerveTranslation();
+  private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization =
+      new SwerveRequest.SysIdSwerveSteerGains();
+  private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
+      new SwerveRequest.SysIdSwerveRotation();
 
   /*
    * SysId routine for characterizing translation. This is used to find PID gains
    * for the drive motors.
    */
-  private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
-      new SysIdRoutine.Config(
-          null, // Use default ramp rate (1 V/s)
-          Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
-          null, // Use default timeout (10 s)
-          // Log state with SignalLogger class
-          state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
-      new SysIdRoutine.Mechanism(
-          output -> setControl(m_translationCharacterization.withVolts(output)), null, this));
+  private final SysIdRoutine m_sysIdRoutineTranslation =
+      new SysIdRoutine(
+          new SysIdRoutine.Config(
+              null, // Use default ramp rate (1 V/s)
+              Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
+              null, // Use default timeout (10 s)
+              // Log state with SignalLogger class
+              state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
+          new SysIdRoutine.Mechanism(
+              output -> setControl(m_translationCharacterization.withVolts(output)), null, this));
 
   /*
    * SysId routine for characterizing steer. This is used to find PID gains for
    * the steer motors.
    */
-  private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
-      new SysIdRoutine.Config(
-          null, // Use default ramp rate (1 V/s)
-          Volts.of(7), // Use dynamic voltage of 7 V
-          null, // Use default timeout (10 s)
-          // Log state with SignalLogger class
-          state -> SignalLogger.writeString("SysIdSteer_State", state.toString())),
-      new SysIdRoutine.Mechanism(
-          volts -> setControl(m_steerCharacterization.withVolts(volts)), null, this));
+  private final SysIdRoutine m_sysIdRoutineSteer =
+      new SysIdRoutine(
+          new SysIdRoutine.Config(
+              null, // Use default ramp rate (1 V/s)
+              Volts.of(7), // Use dynamic voltage of 7 V
+              null, // Use default timeout (10 s)
+              // Log state with SignalLogger class
+              state -> SignalLogger.writeString("SysIdSteer_State", state.toString())),
+          new SysIdRoutine.Mechanism(
+              volts -> setControl(m_steerCharacterization.withVolts(volts)), null, this));
 
   /*
    * SysId routine for characterizing rotation.
@@ -361,31 +371,31 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
    * See the documentation of SwerveRequest.SysIdSwerveRotation for info on
    * importing the log to SysId.
    */
-  private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
-      new SysIdRoutine.Config(
-          /* This is in radians per second², but SysId only supports "volts per second" */
-          Volts.of(Math.PI / 6).per(Second),
-          /* This is in radians per second, but SysId only supports "volts" */
-          Volts.of(Math.PI),
-          null, // Use default timeout (10 s)
-          // Log state with SignalLogger class
-          state -> SignalLogger.writeString("SysIdRotation_State", state.toString())),
-      new SysIdRoutine.Mechanism(
-          output -> {
-            /* output is actually radians per second, but SysId only supports "volts" */
-            setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-            /* also log the requested output for SysId */
-            SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
-          },
-          null,
-          this));
+  private final SysIdRoutine m_sysIdRoutineRotation =
+      new SysIdRoutine(
+          new SysIdRoutine.Config(
+              /* This is in radians per second², but SysId only supports "volts per second" */
+              Volts.of(Math.PI / 6).per(Second),
+              /* This is in radians per second, but SysId only supports "volts" */
+              Volts.of(Math.PI),
+              null, // Use default timeout (10 s)
+              // Log state with SignalLogger class
+              state -> SignalLogger.writeString("SysIdRotation_State", state.toString())),
+          new SysIdRoutine.Mechanism(
+              output -> {
+                /* output is actually radians per second, but SysId only supports "volts" */
+                setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
+                /* also log the requested output for SysId */
+                SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+              },
+              null,
+              this));
 
   /* The SysId routine to test */
   private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
 
   /**
-   * Runs the SysId Quasistatic test in the given direction for the routine
-   * specified by {@link
+   * Runs the SysId Quasistatic test in the given direction for the routine specified by {@link
    * #m_sysIdRoutineToApply}.
    *
    * @param direction Direction of the SysId Quasistatic test
@@ -396,8 +406,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   /**
-   * Runs the SysId Dynamic test in the given direction for the routine specified
-   * by {@link
+   * Runs the SysId Dynamic test in the given direction for the routine specified by {@link
    * #m_sysIdRoutineToApply}.
    *
    * @param direction Direction of the SysId Dynamic test
@@ -413,16 +422,20 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   public Command driveToX(DoubleSupplier x, DoubleSupplier ySpeed, Supplier<Rotation2d> heading) {
-    return applyRequest(() -> {
-      var pose = state().Pose;
-      var targetSpeeds = new ChassisSpeeds(
-          MathUtil.clamp(m_pathXController.calculate(pose.getX(), x.getAsDouble()), -1, 1),
-          (AllianceFlipUtil.shouldFlip() ? -1 : 1) *ySpeed.getAsDouble(),
-          m_pathThetaController.calculate(
-              pose.getRotation().getRadians(), heading.get().getRadians()));
-      return m_pathApplyFieldSpeeds.withSpeeds(
-          targetSpeeds).withWheelForceFeedforwardsX(emptyFeedForwards).withWheelForceFeedforwardsX(emptyFeedForwards);
-    });
+    return applyRequest(
+        () -> {
+          var pose = state().Pose;
+          var targetSpeeds =
+              new ChassisSpeeds(
+                  MathUtil.clamp(m_pathXController.calculate(pose.getX(), x.getAsDouble()), -1, 1),
+                  (AllianceFlipUtil.shouldFlip() ? -1 : 1) * ySpeed.getAsDouble(),
+                  m_pathThetaController.calculate(
+                      pose.getRotation().getRadians(), heading.get().getRadians()));
+          return m_pathApplyFieldSpeeds
+              .withSpeeds(targetSpeeds)
+              .withWheelForceFeedforwardsX(emptyFeedForwards)
+              .withWheelForceFeedforwardsX(emptyFeedForwards);
+        });
   }
 
   @NotLogged
@@ -437,10 +450,10 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
 
   @NotLogged
   public ChassisSpeeds getFieldRelativeLinearSpeedsMPS() {
-    return ChassisSpeeds.fromRobotRelativeSpeeds(state().Speeds,state().Pose.getRotation());
+    return ChassisSpeeds.fromRobotRelativeSpeeds(state().Speeds, state().Pose.getRotation());
   }
 
-  private double[] emptyFeedForwards = new double[] { 0, 0, 0, 0 };
+  private double[] emptyFeedForwards = new double[] {0, 0, 0, 0};
 
   public Command pidToPoseC(Supplier<Pose2d> poseSupplier) {
     return this.run(
@@ -448,13 +461,17 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
           var target = poseSupplier.get();
           m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
           var pose = state().Pose;
-          var targetSpeeds = new ChassisSpeeds(
-              m_pathXController.calculate(pose.getX(), target.getX()),
-              m_pathYController.calculate(pose.getY(), target.getY()),
-              m_pathThetaController.calculate(
-                  pose.getRotation().getRadians(), target.getRotation().getRadians()));
-          setControl(m_pathApplyFieldSpeeds.withSpeeds(targetSpeeds)
-              .withWheelForceFeedforwardsX(emptyFeedForwards).withWheelForceFeedforwardsX(emptyFeedForwards));
+          var targetSpeeds =
+              new ChassisSpeeds(
+                  m_pathXController.calculate(pose.getX(), target.getX()),
+                  m_pathYController.calculate(pose.getY(), target.getY()),
+                  m_pathThetaController.calculate(
+                      pose.getRotation().getRadians(), target.getRotation().getRadians()));
+          setControl(
+              m_pathApplyFieldSpeeds
+                  .withSpeeds(targetSpeeds)
+                  .withWheelForceFeedforwardsX(emptyFeedForwards)
+                  .withWheelForceFeedforwardsX(emptyFeedForwards));
         });
   }
 
@@ -470,46 +487,45 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2.5, 1.75);
   private TrapezoidProfile.Constraints driveToPoseRotationConstraints = new Constraints(3, 6);
   private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(driveToPoseConstraints);
-  private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(driveToPoseRotationConstraints);
+  private TrapezoidProfile driveToPoseRotationProfile =
+      new TrapezoidProfile(driveToPoseRotationConstraints);
 
   // For modifying goals from within a lambda
-
 
   private TrapezoidProfile.State driveToPoseGoal = new State(0, 0);
   private TrapezoidProfile.State driveToPoseRotationGoal = new State(0, 0);
 
+  private ApplyRobotSpeeds m_pathApplyRobotSpeeds =
+      new ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
 
-  private ApplyRobotSpeeds m_pathApplyRobotSpeeds = new ApplyRobotSpeeds().withDriveRequestType(DriveRequestType.Velocity);
   public SwerveRequest calculateFollowRequest(SwerveSetpoint previous, SwerveSample sample) {
     m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
     var pose = state().Pose;
     var targetSpeeds = sample.getChassisSpeeds();
     // Calculate module forces prior to PID correction
-    var targetSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
-    var swerveSetpoint = m_pathPlannerGenerator.generateSetpoint(
-      previous,
-      targetSpeedsRobotRelative, null, 0.02);
+    var targetSpeedsRobotRelative =
+        ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
+    var swerveSetpoint =
+        m_pathPlannerGenerator.generateSetpoint(previous, targetSpeedsRobotRelative, null, 0.02);
     //
     targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(pose.getX(), sample.x);
     targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(pose.getY(), sample.y);
-    targetSpeeds.omegaRadiansPerSecond += m_pathThetaController.calculate(pose.getRotation().getRadians(),
-        sample.heading);
-    targetSpeedsRobotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
-    return
-        m_pathApplyRobotSpeeds
-            .withSpeeds(targetSpeedsRobotRelative)
-            .withWheelForceFeedforwardsX(swerveSetpoint.feedforwards().robotRelativeForcesXNewtons())
-            .withWheelForceFeedforwardsY(swerveSetpoint.feedforwards().robotRelativeForcesYNewtons())
-            ;
+    targetSpeeds.omegaRadiansPerSecond +=
+        m_pathThetaController.calculate(pose.getRotation().getRadians(), sample.heading);
+    targetSpeedsRobotRelative =
+        ChassisSpeeds.fromFieldRelativeSpeeds(targetSpeeds, getPoseHeading());
+    return m_pathApplyRobotSpeeds
+        .withSpeeds(targetSpeedsRobotRelative)
+        .withWheelForceFeedforwardsX(swerveSetpoint.feedforwards().robotRelativeForcesXNewtons())
+        .withWheelForceFeedforwardsY(swerveSetpoint.feedforwards().robotRelativeForcesYNewtons());
   }
 
-  
   public double calculateDrivetrainFwdBackAcceleration() {
     var speeds_0 = lastState.Speeds;
     var speeds_1 = state.Speeds;
-    return (speeds_1.vxMetersPerSecond - speeds_0.vxMetersPerSecond)/(state.Timestamp-lastState.Timestamp);
+    return (speeds_1.vxMetersPerSecond - speeds_0.vxMetersPerSecond)
+        / (state.Timestamp - lastState.Timestamp);
   }
-
 
   Capture<Pose2d> start = new Capture<Pose2d>(new Pose2d());
   // The goal (populated from poseSupplier at command start)
@@ -522,119 +538,143 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   TrapezoidProfile.State rotationState = new State(0, 0);
 
   // Threshold for "close enough" to avoid microadjustments
-  Trigger atPose = atPose(()->end.inner, Units.inchesToMeters(0.5), Units.degreesToRadians(1));
+  Trigger atPose = atPose(() -> end.inner, Units.inchesToMeters(0.5), Units.degreesToRadians(1));
+
   /**
-   * Drives to a pose with motion profiles on translation and rotation.
-   * The translation profile starts at dist(start,end) and drives toward 0. This state is then interpolated 
-   * between poses.
-   * 
-   * The rotation profile starts at start.heading and ends at end.heading, just like a profiled continuous heading controller.
+   * Drives to a pose with motion profiles on translation and rotation. The translation profile
+   * starts at dist(start,end) and drives toward 0. This state is then interpolated between poses.
+   *
+   * <p>The rotation profile starts at start.heading and ends at end.heading, just like a profiled
+   * continuous heading controller.
+   *
    * @param poseSupplier
    * @return
    */
   public Command driveToPoseSupC(Supplier<Pose2d> poseSupplier) {
     var startTime = Timer.getFPGATimestamp();
 
-    var command = runOnce(
-        () -> {
-          // save the start pose and target pose
-          start.inner = getPose();
-          var getTargetTime = Timer.getFPGATimestamp();
-          end.inner = poseSupplier.get();
-          SmartDashboard.putNumber("getTargetTime", Timer.getFPGATimestamp()-getTargetTime);
-          var setupTime = Timer.getFPGATimestamp();
-          // save the normalized vector from current to target
-          normDirStartToEnd.inner = end.inner.getTranslation().minus(start.inner.getTranslation());
-          dist.inner = normDirStartToEnd.inner.getNorm();
-          normDirStartToEnd.inner = normDirStartToEnd.inner.div(dist.inner + 0.001);
-          // initial position: distance from end
-          // initial velocity: component of velocity straight towards end (as a negative number)
-
-          translationState.position = dist.inner;
-          // Pathing.velocityTowards is negative if approaching the target
-          translationState.velocity = 
-          MathUtil.clamp(
-              Pathing.velocityTowards(
-                  start.inner,
-                  getFieldRelativeLinearSpeedsMPS(),
-                  end.inner.getTranslation()), -driveToPoseConstraints.maxVelocity, 0);
-          // Initial state of rotation
-          driveToPoseRotationGoal.position = end.inner.getRotation().getRadians();
-          
-          rotationState.position = start.inner.getRotation().getRadians();
-          rotationState.velocity = state().Speeds.omegaRadiansPerSecond;
-          SmartDashboard.putNumber("driveToPoseTransInterp", translationState.position);
-          // SmartDashboard.putNumber("driveToPoseRotationInterp", rotationState.position);
-          // SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
-          // SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
-          SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
-          SmartDashboard.putNumber("setupTime", Timer.getFPGATimestamp()-setupTime);
-        })
-        .andThen(
-            run(
+    var command =
+        runOnce(
                 () -> {
-                  var setpoint = driveToPoseProfile.calculate(0.02, translationState, driveToPoseGoal);
-                  translationState.position = setpoint.position;
-                  translationState.velocity = setpoint.velocity;
-                  // Rotation continuous input
-                  // Get error which is the smallest distance between goal and measurement
-                  double errorBound = Math.PI;
-                  var measurement = getPoseHeading().getRadians();
-                  double goalMinDistance =
-                      MathUtil.inputModulus(driveToPoseRotationGoal.position-measurement, -errorBound, errorBound);
-                  double setpointMinDistance =
-                      MathUtil.inputModulus(rotationState.position - measurement, -errorBound, errorBound);
+                  // save the start pose and target pose
+                  start.inner = getPose();
+                  var getTargetTime = Timer.getFPGATimestamp();
+                  end.inner = poseSupplier.get();
+                  SmartDashboard.putNumber(
+                      "getTargetTime", Timer.getFPGATimestamp() - getTargetTime);
+                  var setupTime = Timer.getFPGATimestamp();
+                  // save the normalized vector from current to target
+                  normDirStartToEnd.inner =
+                      end.inner.getTranslation().minus(start.inner.getTranslation());
+                  dist.inner = normDirStartToEnd.inner.getNorm();
+                  normDirStartToEnd.inner = normDirStartToEnd.inner.div(dist.inner + 0.001);
+                  // initial position: distance from end
+                  // initial velocity: component of velocity straight towards end (as a negative
+                  // number)
 
-                  // Recompute the profile goal with the smallest error, thus giving the shortest path. The goal
-                  // may be outside the input range after this operation, but that's OK because the controller
-                  // will still go there and report an error of zero. In other words, the setpoint only needs to
-                  // be offset from the measurement by the input range modulus; they don't need to be equal.
-                  driveToPoseRotationGoal.position = goalMinDistance + measurement;
-                  rotationState.position = setpointMinDistance + measurement;
+                  translationState.position = dist.inner;
+                  // Pathing.velocityTowards is negative if approaching the target
+                  translationState.velocity =
+                      MathUtil.clamp(
+                          Pathing.velocityTowards(
+                              start.inner,
+                              getFieldRelativeLinearSpeedsMPS(),
+                              end.inner.getTranslation()),
+                          -driveToPoseConstraints.maxVelocity,
+                          0);
+                  // Initial state of rotation
+                  driveToPoseRotationGoal.position = end.inner.getRotation().getRadians();
 
-                  var rotSetpoint = driveToPoseRotationProfile.calculate(
-                      0.02, rotationState, driveToPoseRotationGoal);
-                  rotationState.position = rotSetpoint.position;
-                  rotationState.velocity = rotSetpoint.velocity;
-                  SmartDashboard.putNumber("driveToPoseTransInterp", setpoint.position);
-                  SmartDashboard.putNumber("driveToPoseRotationInterp", rotSetpoint.position);
+                  rotationState.position = start.inner.getRotation().getRadians();
+                  rotationState.velocity = state().Speeds.omegaRadiansPerSecond;
+                  SmartDashboard.putNumber("driveToPoseTransInterp", translationState.position);
+                  // SmartDashboard.putNumber("driveToPoseRotationInterp", rotationState.position);
+                  // SmartDashboard.putNumber("driveToPoseTransInterpVel",
+                  // translationState.velocity);
+                  // SmartDashboard.putNumber("driveToPoseRotationInterpVel",
+                  // rotationState.velocity);
                   SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
-                  // SmartDashboard.putNumber("driveToPoseTransInterpVel", translationState.velocity);
-                  // SmartDashboard.putNumber("driveToPoseRotationInterpVel", rotationState.velocity);
-                  var startPose = start.inner;
+                  SmartDashboard.putNumber("setupTime", Timer.getFPGATimestamp() - setupTime);
+                })
+            .andThen(
+                run(
+                    () -> {
+                      var setpoint =
+                          driveToPoseProfile.calculate(0.02, translationState, driveToPoseGoal);
+                      translationState.position = setpoint.position;
+                      translationState.velocity = setpoint.velocity;
+                      // Rotation continuous input
+                      // Get error which is the smallest distance between goal and measurement
+                      double errorBound = Math.PI;
+                      var measurement = getPoseHeading().getRadians();
+                      double goalMinDistance =
+                          MathUtil.inputModulus(
+                              driveToPoseRotationGoal.position - measurement,
+                              -errorBound,
+                              errorBound);
+                      double setpointMinDistance =
+                          MathUtil.inputModulus(
+                              rotationState.position - measurement, -errorBound, errorBound);
 
-                  var interpTrans = end.inner
-                      .getTranslation()
-                      .interpolate(startPose.getTranslation(), setpoint.position / dist.inner);
-                  // var request = calculateFollowRequest(m_previousSwerveSetpoint, RepulsorFieldPlanner.sample(
-                  //   interpTrans,
-                  //   new Rotation2d(rotationState.position),
-                  //   normDirStartToEnd.inner.getX() * -setpoint.velocity,
-                  //   normDirStartToEnd.inner.getY() * -setpoint.velocity,
-                  //   rotationState.velocity));
-                  // if (atPose.getAsBoolean()) {
-                  //   this.setControl(xBrake);
-                  // } else {
-                  //   this.setControl(request);
-                  // }
+                      // Recompute the profile goal with the smallest error, thus giving the
+                      // shortest path. The goal
+                      // may be outside the input range after this operation, but that's OK because
+                      // the controller
+                      // will still go there and report an error of zero. In other words, the
+                      // setpoint only needs to
+                      // be offset from the measurement by the input range modulus; they don't need
+                      // to be equal.
+                      driveToPoseRotationGoal.position = goalMinDistance + measurement;
+                      rotationState.position = setpointMinDistance + measurement;
 
-                  if (atPose.getAsBoolean()) {
-                    this.setControl(idle);
-                  } else {
-                    followPath(RepulsorFieldPlanner.sample(
-                    interpTrans,
-                    new Rotation2d(rotationState.position),
-                    normDirStartToEnd.inner.getX() * -setpoint.velocity,
-                    normDirStartToEnd.inner.getY() * -setpoint.velocity,
-                    rotationState.velocity));
-                  }
-                }))
-;
-var endTime = Timer.getFPGATimestamp();
-SmartDashboard.putNumber("driveToPoseTime", endTime-startTime);
-return command;
+                      var rotSetpoint =
+                          driveToPoseRotationProfile.calculate(
+                              0.02, rotationState, driveToPoseRotationGoal);
+                      rotationState.position = rotSetpoint.position;
+                      rotationState.velocity = rotSetpoint.velocity;
+                      SmartDashboard.putNumber("driveToPoseTransInterp", setpoint.position);
+                      SmartDashboard.putNumber("driveToPoseRotationInterp", rotSetpoint.position);
+                      SmartDashboard.putNumber("driveToPoseTransDist", dist.inner);
+                      // SmartDashboard.putNumber("driveToPoseTransInterpVel",
+                      // translationState.velocity);
+                      // SmartDashboard.putNumber("driveToPoseRotationInterpVel",
+                      // rotationState.velocity);
+                      var startPose = start.inner;
+
+                      var interpTrans =
+                          end.inner
+                              .getTranslation()
+                              .interpolate(
+                                  startPose.getTranslation(), setpoint.position / dist.inner);
+                      // var request = calculateFollowRequest(m_previousSwerveSetpoint,
+                      // RepulsorFieldPlanner.sample(
+                      //   interpTrans,
+                      //   new Rotation2d(rotationState.position),
+                      //   normDirStartToEnd.inner.getX() * -setpoint.velocity,
+                      //   normDirStartToEnd.inner.getY() * -setpoint.velocity,
+                      //   rotationState.velocity));
+                      // if (atPose.getAsBoolean()) {
+                      //   this.setControl(xBrake);
+                      // } else {
+                      //   this.setControl(request);
+                      // }
+
+                      if (atPose.getAsBoolean()) {
+                        this.setControl(idle);
+                      } else {
+                        followPath(
+                            RepulsorFieldPlanner.sample(
+                                interpTrans,
+                                new Rotation2d(rotationState.position),
+                                normDirStartToEnd.inner.getX() * -setpoint.velocity,
+                                normDirStartToEnd.inner.getY() * -setpoint.velocity,
+                                rotationState.velocity));
+                      }
+                    }));
+    var endTime = Timer.getFPGATimestamp();
+    SmartDashboard.putNumber("driveToPoseTime", endTime - startTime);
+    return command;
   }
-
 
   public Command driveToPoseC(Optional<Pose2d> poseOpt) {
     return poseOpt.map((pose) -> driveToPoseSupC(() -> pose)).orElse(Commands.none());
@@ -644,8 +684,7 @@ return command;
     return driveToPoseSupC(() -> poseSup);
   }
 
-  // END DriveToPose 
-
+  // END DriveToPose
 
   public double toleranceMeters = Units.inchesToMeters(0.5);
   public double toleranceRadians = Units.degreesToRadians(1);
@@ -660,13 +699,16 @@ return command;
     // above.
     return dot > Math.cos(toleranceRadians);
   }
+
   public Trigger atPose(Supplier<Pose2d> poseSup, double toleranceMeters, double toleranceRadians) {
     return new Trigger(
         () -> {
           Pose2d pose = poseSup.get();
           Pose2d currentPose = getPose();
-          boolean transValid = currentPose.getTranslation().getDistance(pose.getTranslation()) < toleranceMeters;
-          boolean rotValid = withinTolerance(currentPose.getRotation(), pose.getRotation(), toleranceRadians);
+          boolean transValid =
+              currentPose.getTranslation().getDistance(pose.getTranslation()) < toleranceMeters;
+          boolean rotValid =
+              withinTolerance(currentPose.getRotation(), pose.getRotation(), toleranceRadians);
           return transValid && rotValid;
         });
   }
@@ -684,86 +726,94 @@ return command;
   }
 
   public Trigger safeToMoveArm(Supplier<Pose2d> poseSup) {
-    return atPose(poseSup, Units.inchesToMeters(24), 2*Math.PI);
+    return atPose(poseSup, Units.inchesToMeters(24), 2 * Math.PI);
   }
 
   public Trigger safeToReefAlign(Supplier<Pose2d> reefTargetSup) {
-    return new Trigger(()->{
-      var target = reefTargetSup.get();
-      var pose = getPose();
-      var distance = target.getTranslation().getDistance(pose.getTranslation());
-      var rightSide = pose.relativeTo(target).getX()>0;
-      return distance<2 && rightSide;
-    });
+    return new Trigger(
+        () -> {
+          var target = reefTargetSup.get();
+          var pose = getPose();
+          var distance = target.getTranslation().getDistance(pose.getTranslation());
+          var rightSide = pose.relativeTo(target).getX() > 0;
+          return distance < 2 && rightSide;
+        });
   }
 
-public Command goToPosition(Supplier<Pose2d> target) {
+  public Command goToPosition(Supplier<Pose2d> target) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'goToPosition'");
-}
+  }
 
+  private final SwerveRequest.RobotCentric m_characterisationReq =
+      new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+  private double lastGyroYawRads = 0;
+  private double accumGyroYawRads = 0;
 
-private final SwerveRequest.RobotCentric m_characterisationReq = new SwerveRequest.RobotCentric()
-.withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-private double lastGyroYawRads = 0;
-private double accumGyroYawRads = 0;
+  private double[] startWheelPositions = new double[4];
+  private double currentEffectiveWheelRadius = 0;
+  private DoubleSupplier m_gyroYawRadsSupplier =
+      () -> Units.degreesToRadians(getPigeon2().getAngle());
+  private final SlewRateLimiter m_omegaLimiter = new SlewRateLimiter(1);
 
-private double[] startWheelPositions = new double[4];
-private double currentEffectiveWheelRadius = 0;
-private DoubleSupplier m_gyroYawRadsSupplier = () -> Units.degreesToRadians(getPigeon2().getAngle());
-private final SlewRateLimiter m_omegaLimiter = new SlewRateLimiter(1);
+  public Command wheelRadiusCharacterisation(double omegaDirection) {
+    var initialize =
+        runOnce(
+            () -> {
+              lastGyroYawRads = m_gyroYawRadsSupplier.getAsDouble();
+              accumGyroYawRads = 0;
+              currentEffectiveWheelRadius = 0;
+              for (int i = 0; i < 4; i++) {
+                var pos = this.getModule(i).getPosition(true);
+                startWheelPositions[i] =
+                    pos.distanceMeters * TunerConstants.kDriveRotationsPerMeter;
+              }
+              m_omegaLimiter.reset(0);
+            });
 
-public Command wheelRadiusCharacterisation(double omegaDirection) {
-  var initialize = runOnce(() -> {
-    lastGyroYawRads = m_gyroYawRadsSupplier.getAsDouble();
-    accumGyroYawRads = 0;
-    currentEffectiveWheelRadius = 0;
-    for (int i = 0; i < 4; i++) {
-      var pos = this.getModule(i).getPosition(true);
-      startWheelPositions[i] = pos.distanceMeters * TunerConstants.kDriveRotationsPerMeter;
-    }
-    m_omegaLimiter.reset(0);
-  });
+    var executeEnd =
+        runEnd(
+            () -> {
+              setControl(
+                  m_characterisationReq.withRotationalRate(
+                      m_omegaLimiter.calculate(1 * omegaDirection)));
+              accumGyroYawRads +=
+                  MathUtil.angleModulus(m_gyroYawRadsSupplier.getAsDouble() - lastGyroYawRads);
+              lastGyroYawRads = m_gyroYawRadsSupplier.getAsDouble();
+              double averageWheelPositionRotations = 0;
+              double[] wheelPositionRotationss = new double[4];
+              for (int i = 0; i < 4; i++) {
+                var pos = this.getModule(i).getPosition(true);
+                // log("pos"+i, pos.distanceMeters);
+                wheelPositionRotationss[i] =
+                    pos.distanceMeters * TunerConstants.kDriveRotationsPerMeter;
+                averageWheelPositionRotations +=
+                    Math.abs(wheelPositionRotationss[i] - startWheelPositions[i]);
+              }
+              averageWheelPositionRotations /= 4.0;
+              // log("wheelPos", wheelPositionRotationss);
+              // log("avgWheelPos", averageWheelPositionRotations);
+              // log("accumGyroYawRads", accumGyroYawRads);
 
-  var executeEnd = runEnd(
-    () -> {
-      setControl(m_characterisationReq
-        .withRotationalRate(m_omegaLimiter.calculate(1 * omegaDirection)));
-      accumGyroYawRads += MathUtil.angleModulus(m_gyroYawRadsSupplier.getAsDouble() - lastGyroYawRads);
-      lastGyroYawRads = m_gyroYawRadsSupplier.getAsDouble();
-      double averageWheelPositionRotations = 0;
-      double[] wheelPositionRotationss = new double[4];
-      for (int i = 0; i < 4; i++) {
-        var pos = this.getModule(i).getPosition(true);
-        // log("pos"+i, pos.distanceMeters);
-        wheelPositionRotationss[i] = pos.distanceMeters * TunerConstants.kDriveRotationsPerMeter;
-        averageWheelPositionRotations += Math.abs(wheelPositionRotationss[i] - startWheelPositions[i]);
-      }
-      averageWheelPositionRotations /= 4.0;
-      // log("wheelPos", wheelPositionRotationss);
-      // log("avgWheelPos", averageWheelPositionRotations);
-      // log("accumGyroYawRads", accumGyroYawRads);
-      
-      // arc length meters / wheel rotations = wheel circumference
-      currentEffectiveWheelRadius = (accumGyroYawRads * TunerConstants.kDriveRadius) / averageWheelPositionRotations;
-      SmartDashboard.putNumber("currWheelRad", currentEffectiveWheelRadius / (2*Math.PI));
-      // log_lastGyro.accept(lastGyroYawRads);
-      // log_avgWheelPos.accept(averageWheelPosition);
-      // log_accumGyro.accept(accumGyroYawRads);
-      // log_curEffWheelRad.accept(currentEffectiveWheelRadius);
-    }, () -> {
-      setControl(m_characterisationReq.withRotationalRate(0));
-      if (Math.abs(accumGyroYawRads) <= Math.PI * 2.0) {
-        System.out.println("not enough data for characterization " + accumGyroYawRads);
-      } else {
-        System.out.println(
-          "effective wheel radius: "
-            + currentEffectiveWheelRadius
-            + " inches");
-      }
-    });
+              // arc length meters / wheel rotations = wheel circumference
+              currentEffectiveWheelRadius =
+                  (accumGyroYawRads * TunerConstants.kDriveRadius) / averageWheelPositionRotations;
+              SmartDashboard.putNumber("currWheelRad", currentEffectiveWheelRadius / (2 * Math.PI));
+              // log_lastGyro.accept(lastGyroYawRads);
+              // log_avgWheelPos.accept(averageWheelPosition);
+              // log_accumGyro.accept(accumGyroYawRads);
+              // log_curEffWheelRad.accept(currentEffectiveWheelRadius);
+            },
+            () -> {
+              setControl(m_characterisationReq.withRotationalRate(0));
+              if (Math.abs(accumGyroYawRads) <= Math.PI * 2.0) {
+                System.out.println("not enough data for characterization " + accumGyroYawRads);
+              } else {
+                System.out.println(
+                    "effective wheel radius: " + currentEffectiveWheelRadius + " inches");
+              }
+            });
 
-  return Commands.sequence(
-    initialize, executeEnd);
-}
+    return Commands.sequence(initialize, executeEnd);
+  }
 }

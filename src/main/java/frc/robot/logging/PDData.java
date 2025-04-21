@@ -1,7 +1,5 @@
 package frc.robot.logging;
 
-import java.nio.ByteBuffer;
-
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.hal.PowerDistributionFaults;
@@ -11,6 +9,7 @@ import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import java.nio.ByteBuffer;
 
 /**
  * A utility to log data from the PDP/PDH with as little overhead as possible. Based on

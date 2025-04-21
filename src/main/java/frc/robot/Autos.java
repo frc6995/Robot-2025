@@ -17,28 +17,14 @@ import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.auto.NOMADAutoChooser;
 import choreo.trajectory.SwerveSample;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.Logged.Strategy;
 import edu.wpi.first.math.MathUtil;
@@ -66,6 +52,18 @@ import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.Capture;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Logged(strategy = Strategy.OPT_IN)
 public class Autos {
@@ -78,11 +76,15 @@ public class Autos {
 
   public final HashMap<String, Supplier<Command>> autos = new HashMap<>();
   public final ArmBrakeS m_ArmBrakeS;
-  @Logged
-  public final CoralSensor m_coralSensor;
+  @Logged public final CoralSensor m_coralSensor;
 
-  public Autos(DriveBaseS drivebase, RealArm arm, IntakeS hand, OperatorBoard board,
-      ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
+  public Autos(
+      DriveBaseS drivebase,
+      RealArm arm,
+      IntakeS hand,
+      OperatorBoard board,
+      ArmBrakeS armBrakeS,
+      TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
     m_arm = arm;
     m_hand = hand;
@@ -90,20 +92,22 @@ public class Autos {
     m_board = board;
     m_ArmBrakeS = armBrakeS;
     m_autoChooser = new NOMADAutoChooser();
-    m_autoFactory = new AutoFactory(
-        () -> m_drivebase.state().Pose,
-        m_drivebase::resetOdometry,
-        m_drivebase::followPath,
-        true,
-        m_drivebase,
-        m_drivebase::logTrajectory);
+    m_autoFactory =
+        new AutoFactory(
+            () -> m_drivebase.state().Pose,
+            m_drivebase::resetOdometry,
+            m_drivebase::followPath,
+            true,
+            m_drivebase,
+            m_drivebase::logTrajectory);
     addAutos();
     if (RobotBase.isSimulation()) {
-    new Trigger(() -> DriverStation.getStickButton(4, 1))
-        .onTrue(runOnce(() -> m_coralSensor.setHasCoral(true)).ignoringDisable(true));
-    new Trigger(() -> DriverStation.getStickButton(4, 2))
-        .onTrue(runOnce(() -> m_coralSensor.setHasCoral(false)).ignoringDisable(true));
-    new Trigger(() -> DriverStation.getStickButton(4, 3)).onTrue(runOnce(this::testAutos).ignoringDisable(true));
+      new Trigger(() -> DriverStation.getStickButton(4, 1))
+          .onTrue(runOnce(() -> m_coralSensor.setHasCoral(true)).ignoringDisable(true));
+      new Trigger(() -> DriverStation.getStickButton(4, 2))
+          .onTrue(runOnce(() -> m_coralSensor.setHasCoral(false)).ignoringDisable(true));
+      new Trigger(() -> DriverStation.getStickButton(4, 3))
+          .onTrue(runOnce(this::testAutos).ignoringDisable(true));
     }
     drivetrainAtReefTargetTrig = m_drivebase.atPose(this.offsetSelectedReefPose);
     drivetrainCloseMoveArmTrig = m_drivebase.safeToMoveArm(this.offsetSelectedReefPose);
@@ -112,82 +116,118 @@ public class Autos {
 
   }
 
-  public Capture<ReefScoringOption> lastScoringOption = new Capture<ReefScoringOption>(ReefScoringOption.L1);
+  public Capture<ReefScoringOption> lastScoringOption =
+      new Capture<ReefScoringOption>(ReefScoringOption.L1);
 
   public void addAutos() {
-    autos.put("1.Left 3p (Home)", () -> flexAuto(POI.STJ, POI.SL3, Optional.empty(), POI.J, POI.K, POI.L, POI.I));
-    autos.put("2.Right 3p", () -> flexAuto(POI.STE, POI.SR3, Optional.empty(), POI.E, POI.D, POI.C, POI.F));
+    autos.put(
+        "1.Left 3p (Home)",
+        () -> flexAuto(POI.STJ, POI.SL3, Optional.empty(), POI.J, POI.K, POI.L, POI.I));
+    autos.put(
+        "2.Right 3p",
+        () -> flexAuto(POI.STE, POI.SR3, Optional.empty(), POI.E, POI.D, POI.C, POI.F));
     // autos.put("3.CenterLeft 1p", ()->flexAuto(POI.STH, POI.SL3, Optional.empty(), POI.H));
     // autos.put("4.CenterRight 1p", ()->flexAuto(POI.STG, POI.SR3, Optional.empty(), POI.G));
-    //autos.put("AB", ()->flexAuto(POI.STA, POI.SL1, Optional.empty(), POI.A, POI.B));
-    m_autoChooser.setDefaultCmd(()->{
-      var moveField = new SwerveRequest.FieldCentric();
-      var moveRobot = new SwerveRequest.RobotCentric();
-      return m_drivebase.applyRequest(()->moveField.withVelocityX(-1)).withTimeout(1)
-      .andThen(m_drivebase.applyRequest(()->moveRobot.withVelocityY(-1)).withTimeout(1));});
+    // autos.put("AB", ()->flexAuto(POI.STA, POI.SL1, Optional.empty(), POI.A, POI.B));
+    m_autoChooser.setDefaultCmd(
+        () -> {
+          var moveField = new SwerveRequest.FieldCentric();
+          var moveRobot = new SwerveRequest.RobotCentric();
+          return m_drivebase
+              .applyRequest(() -> moveField.withVelocityX(-1))
+              .withTimeout(1)
+              .andThen(m_drivebase.applyRequest(() -> moveRobot.withVelocityY(-1)).withTimeout(1));
+        });
 
-    autos.put("Left 2.5p Push", ()->flexAuto(POI.STJ, POI.SL3, Optional.of(
-         (routine)->{
-           var traj = routine.trajectory("K-PUSH");
-           traj.atTimeBeforeEnd(1).onTrue(
-             m_hand.inCoral().until(new Trigger(this::hasCoral)).andThen(m_hand.driveToOffset(0)));
-           return traj;
-         }
-       ), POI.J, POI.K));
-      //autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
+    autos.put(
+        "Left 2.5p Push",
+        () ->
+            flexAuto(
+                POI.STJ,
+                POI.SL3,
+                Optional.of(
+                    (routine) -> {
+                      var traj = routine.trajectory("K-PUSH");
+                      traj.atTimeBeforeEnd(1)
+                          .onTrue(
+                              m_hand
+                                  .inCoral()
+                                  .until(new Trigger(this::hasCoral))
+                                  .andThen(m_hand.driveToOffset(0)));
+                      return traj;
+                    }),
+                POI.J,
+                POI.K));
+    // autos.put("Wheel Rad Test", ()->m_drivebase.wheelRadiusCharacterisation(1));
 
-      autos.put("Backside H-2Alg", () -> flexAuto(POI.STH, POI.SL3, Optional.of(
-        (routine)->{
-          var traj = routine.trajectory("1");
-          traj.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE_REEF)).onTrue(m_hand.inAlgae());
-          
-          var toScore = routine.trajectory("3");
-          traj.chain(toScore);
-          var moveback = routine.trajectory("4");
-          toScore.atTime(0.3).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
-          toScore.done().onTrue(bargeUpAndOutVoltage()).onTrue(waitSeconds(1.2).andThen(moveback.spawnCmd()));
+    autos.put(
+        "Backside H-2Alg",
+        () ->
+            flexAuto(
+                POI.STH,
+                POI.SL3,
+                Optional.of(
+                    (routine) -> {
+                      var traj = routine.trajectory("1");
+                      traj.atTime(0)
+                          .onTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE_REEF))
+                          .onTrue(m_hand.inAlgae());
 
-          
-          //var push2 = routine.trajectory("5");
-          //moveback.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
-          moveback.atTimeBeforeEnd(1.4).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE_REEF)).onTrue(m_hand.inAlgae());
+                      var toScore = routine.trajectory("3");
+                      traj.chain(toScore);
+                      var moveback = routine.trajectory("4");
+                      toScore.atTime(0.3).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
+                      toScore
+                          .done()
+                          .onTrue(bargeUpAndOutVoltage())
+                          .onTrue(waitSeconds(1.2).andThen(moveback.spawnCmd()));
 
-          //moveback.chain(push2);
+                      // var push2 = routine.trajectory("5");
+                      // moveback.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
+                      moveback
+                          .atTimeBeforeEnd(1.4)
+                          .onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE_REEF))
+                          .onTrue(m_hand.inAlgae());
 
-          
+                      // moveback.chain(push2);
 
-          var toScore2 = routine.trajectory("6");
-          toScore2.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
-          moveback.chain(toScore2);
+                      var toScore2 = routine.trajectory("6");
+                      toScore2.atTime(0.5).onTrue(m_arm.goToPosition(Arm.Positions.STOW));
+                      moveback.chain(toScore2);
 
+                      var moveOffLineAlgae = (routine.trajectory("7"));
+                      toScore2
+                          .done()
+                          .onTrue(bargeUpAndOutVoltage())
+                          .onTrue(waitSeconds(1.2).andThen(moveOffLineAlgae.spawnCmd()));
+                      // toScore2.chain(moveOffLineAlgae);
+                      // toScore2.done().onTrue(waitSeconds(2).andThen(moveOffLineAlgae.spawnCmd()));
 
-          var moveOffLineAlgae = (routine.trajectory("7"));
-          toScore2.done().onTrue(bargeUpAndOutVoltage()).onTrue(waitSeconds(1.2).andThen(moveOffLineAlgae.spawnCmd()));
-         // toScore2.chain(moveOffLineAlgae);
-          //toScore2.done().onTrue(waitSeconds(2).andThen(moveOffLineAlgae.spawnCmd()));
+                      return traj;
+                    }),
+                POI.H));
 
-          return traj;
-        }), POI.H));
-      
     // autos.put("Ground A4-B4-A2-B2", ()->flexGroundAuto(
     //   new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L3_PIV),
     //   new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L3_PIV),
     //   new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_A, ReefScoringOption.L2)
     //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
     //   ));
-    autos.put("Left Frontside AB", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
-      ,
-      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
-      ));
+    autos.put(
+        "Left Frontside AB",
+        () ->
+            flexGroundAuto(
+                new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
+                new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV),
+                new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)));
 
-    autos.put("Left Wall AB", ()->flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
-      ,
-      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
-      ));
+    autos.put(
+        "Left Wall AB",
+        () ->
+            flexGroundAuto(
+                new GroundAutoCycle(Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
+                new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV),
+                new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)));
     //   autos.put("Ground L-A-B WALL", ()->flexGroundAuto(
     //     new GroundAutoCycle(Optional.empty(), POI.STLW, POI.L, ReefScoringOption.L4_PIV),
     //     new GroundAutoCycle(Optional.empty(), POI.LP1, POI.A, ReefScoringOption.L4_PIV),
@@ -200,50 +240,54 @@ public class Autos {
     //   new GroundAutoCycle(Optional.empty(), POI.LP2, POI.A, ReefScoringOption.L4_PIV)
     //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
     //   ));
-      // autos.put("Ground C-B-A WALL", ()->flexGroundAuto(
-      //   new GroundAutoCycle(Optional.empty(), POI.STCW, POI.C, ReefScoringOption.L4_PIV),
-      //   new GroundAutoCycle(Optional.empty(), POI.LP3, POI.B, ReefScoringOption.L4_PIV),
-      //   new GroundAutoCycle(Optional.empty(), POI.LP2, POI.A, ReefScoringOption.L4_PIV)
-      //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
-      //   ));
-      
-  //   autos.put("Ground A-B-BL2", ()->flexGroundAuto(
-  //     new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
-  //     new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
-  //     new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_B, ReefScoringOption.L2)
-  //  ));
-    autos.put("Push Left Front A-B", ()->
-    sequence(
-      m_autoFactory.resetOdometry("8").asProxy(),
-      m_autoFactory.trajectoryCmd("8").asProxy(),
-    flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STAP, POI.A, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
-      ,
-      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
-    )));
+    // autos.put("Ground C-B-A WALL", ()->flexGroundAuto(
+    //   new GroundAutoCycle(Optional.empty(), POI.STCW, POI.C, ReefScoringOption.L4_PIV),
+    //   new GroundAutoCycle(Optional.empty(), POI.LP3, POI.B, ReefScoringOption.L4_PIV),
+    //   new GroundAutoCycle(Optional.empty(), POI.LP2, POI.A, ReefScoringOption.L4_PIV)
+    //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
+    //   ));
 
-    autos.put("Push Left Wall A-B", ()->
-    sequence(
-      m_autoFactory.resetOdometry("STAW_PUSH").asProxy(),
-      m_autoFactory.trajectoryCmd("STAW_PUSH").asProxy(),
-    flexGroundAuto(
-      new GroundAutoCycle(Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
-      new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
-      ,
-      new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
-    )));
+    //   autos.put("Ground A-B-BL2", ()->flexGroundAuto(
+    //     new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
+    //     new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
+    //     new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_B, ReefScoringOption.L2)
+    //  ));
+    autos.put(
+        "Push Left Front A-B",
+        () ->
+            sequence(
+                m_autoFactory.resetOdometry("8").asProxy(),
+                m_autoFactory.trajectoryCmd("8").asProxy(),
+                flexGroundAuto(
+                    new GroundAutoCycle(
+                        Optional.empty(), POI.STAP, POI.A, ReefScoringOption.L4_PIV),
+                    new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV),
+                    new GroundAutoCycle(
+                        Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2))));
 
+    autos.put(
+        "Push Left Wall A-B",
+        () ->
+            sequence(
+                m_autoFactory.resetOdometry("STAW_PUSH").asProxy(),
+                m_autoFactory.trajectoryCmd("STAW_PUSH").asProxy(),
+                flexGroundAuto(
+                    new GroundAutoCycle(
+                        Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
+                    new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV),
+                    new GroundAutoCycle(
+                        Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2))));
 
     // autos.put("Ground A4-B4-R1-B3", ()->flexGroundAuto(
     //   new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
     //   new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
     //   new GroundAutoCycle(Optional.of(
     //           (AutoRoutine routine)->{
-                  
+
     //                   var spin = routine.trajectory("A1");
     //                   var pushin = routine.trajectory("A2");
-    //                   spin.atTime(0.1).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE_REEF)).onTrue(m_hand.inAlgae());
+    //
+    // spin.atTime(0.1).onTrue(m_arm.goToPosition(Arm.Positions.HIGH_ALGAE_REEF)).onTrue(m_hand.inAlgae());
     //                   spin.chain(pushin);
 
     //                   var expel = routine.trajectory("A3");
@@ -252,96 +296,106 @@ public class Autos {
     //                   return spin;
     //           }), POI.LP2, POI.B, ReefScoringOption.L3_PIV)
     //         ));
-      
-          // autos.put must be before here
-          for (Entry<String, Supplier<Command>> entry : autos.entrySet()) { 
-            m_autoChooser.addCmd(entry.getKey(), entry.getValue());
-          }
-      
-        }
-      
-        private Alert successfulAutoTest = new Alert("Successfully Checked Autos", AlertType.kInfo);
-      
-        public void testAutos() {
-          for (Entry<String, Supplier<Command>> entry : autos.entrySet()) {
-            entry.getValue().get();
-          }
-          successfulAutoTest.set(true);
-        }
-      
-        
-        public Command outtakeCoralEitherSide() {
-          return either(
-              // if scoring out battery side
-              m_hand.outCoralReverse(),
-              // if scoring out pivot side
-              m_hand.outCoral(),
-              ()->m_arm.position.wristRadians() > 0);
-        }
-        private record GroundAutoCycle(Optional<Function<AutoRoutine, AutoTrajectory>> after, POI start, POI score, ReefScoringOption scoreArm){
+
+    // autos.put must be before here
+    for (Entry<String, Supplier<Command>> entry : autos.entrySet()) {
+      m_autoChooser.addCmd(entry.getKey(), entry.getValue());
+    }
   }
 
+  private Alert successfulAutoTest = new Alert("Successfully Checked Autos", AlertType.kInfo);
 
-  public Command flexGroundAuto(GroundAutoCycle first, GroundAutoCycle second, /*Optional<Function<AutoRoutine, AutoTrajectory>> after,*/ GroundAutoCycle...rest){
-    SwerveRequest lollipopPickupRequest = new SwerveRequest.ApplyRobotSpeeds()
-      .withDriveRequestType(DriveRequestType.Velocity)
-      .withSpeeds(new ChassisSpeeds(0.5, 0, 0));
+  public void testAutos() {
+    for (Entry<String, Supplier<Command>> entry : autos.entrySet()) {
+      entry.getValue().get();
+    }
+    successfulAutoTest.set(true);
+  }
+
+  public Command outtakeCoralEitherSide() {
+    return either(
+        // if scoring out battery side
+        m_hand.outCoralReverse(),
+        // if scoring out pivot side
+        m_hand.outCoral(),
+        () -> m_arm.position.wristRadians() > 0);
+  }
+
+  private record GroundAutoCycle(
+      Optional<Function<AutoRoutine, AutoTrajectory>> after,
+      POI start,
+      POI score,
+      ReefScoringOption scoreArm) {}
+
+  public Command flexGroundAuto(
+      GroundAutoCycle first,
+      GroundAutoCycle second, /*Optional<Function<AutoRoutine, AutoTrajectory>> after,*/
+      GroundAutoCycle... rest) {
+    SwerveRequest lollipopPickupRequest =
+        new SwerveRequest.ApplyRobotSpeeds()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSpeeds(new ChassisSpeeds(0.5, 0, 0));
     var routine = m_autoFactory.newRoutine("flexGroundAuto");
     var start = first.start;
     var firstScore = first.score;
-    var toReef = start.toChecked(firstScore, routine)
-        .map((t)->this.bindAutoScorePremove(t, first.scoreArm))
-        .get();
-    
+    var toReef =
+        start
+            .toChecked(firstScore, routine)
+            .map((t) -> this.bindAutoScorePremove(t, first.scoreArm))
+            .get();
+
     // Set up the start->first score -> intake
-    routine
-        .active()
-        .onTrue(
-            sequence(
-                toReef.resetOdometry(),
-                toReef.cmd()));
-      
+    routine.active().onTrue(sequence(toReef.resetOdometry(), toReef.cmd()));
+
     List<GroundAutoCycle> scores = new LinkedList<GroundAutoCycle>();
     scores.add(first);
     scores.add(second);
     scores.addAll(List.of(rest));
     // from [0].score to [1].start to [1.score]
-    List<Pair<GroundAutoCycle,GroundAutoCycle>> scorePairs = new LinkedList<>();
-    for (int i = 0; i < scores.size()-1; i++) {
-      scorePairs.add(new Pair<GroundAutoCycle,GroundAutoCycle>(scores.get(i), scores.get(i+1)));
+    List<Pair<GroundAutoCycle, GroundAutoCycle>> scorePairs = new LinkedList<>();
+    for (int i = 0; i < scores.size() - 1; i++) {
+      scorePairs.add(new Pair<GroundAutoCycle, GroundAutoCycle>(scores.get(i), scores.get(i + 1)));
     }
 
     System.out.println(scorePairs);
-    // bind the prev->poi (toReef) followed by the poi->intake (toIntake), followed by starting the next score;
-    for (Pair<GroundAutoCycle,GroundAutoCycle> pair : scorePairs){
+    // bind the prev->poi (toReef) followed by the poi->intake (toIntake), followed by starting the
+    // next score;
+    for (Pair<GroundAutoCycle, GroundAutoCycle> pair : scorePairs) {
       var intake = pair.getSecond().start;
-      var toIntake = pair.getFirst().score.toChecked(intake, routine)
-          .map(this::bindIntake)
-          .get();
-      bindScore(toReef, pair.getFirst().scoreArm, Optional.of(toIntake), Arm.Positions.GROUND_CORAL,
-      Optional.of(
-        () -> m_arm.position.pivotRadians()<Units.degreesToRadians(85) && m_arm.position.elevatorMeters()<0.8
-      ));
+      var toIntake = pair.getFirst().score.toChecked(intake, routine).map(this::bindIntake).get();
+      bindScore(
+          toReef,
+          pair.getFirst().scoreArm,
+          Optional.of(toIntake),
+          Arm.Positions.GROUND_CORAL,
+          Optional.of(
+              () ->
+                  m_arm.position.pivotRadians() < Units.degreesToRadians(85)
+                      && m_arm.position.elevatorMeters() < 0.8));
 
-      var nextToReef = intake.toChecked(pair.getSecond().score, routine)
-      .map((t)->this.bindAutoScorePremove(t, pair.getSecond().scoreArm))
-      .get();
-      var recieveCoral= RobotBase.isSimulation() ? sequence(waitSeconds(0.2), runOnce(()->m_coralSensor.setHasCoral(true))) : waitUntil(this::hasCoral);
-      //toIntake.atTime(0.5).onTrue(waitUntil(toIntake.active().and(this::hasCoral)).andThen(nextToReef.spawnCmd()));
+      var nextToReef =
+          intake
+              .toChecked(pair.getSecond().score, routine)
+              .map((t) -> this.bindAutoScorePremove(t, pair.getSecond().scoreArm))
+              .get();
+      var recieveCoral =
+          RobotBase.isSimulation()
+              ? sequence(waitSeconds(0.2), runOnce(() -> m_coralSensor.setHasCoral(true)))
+              : waitUntil(this::hasCoral);
+      // toIntake.atTime(0.5).onTrue(waitUntil(toIntake.active().and(this::hasCoral)).andThen(nextToReef.spawnCmd()));
       toIntake.atTimeBeforeEnd(0.5).onTrue(recieveCoral);
-      toIntake
-      .done()
-          .onTrue(
-              sequence(
-                  nextToReef.spawnCmd()
-      ));
+      toIntake.done().onTrue(sequence(nextToReef.spawnCmd()));
       toReef = nextToReef;
     }
-    var lastCycle = scores.get(scores.size()-1);
-    bindScore(toReef, lastCycle.scoreArm, lastCycle.after().map((opt)->opt.apply(routine)), Arm.Positions.CORAL_STOW, Optional.of(()->true));
+    var lastCycle = scores.get(scores.size() - 1);
+    bindScore(
+        toReef,
+        lastCycle.scoreArm,
+        lastCycle.after().map((opt) -> opt.apply(routine)),
+        Arm.Positions.CORAL_STOW,
+        Optional.of(() -> true));
     return routine.cmd();
   }
-
 
   /**
    * Requires: only drivetrain Runs: drivetrain and rollers
@@ -359,23 +413,31 @@ public class Autos {
 
   public Command alignAndDrop(
       Supplier<Pose2d> target, ReefScoringOption score, double outtakeSeconds) {
-      Capture<Pose2d> targetSup = new Capture<Pose2d>(target.get());
-      return 
-      runOnce(()->{
-        targetSup.inner = target.get();
-      }).andThen(
-      race(
-          waitUntil(
-              m_drivebase.atPose(targetSup)
-                  .and(
-                      () -> {
-                        return m_arm.atPosition(score.arm);
-                      })), // Proxy so hand isn't directly required
-          waitSeconds(1.3),
-          m_drivebase.driveToPoseSupC(targetSup))
-          .andThen(deadline(
-              waitSeconds(0.05).andThen(m_hand.voltage(score.outtakeVoltage).withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop())));
-    
+    Capture<Pose2d> targetSup = new Capture<Pose2d>(target.get());
+    return runOnce(
+            () -> {
+              targetSup.inner = target.get();
+            })
+        .andThen(
+            race(
+                    waitUntil(
+                        m_drivebase
+                            .atPose(targetSup)
+                            .and(
+                                () -> {
+                                  return m_arm.atPosition(score.arm);
+                                })), // Proxy so hand isn't directly required
+                    waitSeconds(1.3),
+                    m_drivebase.driveToPoseSupC(targetSup))
+                .andThen(
+                    deadline(
+                        waitSeconds(0.05)
+                            .andThen(
+                                m_hand
+                                    .voltage(score.outtakeVoltage)
+                                    .withTimeout(outtakeSeconds)
+                                    .asProxy()),
+                        m_drivebase.stop())));
   }
 
   @Logged
@@ -383,7 +445,6 @@ public class Autos {
     return m_coralSensor.hasCoral();
   }
 
-  
   public final double centerToCoralEnd = 0.61;
 
   public Supplier<Pose2d> sensorOffsetPose(Supplier<Pose2d> original) {
@@ -392,66 +453,81 @@ public class Autos {
 
   @Logged
   public ReefScoringOption selectedScoringOption() {
-    if(m_board.getLevel() == 0) {return ReefScoringOption.L1;}
-    if(m_board.getLevel() == 1) {return ReefScoringOption.L2;}
+    if (m_board.getLevel() == 0) {
+      return ReefScoringOption.L1;
+    }
+    if (m_board.getLevel() == 1) {
+      return ReefScoringOption.L2;
+    }
     // TODO automatic selection of pivot-side when closer
-    var pivotSideTarget = ReefScoringOption.L3_PIV.selectedPOI.apply(m_board.getBranch()).flippedPose().getRotation();
-    var batterySideTarget = ReefScoringOption.L3.selectedPOI.apply(m_board.getBranch()).flippedPose().getRotation();
+    var pivotSideTarget =
+        ReefScoringOption.L3_PIV.selectedPOI.apply(m_board.getBranch()).flippedPose().getRotation();
+    var batterySideTarget =
+        ReefScoringOption.L3.selectedPOI.apply(m_board.getBranch()).flippedPose().getRotation();
     var currentHeading = m_drivebase.getPoseHeading();
     if (Math.abs(pivotSideTarget.minus(currentHeading).getRadians())
         < Math.abs(batterySideTarget.minus(currentHeading).getRadians())) {
-      if(m_board.getLevel() == 2) {return ReefScoringOption.L3_PIV;}
+      if (m_board.getLevel() == 2) {
+        return ReefScoringOption.L3_PIV;
+      }
       return ReefScoringOption.L4_PIV;
     }
-    if(m_board.getLevel() == 2) {return ReefScoringOption.L3;}
+    if (m_board.getLevel() == 2) {
+      return ReefScoringOption.L3;
+    }
     return ReefScoringOption.L4;
   }
 
   public Command autoScoreOption(ReefScoringOption option) {
     Capture<Integer> branch = new Capture<Integer>(m_board.getBranch());
-    Supplier<Pose2d> targetSup = ()->option.selectedPOI.apply(branch.get()).flippedPose();
-  return 
-  parallel(
-      runOnce(()->lastScoringOption.inner = option),
-      new ScheduleCommand(m_hand.driveToOffset(option.coralOffsetMeters)),
-      m_drivebase.driveToPoseSupC(targetSup).asProxy(),
-        preMoveUntilTarget(targetSup, option).asProxy())
-  .beforeStarting(()->{
-    branch.inner = m_board.getBranch();
-  }).asProxy();
-}
+    Supplier<Pose2d> targetSup = () -> option.selectedPOI.apply(branch.get()).flippedPose();
+    return parallel(
+            runOnce(() -> lastScoringOption.inner = option),
+            new ScheduleCommand(m_hand.driveToOffset(option.coralOffsetMeters)),
+            m_drivebase.driveToPoseSupC(targetSup).asProxy(),
+            preMoveUntilTarget(targetSup, option).asProxy())
+        .beforeStarting(
+            () -> {
+              branch.inner = m_board.getBranch();
+            })
+        .asProxy();
+  }
+
   public Command autoScoreMap() {
-    return select(Map.of(
-      ReefScoringOption.L1, autoScoreOption(ReefScoringOption.L1),
-      ReefScoringOption.L2, autoScoreOption(ReefScoringOption.L2),
-      ReefScoringOption.L3, autoScoreOption(ReefScoringOption.L3),
-      ReefScoringOption.L4, autoScoreOption(ReefScoringOption.L4),
-      ReefScoringOption.L3_HIGH_ALG, autoScoreOption(ReefScoringOption.L3_HIGH_ALG),
-      ReefScoringOption.L3_PIV, autoScoreOption(ReefScoringOption.L3_PIV),
-      ReefScoringOption.L4_PIV, autoScoreOption(ReefScoringOption.L4_PIV)
-    ), this::selectedScoringOption);
+    return select(
+        Map.of(
+            ReefScoringOption.L1, autoScoreOption(ReefScoringOption.L1),
+            ReefScoringOption.L2, autoScoreOption(ReefScoringOption.L2),
+            ReefScoringOption.L3, autoScoreOption(ReefScoringOption.L3),
+            ReefScoringOption.L4, autoScoreOption(ReefScoringOption.L4),
+            ReefScoringOption.L3_HIGH_ALG, autoScoreOption(ReefScoringOption.L3_HIGH_ALG),
+            ReefScoringOption.L3_PIV, autoScoreOption(ReefScoringOption.L3_PIV),
+            ReefScoringOption.L4_PIV, autoScoreOption(ReefScoringOption.L4_PIV)),
+        this::selectedScoringOption);
   }
 
   public Command stowAfterCoral(Supplier<ReefScoringOption> option) {
-    return select(Map.of(
-      ReefScoringOption.L1, ReefScoringOption.L1.stow.apply(this),
-      ReefScoringOption.L2, ReefScoringOption.L2.stow.apply(this),
-      ReefScoringOption.L3, ReefScoringOption.L3.stow.apply(this),
-      ReefScoringOption.L4, ReefScoringOption.L4.stow.apply(this),
-      ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.stow.apply(this),
-      ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.stow.apply(this)
-    ), option);
+    return select(
+        Map.of(
+            ReefScoringOption.L1, ReefScoringOption.L1.stow.apply(this),
+            ReefScoringOption.L2, ReefScoringOption.L2.stow.apply(this),
+            ReefScoringOption.L3, ReefScoringOption.L3.stow.apply(this),
+            ReefScoringOption.L4, ReefScoringOption.L4.stow.apply(this),
+            ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.stow.apply(this),
+            ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.stow.apply(this)),
+        option);
   }
 
   public Command premoveAfterCoralIntake(Supplier<ReefScoringOption> option) {
-    return select(Map.of(
-      ReefScoringOption.L1, ReefScoringOption.L1.premove.apply(this),
-      ReefScoringOption.L2, ReefScoringOption.L2.premove.apply(this),
-      ReefScoringOption.L3, ReefScoringOption.L3.premove.apply(this),
-      ReefScoringOption.L4, ReefScoringOption.L4.premove.apply(this),
-      ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.premove.apply(this),
-      ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.premove.apply(this)
-    ), option);
+    return select(
+        Map.of(
+            ReefScoringOption.L1, ReefScoringOption.L1.premove.apply(this),
+            ReefScoringOption.L2, ReefScoringOption.L2.premove.apply(this),
+            ReefScoringOption.L3, ReefScoringOption.L3.premove.apply(this),
+            ReefScoringOption.L4, ReefScoringOption.L4.premove.apply(this),
+            ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.premove.apply(this),
+            ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.premove.apply(this)),
+        option);
   }
 
   // public POI selectedReefPOI() {
@@ -520,15 +596,16 @@ public class Autos {
   public enum AlgaeHeight {
     LOW(Arm.Positions.LOW_ALGAE_REEF, Arm.Positions.LOW_ALGAE),
     HIGH(Arm.Positions.HIGH_ALGAE_REEF, Arm.Positions.HIGH_ALGAE);
+
     AlgaeHeight(ArmPosition pivotPosition, ArmPosition batteryPosition) {
-          this.pivotPosition = pivotPosition;
-          this.batteryPosition = batteryPosition;
-        }
-    
-        public final ArmPosition pivotPosition;
-        public final ArmPosition batteryPosition;
-    
+      this.pivotPosition = pivotPosition;
+      this.batteryPosition = batteryPosition;
+    }
+
+    public final ArmPosition pivotPosition;
+    public final ArmPosition batteryPosition;
   }
+
   public enum ReefSide {
     R1(POI.A, POI.B, POI.R1, AlgaeHeight.HIGH, Rotation2d.kZero),
     R2(POI.C, POI.D, POI.R2, AlgaeHeight.LOW, Rotation2d.fromDegrees(60)),
@@ -546,17 +623,23 @@ public class Autos {
     public final Rotation2d pivotFaceAlgaeBlueHeading;
     public final Supplier<Rotation2d> batteryFaceAlgaeFlippedHeading;
     public final Supplier<Rotation2d> pivotFaceAlgaeFlippedHeading;
-    private ReefSide(POI left, POI right, POI algae, AlgaeHeight height, Rotation2d batteryFaceAlgaeBlueHeading) {
+
+    private ReefSide(
+        POI left,
+        POI right,
+        POI algae,
+        AlgaeHeight height,
+        Rotation2d batteryFaceAlgaeBlueHeading) {
       this.left = left;
       this.right = right;
       this.algae = algae;
       this.algaeHeight = height;
       this.batteryFaceAlgaeBlueHeading = batteryFaceAlgaeBlueHeading;
       this.pivotFaceAlgaeBlueHeading = AllianceFlipUtil.flip(batteryFaceAlgaeBlueHeading);
-      this.batteryFaceAlgaeFlippedHeading = AllianceFlipUtil.getFlipped(batteryFaceAlgaeBlueHeading);
+      this.batteryFaceAlgaeFlippedHeading =
+          AllianceFlipUtil.getFlipped(batteryFaceAlgaeBlueHeading);
       this.pivotFaceAlgaeFlippedHeading = AllianceFlipUtil.getFlipped(pivotFaceAlgaeBlueHeading);
     }
-
   }
 
   public ReefSide closestSide() {
@@ -616,7 +699,8 @@ public class Autos {
   }
 
   public Command alignToClimb() {
-    return defer(() -> m_drivebase.driveToPoseSupC(selectedClimb()::flippedPose), Set.of(m_drivebase));
+    return defer(
+        () -> m_drivebase.driveToPoseSupC(selectedClimb()::flippedPose), Set.of(m_drivebase));
   }
 
   public POI closestIntake() {
@@ -633,37 +717,41 @@ public class Autos {
 
   public boolean onLeftHalf() {
     var pose = m_drivebase.getPose();
-    return pose.getTranslation().getDistance(POI.SL3.flippedPose().getTranslation()) < pose.getTranslation()
-        .getDistance(POI.SR3.flippedPose().getTranslation());
+    return pose.getTranslation().getDistance(POI.SL3.flippedPose().getTranslation())
+        < pose.getTranslation().getDistance(POI.SR3.flippedPose().getTranslation());
   }
 
   private Command preMoveUntilTarget(Supplier<Pose2d> target, ReefScoringOption option) {
     return sequence(
-
-        option.premove.apply(this)
+        option
+            .premove
+            .apply(this)
             .until(m_drivebase.safeToMoveArm(target))
             .onlyIf(m_drivebase.safeToMoveArm(target).negate()),
-            option.scoringPosition.apply(this)
-        );
+        option.scoringPosition.apply(this));
   }
 
   public Command goToPositionWristLast(ArmPosition finalPosition) {
     return sequence(
-      m_arm.goToPosition(finalPosition.safeWrist()).until(
-      ()->m_arm.getPosition().withinTolerance(finalPosition.safeWrist(),
-        Degrees.of(10).in(Radians), Inches.of(48).in(Meters), Degrees.of(360).in(Radians))
-    ),
-    m_arm.goToPosition(finalPosition)
-    );
+        m_arm
+            .goToPosition(finalPosition.safeWrist())
+            .until(
+                () ->
+                    m_arm
+                        .getPosition()
+                        .withinTolerance(
+                            finalPosition.safeWrist(),
+                            Degrees.of(10).in(Radians),
+                            Inches.of(48).in(Meters),
+                            Degrees.of(360).in(Radians))),
+        m_arm.goToPosition(finalPosition));
   }
 
-
-// TODO: implement safetoreefalign
-/*public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
-  m_drivebase.safeToReefAlign(this::selectedReefPose);
-  return frc.robot.Autos.safeToReefAlign();
-}*/
-
+  // TODO: implement safetoreefalign
+  /*public boolean Autos.safeToReefAlign((Supplier<Pose2d>> target)){
+    m_drivebase.safeToReefAlign(this::selectedReefPose);
+    return frc.robot.Autos.safeToReefAlign();
+  }*/
 
   private Trigger drivetrainAtReefTargetTrig;
   private Trigger drivetrainCloseMoveArmTrig;
@@ -671,7 +759,7 @@ public class Autos {
 
   // public Command autoScore() {
   //   Capture<Pose2d> targetSup = new Capture<Pose2d>(offsetSelectedReefPose.get());
-  //         return 
+  //         return
   //         parallel(
   //             m_drivebase.driveToPoseSupC(targetSup).asProxy(),
   //               preMoveUntilReefLevel(targetSup, m_board::getLevel)
@@ -679,7 +767,7 @@ public class Autos {
   //         .beforeStarting(()->{
   //           targetSup.inner = offsetSelectedReefPose.get();
   //         })
-              
+
   //             .asProxy();
   // }
 
@@ -689,166 +777,175 @@ public class Autos {
     var pivotSideTarget = closestSide.pivotFaceAlgaeFlippedHeading.get();
     var batterySideTarget = closestSide.batteryFaceAlgaeFlippedHeading.get();
     var currentHeading = m_drivebase.getPoseHeading();
-    var pivotSideIsCloser = (Math.abs(pivotSideTarget.minus(currentHeading).getRadians())
-        < Math.abs(batterySideTarget.minus(currentHeading).getRadians()));
+    var pivotSideIsCloser =
+        (Math.abs(pivotSideTarget.minus(currentHeading).getRadians())
+            < Math.abs(batterySideTarget.minus(currentHeading).getRadians()));
     return pivotSideIsCloser;
   }
-  public Command armToClosestAlgaePivot(){
-    return
-      Commands.select(
-      Map.of(
-        AlgaeHeight.LOW, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.LOW.pivotPosition)),
-        AlgaeHeight.HIGH, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.HIGH.pivotPosition))
-      ),
-      ()->closestSide().algaeHeight);
+
+  public Command armToClosestAlgaePivot() {
+    return Commands.select(
+        Map.of(
+            AlgaeHeight.LOW, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.LOW.pivotPosition)),
+            AlgaeHeight.HIGH,
+                new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.HIGH.pivotPosition))),
+        () -> closestSide().algaeHeight);
   }
 
-  public Command armToClosestAlgaeBattery(){
-    return
-      Commands.select(
-      Map.of(
-        AlgaeHeight.LOW, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.LOW.batteryPosition)),
-        AlgaeHeight.HIGH, new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.HIGH.batteryPosition))
-      ),
-      ()->closestSide().algaeHeight);
+  public Command armToClosestAlgaeBattery() {
+    return Commands.select(
+        Map.of(
+            AlgaeHeight.LOW,
+                new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.LOW.batteryPosition)),
+            AlgaeHeight.HIGH,
+                new ScheduleCommand(m_arm.goToPosition(AlgaeHeight.HIGH.batteryPosition))),
+        () -> closestSide().algaeHeight);
   }
 
   public Command armToClosestAlgae() {
     return either(
-      armToClosestAlgaePivot(),
-      armToClosestAlgaeBattery(),
-      this::pivotSideCloserToReef);
+        armToClosestAlgaePivot(), armToClosestAlgaeBattery(), this::pivotSideCloserToReef);
   }
 
   public Rotation2d closerAlgaeAlignHeadingAllianceRelative() {
     var closestSide = closestSide();
-    return pivotSideCloserToReef() ? closestSide.pivotFaceAlgaeBlueHeading : closestSide.batteryFaceAlgaeBlueHeading;
+    return pivotSideCloserToReef()
+        ? closestSide.pivotFaceAlgaeBlueHeading
+        : closestSide.batteryFaceAlgaeBlueHeading;
   }
 
   public Command coralIntakeSelfCenter() {
-    return           sequence(
-      m_hand.inCoralSlow().until(this::hasCoral),
-      m_hand.voltage(-1).until(()->!this.hasCoral()),
-      m_hand.voltage(0.5).until(this::hasCoral),
-      m_hand.voltage(0.5).withTimeout(0.4)
-    );
+    return sequence(
+        m_hand.inCoralSlow().until(this::hasCoral),
+        m_hand.voltage(-1).until(() -> !this.hasCoral()),
+        m_hand.voltage(0.5).until(this::hasCoral),
+        m_hand.voltage(0.5).withTimeout(0.4));
   }
+
   public Command autoCoralIntake() {
     return parallel(
         new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL)),
-        new ScheduleCommand(
-          coralIntakeSelfCenter()
-
-        )
-    );
+        new ScheduleCommand(coralIntakeSelfCenter()));
   }
 
   public Command autoCoralGroundIntake() {
     return parallel(
         new ScheduleCommand(m_arm.goToPosition(Arm.Positions.GROUND_CORAL)),
         new ScheduleCommand(
-          
             sequence(
-              m_hand.inCoral()
- 
-              
-              .until(this::hasCoral)//,
-              //m_hand.inCoral().withTimeout(0.1)
-            ).unless(this::hasCoral).andThen(
-                parallel(
-                  new ScheduleCommand(premoveAfterCoralIntake(this::selectedScoringOption)),
-                  
-                  new ScheduleCommand(m_hand.stop()),
-                  new ScheduleCommand(
+                    m_hand.inCoral().until(this::hasCoral) // ,
 
-                    LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(1)
+                    // m_hand.inCoral().withTimeout(0.1)
                     )
-                )
-            )
-        )
-    );
+                .unless(this::hasCoral)
+                .andThen(
+                    parallel(
+                        new ScheduleCommand(premoveAfterCoralIntake(this::selectedScoringOption)),
+                        new ScheduleCommand(m_hand.stop()),
+                        new ScheduleCommand(
+                            LightStripS.top.stateC(() -> TopStates.Intaked).withTimeout(1))))));
   }
 
   public Command bargeUpAndOut() {
     return deadline(
-      m_hand.inAlgae().until(()-> m_arm.position.elevatorMeters() > 
-        Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(12))
-          .andThen(m_hand.outAlgae().withTimeout(0.5)),
-      m_arm.goToPosition(Arm.Positions.SCORE_BARGE).asProxy()
-      
-    ).andThen(
-      parallel(
-        new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
-        new ScheduleCommand(m_hand.inAlgae())
-      )
-    );
+            m_hand
+                .inAlgae()
+                .until(
+                    () ->
+                        m_arm.position.elevatorMeters()
+                            > Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(12))
+                .andThen(m_hand.outAlgae().withTimeout(0.5)),
+            m_arm.goToPosition(Arm.Positions.SCORE_BARGE).asProxy())
+        .andThen(
+            parallel(
+                new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
+                new ScheduleCommand(m_hand.inAlgae())));
   }
-  
+
   public Command bargeUpAndOutVoltage() {
-    BooleanSupplier release = ()-> m_arm.position.elevatorMeters() > 
-    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(16);
-    BooleanSupplier nohardstop = ()-> m_arm.position.elevatorMeters() > 
-    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(10);
-    return
-      sequence(
+    BooleanSupplier release =
+        () ->
+            m_arm.position.elevatorMeters()
+                > Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(16);
+    BooleanSupplier nohardstop =
+        () ->
+            m_arm.position.elevatorMeters()
+                > Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(10);
+    return sequence(
         // prep position
-        parallel(
-          m_arm.goToPosition(Arm.Positions.SCORE_BARGE_PRE),
-          m_hand.inAlgae()
-        ).until(
-          ()->m_arm.position.withinTolerance(Arm.Positions.SCORE_BARGE_PRE,
-          Units.degreesToRadians(2), Units.inchesToMeters(3), Units.degreesToRadians(3))),
+        parallel(m_arm.goToPosition(Arm.Positions.SCORE_BARGE_PRE), m_hand.inAlgae())
+            .until(
+                () ->
+                    m_arm.position.withinTolerance(
+                        Arm.Positions.SCORE_BARGE_PRE,
+                        Units.degreesToRadians(2),
+                        Units.inchesToMeters(3),
+                        Units.degreesToRadians(3))),
         // extend
         parallel(
-          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
-          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->4)
-        ).alongWith(m_hand.inAlgae()).until(release),
+                m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
+                m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
+                m_arm.elevatorS.voltage(() -> 4))
+            .alongWith(m_hand.inAlgae())
+            .until(release),
         // stop
         parallel(
-          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
-          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->4)
-        ).alongWith(m_hand.outAlgae()).until(nohardstop),
+                m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
+                m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
+                m_arm.elevatorS.voltage(() -> 4))
+            .alongWith(m_hand.outAlgae())
+            .until(nohardstop),
         parallel(
-          m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
-          m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->0),
-          m_hand.stop()
-        ).withTimeout(0.2),
+                m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
+                m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
+                m_arm.elevatorS.voltage(() -> 0),
+                m_hand.stop())
+            .withTimeout(0.2),
         // retract
         parallel(
-          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
-          new ScheduleCommand(m_hand.stop())
-        )
-      );
+            new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW)),
+            new ScheduleCommand(m_hand.stop())));
   }
-  
+
   private double bargeTargetX() {
-    final double blueX = 7.53-Units.inchesToMeters(10);
-    return (m_drivebase.getPose().getX() > AllianceFlipUtil.fieldLength/2.0) ? AllianceFlipUtil.flipX(blueX) : blueX;
+    final double blueX = 7.53 - Units.inchesToMeters(10);
+    return (m_drivebase.getPose().getX() > AllianceFlipUtil.fieldLength / 2.0)
+        ? AllianceFlipUtil.flipX(blueX)
+        : blueX;
   }
 
   private final Supplier<Rotation2d> bargeTargetHeading = this::bargeTargetHeading;
 
   public Rotation2d bargeTargetHeading() {
-    return (m_drivebase.getPose().getX() > AllianceFlipUtil.fieldLength/2.0) ? Rotation2d.k180deg : Rotation2d.kZero;
+    return (m_drivebase.getPose().getX() > AllianceFlipUtil.fieldLength / 2.0)
+        ? Rotation2d.k180deg
+        : Rotation2d.kZero;
   }
+
   public Command alignToBarge(DoubleSupplier lateralSpeed) {
     return m_drivebase.driveToX(this::bargeTargetX, lateralSpeed, bargeTargetHeading);
   }
 
   public boolean atBargeLine() {
-    return MathUtil.isNear(bargeTargetX(), m_drivebase.getPose().getX(), Units.inchesToMeters(2)) && 
-      MathUtil.isNear(0, m_drivebase.getPoseHeading().minus(bargeTargetHeading()).getRadians(), Units.degreesToRadians(10));
+    return MathUtil.isNear(bargeTargetX(), m_drivebase.getPose().getX(), Units.inchesToMeters(2))
+        && MathUtil.isNear(
+            0,
+            m_drivebase.getPoseHeading().minus(bargeTargetHeading()).getRadians(),
+            Units.degreesToRadians(10));
   }
 
   // public Command outtake() {
   //   return m_hand.outCoral().alongWith(runOnce(() -> m_coralSensor.setHasCoral(false)));
   // }
 
-  public AutoTrajectory bindScore(AutoTrajectory self, ReefScoringOption scoringPosition, Optional<AutoTrajectory> next, ArmPosition intakeAfterScore, Optional<BooleanSupplier> readyToMoveOn) {
-    BooleanSupplier elevatorRetractedEnough = () -> m_arm.position.elevatorLength().lt(Meters.of(1.45));
+  public AutoTrajectory bindScore(
+      AutoTrajectory self,
+      ReefScoringOption scoringPosition,
+      Optional<AutoTrajectory> next,
+      ArmPosition intakeAfterScore,
+      Optional<BooleanSupplier> readyToMoveOn) {
+    BooleanSupplier elevatorRetractedEnough =
+        () -> m_arm.position.elevatorLength().lt(Meters.of(1.45));
     BooleanSupplier readyToNext = readyToMoveOn.orElse(elevatorRetractedEnough);
     var finalPoseUnflipped = self.getRawTrajectory().getFinalPose(false).get();
     var finalPoseFlipped = self.getFinalPose().get();
@@ -861,82 +958,93 @@ public class Autos {
     // .onTrue(
     //   goToPositionWristLast(scoringPosition)
     // );
-    self.atTimeBeforeEnd(0.01)
-    .onTrue(scoringPosition.scoringPosition.apply(this));
+    self.atTimeBeforeEnd(0.01).onTrue(scoringPosition.scoringPosition.apply(this));
     self.done()
         .onTrue(print("Inside Scoring Radius"))
-        
-        .onTrue(
-          sequence(
-            alignAndDrop(
-              sensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME
-            ),
-
-            //Commands.waitSeconds(AUTO_OUTTAKE_TIME),
-            new ScheduleCommand(sequence(
-              scoringPosition.stow.apply(this).until(elevatorRetractedEnough),
-              m_arm.goToPosition(intakeAfterScore)
-            )),
-            next.map((Function<AutoTrajectory, Command>) (nextTraj)->
-              waitUntil(
-                  readyToNext)
-                  .andThen(nextTraj.spawnCmd())).orElse(none())
-        ));
-    return self;
-  }
-  public Command flexAuto(POI start, POI intake, Optional<Function<AutoRoutine, AutoTrajectory>> after, POI firstScore, POI... rest)
-      throws NoSuchElementException {
-    SwerveRequest stationPickupRequest = new SwerveRequest.ApplyRobotSpeeds()
-      .withDriveRequestType(DriveRequestType.Velocity)
-      .withSpeeds(new ChassisSpeeds(0.3, 0, 0));
-    final ReefScoringOption scoringPosition = ReefScoringOption.L4_PIV;
-    var routine = m_autoFactory.newRoutine("JKLA_SL3");
-    var toReef = start.toChecked(firstScore, routine)
-        .map((t)->this.bindAutoScorePremove(t, scoringPosition))
-        .get();
-    
-    // Set up the start->first score -> intake
-    routine
-        .active()
         .onTrue(
             sequence(
-                toReef.resetOdometry(),
-                toReef.cmd()));
-      
+                alignAndDrop(
+                    sensorOffsetPose(() -> finalPoseFlipped), scoringPosition, AUTO_OUTTAKE_TIME),
+
+                // Commands.waitSeconds(AUTO_OUTTAKE_TIME),
+                new ScheduleCommand(
+                    sequence(
+                        scoringPosition.stow.apply(this).until(elevatorRetractedEnough),
+                        m_arm.goToPosition(intakeAfterScore))),
+                next.map(
+                        (Function<AutoTrajectory, Command>)
+                            (nextTraj) -> waitUntil(readyToNext).andThen(nextTraj.spawnCmd()))
+                    .orElse(none())));
+    return self;
+  }
+
+  public Command flexAuto(
+      POI start,
+      POI intake,
+      Optional<Function<AutoRoutine, AutoTrajectory>> after,
+      POI firstScore,
+      POI... rest)
+      throws NoSuchElementException {
+    SwerveRequest stationPickupRequest =
+        new SwerveRequest.ApplyRobotSpeeds()
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSpeeds(new ChassisSpeeds(0.3, 0, 0));
+    final ReefScoringOption scoringPosition = ReefScoringOption.L4_PIV;
+    var routine = m_autoFactory.newRoutine("JKLA_SL3");
+    var toReef =
+        start
+            .toChecked(firstScore, routine)
+            .map((t) -> this.bindAutoScorePremove(t, scoringPosition))
+            .get();
+
+    // Set up the start->first score -> intake
+    routine.active().onTrue(sequence(toReef.resetOdometry(), toReef.cmd()));
+
     List<POI> scores = new LinkedList<POI>();
     scores.add(firstScore);
     scores.addAll(List.of(rest));
-    List<Pair<POI,POI>> scorePairs = new LinkedList<>();
-    for (int i = 0; i < scores.size()-1; i++) {
-      scorePairs.add(new Pair<POI,POI>(scores.get(i), scores.get(i+1)));
+    List<Pair<POI, POI>> scorePairs = new LinkedList<>();
+    for (int i = 0; i < scores.size() - 1; i++) {
+      scorePairs.add(new Pair<POI, POI>(scores.get(i), scores.get(i + 1)));
     }
 
     System.out.println(scorePairs);
-    // bind the prev->poi (toReef) followed by the poi->intake (toIntake), followed by starting the next score;
-    for (Pair<POI,POI> pair : scorePairs){
-      
-      var toIntake = pair.getFirst().toChecked(intake, routine)
-          .map(this::bindWallIntake)
-          .get();
-      bindScore(toReef, scoringPosition, Optional.of(toIntake), Arm.Positions.WALL_INTAKE_CORAL, Optional.empty());
+    // bind the prev->poi (toReef) followed by the poi->intake (toIntake), followed by starting the
+    // next score;
+    for (Pair<POI, POI> pair : scorePairs) {
 
-      var nextToReef = intake.toChecked(pair.getSecond(), routine)
-      .map((t)->this.bindAutoScorePremove(t, scoringPosition))
-      .get();
+      var toIntake = pair.getFirst().toChecked(intake, routine).map(this::bindWallIntake).get();
+      bindScore(
+          toReef,
+          scoringPosition,
+          Optional.of(toIntake),
+          Arm.Positions.WALL_INTAKE_CORAL,
+          Optional.empty());
+
+      var nextToReef =
+          intake
+              .toChecked(pair.getSecond(), routine)
+              .map((t) -> this.bindAutoScorePremove(t, scoringPosition))
+              .get();
       var intakeFinalPose = toIntake.getRawTrajectory().getFinalPose(false).get();
-      var recieveCoral= RobotBase.isSimulation() ? sequence(waitSeconds(0.4), runOnce(()->m_coralSensor.setHasCoral(true))) : waitUntil(this::hasCoral);
+      var recieveCoral =
+          RobotBase.isSimulation()
+              ? sequence(waitSeconds(0.4), runOnce(() -> m_coralSensor.setHasCoral(true)))
+              : waitUntil(this::hasCoral);
       toIntake
-      .done()
+          .done()
           .onTrue(
               sequence(
-                  deadline(
-                      recieveCoral,
-                      m_drivebase.applyRequest(()->stationPickupRequest)),
-                  nextToReef.spawnCmd()
-      ));
+                  deadline(recieveCoral, m_drivebase.applyRequest(() -> stationPickupRequest)),
+                  nextToReef.spawnCmd()));
       toReef = nextToReef;
     }
-    bindScore(toReef, scoringPosition, after.map((func)->func.apply(routine)), Arm.Positions.WALL_INTAKE_CORAL, Optional.empty());
+    bindScore(
+        toReef,
+        scoringPosition,
+        after.map((func) -> func.apply(routine)),
+        Arm.Positions.WALL_INTAKE_CORAL,
+        Optional.empty());
     return routine.cmd();
   }
 
@@ -952,16 +1060,14 @@ public class Autos {
   }
 
   private AutoTrajectory bindIntake(AutoTrajectory trajectory) {
-    trajectory.atTime(0.5)
+    trajectory
+        .atTime(0.5)
         .onTrue(m_hand.inCoral().until(new Trigger(this::hasCoral)).andThen(m_hand.stop()));
     return trajectory;
   }
 
   private AutoTrajectory bindWallIntake(AutoTrajectory trajectory) {
-    trajectory.atTime(0.5)
-        .onTrue(
-          coralIntakeSelfCenter()
-        );
+    trajectory.atTime(0.5).onTrue(coralIntakeSelfCenter());
     return trajectory;
   }
 }

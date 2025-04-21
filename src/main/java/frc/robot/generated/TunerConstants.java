@@ -27,7 +27,6 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerFeedbackType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstantsFactory;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -65,7 +64,10 @@ public class TunerConstants {
   // output type specified by SwerveModuleConstants.DriveMotorClosedLoopOutput
   private static final Slot0Configs driveGains =
       new Slot0Configs()
-          .withKP(8*(5.35714285714285 / 7.125)) // 8 A/(oldRot/s) = 8 A/(5.357 newRot/7.125oldRot)*oldRot
+          .withKP(
+              8
+                  * (5.35714285714285
+                      / 7.125)) // 8 A/(oldRot/s) = 8 A/(5.357 newRot/7.125oldRot)*oldRot
           .withKI(0)
           .withKD(0)
           .withKS(0)
@@ -76,7 +78,8 @@ public class TunerConstants {
   private static final ClosedLoopOutputType kSteerClosedLoopOutput = ClosedLoopOutputType.Voltage;
   // The closed-loop output type to use for the drive motors;
   // This affects the PID/FF gains for the drive motors
-  private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.TorqueCurrentFOC;
+  private static final ClosedLoopOutputType kDriveClosedLoopOutput =
+      ClosedLoopOutputType.TorqueCurrentFOC;
 
   // The type of motor used for the drive motor
   private static final DriveMotorArrangement kDriveMotorType =
@@ -121,7 +124,8 @@ public class TunerConstants {
   // This may need to be tuned to your individual robot
   private static final double kCoupleRatio = 3.125;
 
-  private static final double kDriveGearRatio = 50.0/16.0 * 19.0/25.0 * 45.0/15.0;//5.357142857142857;
+  private static final double kDriveGearRatio =
+      50.0 / 16.0 * 19.0 / 25.0 * 45.0 / 15.0; // 5.357142857142857;
   private static final double kSteerGearRatio = 21.428571428571427;
   public static final Distance kWheelRadius = Inches.of(1.962);
 
@@ -136,7 +140,7 @@ public class TunerConstants {
   // Simulated voltage necessary to overcome friction
   private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
   private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
-  public static final double kDriveRotationsPerMeter = 1 / (2*Math.PI*kWheelRadius.in(Meter));
+  public static final double kDriveRotationsPerMeter = 1 / (2 * Math.PI * kWheelRadius.in(Meter));
   public static final SwerveDrivetrainConstants DrivetrainConstants =
       new SwerveDrivetrainConstants()
           .withCANBusName(kCANBus.getName())
@@ -265,14 +269,16 @@ public class TunerConstants {
               kInvertRightSide,
               kBackRightSteerMotorInverted,
               kBackRightEncoderInverted);
-public static double kDriveRadius = Math.hypot(kFrontLeftXPos.in(Meter), kFrontLeftYPos.in(Meter));
+  public static double kDriveRadius =
+      Math.hypot(kFrontLeftXPos.in(Meter), kFrontLeftYPos.in(Meter));
 
   /**
    * Creates a CommandSwerveDrivetrain instance. This should only be called once in your robot
    * program,.
    */
   public static DriveBaseS createDrivetrain() {
-    return new DriveBaseS(DrivetrainConstants,
+    return new DriveBaseS(
+        DrivetrainConstants,
         FrontLeft.withEncoderOffset(Rotations.of(0.1074218)),
         FrontRight.withEncoderOffset(Rotations.of(-0.393066)),
         BackLeft.withEncoderOffset(Rotations.of(0.3203125)),

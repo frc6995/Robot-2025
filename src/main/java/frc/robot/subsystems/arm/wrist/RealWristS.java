@@ -8,9 +8,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -20,7 +17,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.sim.ChassisReference;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
@@ -43,6 +39,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.NomadMathUtil;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 @Logged
 public class RealWristS extends Wrist {
@@ -53,10 +51,11 @@ public class RealWristS extends Wrist {
 
     public static final Angle CCW_LIMIT = Degrees.of(146.8);
     public static final Angle CW_LIMIT = Degrees.of(-70);
-    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
+    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION =
+        48.0 / 9.0 * 40.0 / 15.0 * 40.0 / 15.0;
     // Units=volts/pivot rotation/s
     public static final double K_V = 4.548;
-    public static final double K_A = 0.2 * 0.45/0.25;
+    public static final double K_A = 0.2 * 0.45 / 0.25;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
@@ -73,16 +72,19 @@ public class RealWristS extends Wrist {
     public static final double IN_VOLTAGE = 0;
 
     public static final double K_G = 0.45;
-    public static final Angle K_G_ANGLE = Degrees.of(35.06);//Rotations.of(-0.072);
+    public static final Angle K_G_ANGLE = Degrees.of(35.06); // Rotations.of(-0.072);
 
     public static final Angle K_G_ANGLE_WITH_CORAL = Degrees.of(45);
     public static final double K_S = 0;
     // arm plus hand
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
     public static final double MOI = 0.10829;
+
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.CurrentLimits.withStatorCurrentLimitEnable(true).withStatorCurrentLimit(120)
-      .withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(60);
+      config.CurrentLimits.withStatorCurrentLimitEnable(true)
+          .withStatorCurrentLimit(120)
+          .withSupplyCurrentLimitEnable(true)
+          .withSupplyCurrentLimit(60);
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(50).withKD(0);
       config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(2.8);
       config.Feedback
@@ -97,15 +99,18 @@ public class RealWristS extends Wrist {
       config.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
       return config;
     }
-
   }
 
   private final SingleJointedArmSim m_pivotSim =
       new SingleJointedArmSim(
-        WristConstants.GEARBOX, WristConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION, 
-        WristConstants.MOI, 0.2, WristConstants.CW_LIMIT.in(Radians), 
-        WristConstants.CCW_LIMIT.in(Radians), false, 0
-      );
+          WristConstants.GEARBOX,
+          WristConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION,
+          WristConstants.MOI,
+          0.2,
+          WristConstants.CW_LIMIT.in(Radians),
+          WristConstants.CCW_LIMIT.in(Radians),
+          false,
+          0);
 
   public final MechanismLigament2d WRIST =
       new MechanismLigament2d("wrist", 0, 0, 4, new Color8Bit(235, 137, 52));
@@ -120,14 +125,14 @@ public class RealWristS extends Wrist {
   private double m_goalRotations;
 
   private DoubleSupplier m_mainAngleSupplier = () -> 0;
+
   public void setMainAngleSupplier(DoubleSupplier mainAngleSupplier) {
     m_mainAngleSupplier = mainAngleSupplier;
   }
+
   /** Creates a new MainPivotS. */
   public RealWristS() {
-    m_leader
-        .getConfigurator()
-        .apply(WristConstants.configureLeader(new TalonFXConfiguration()));
+    m_leader.getConfigurator().apply(WristConstants.configureLeader(new TalonFXConfiguration()));
     m_leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
     m_pivotSim.setState(VecBuilder.fill(0, 0));
     m_setpointSig.setUpdateFrequency(50);
@@ -143,15 +148,16 @@ public class RealWristS extends Wrist {
     if (DriverStation.isDisabled()) {
       m_leader.set(0);
     }
-
   }
 
   public double setpoint() {
     m_setpointSig.refresh();
     return m_setpointSig.getValueAsDouble();
   }
+
   public Command home() {
-    return this.runOnce(()->m_leader.getConfigurator().setPosition(WristConstants.CW_LIMIT)).ignoringDisable(true);
+    return this.runOnce(() -> m_leader.getConfigurator().setPosition(WristConstants.CW_LIMIT))
+        .ignoringDisable(true);
   }
 
   public void simulationPeriodic() {
@@ -189,14 +195,17 @@ public class RealWristS extends Wrist {
   }
 
   public double getKgVolts() {
-    return Math.cos(getAngleRadians() - WristConstants.K_G_ANGLE.in(Radians) + m_mainAngleSupplier.getAsDouble())*WristConstants.K_G;
+    return Math.cos(
+            getAngleRadians()
+                - WristConstants.K_G_ANGLE.in(Radians)
+                + m_mainAngleSupplier.getAsDouble())
+        * WristConstants.K_G;
   }
 
   public void setAngleRadians(double angle) {
     m_goalRotations = Units.radiansToRotations(angle);
 
-    m_leader.setControl(
-        m_profileReq.withPosition(m_goalRotations).withFeedForward(getKgVolts()));
+    m_leader.setControl(m_profileReq.withPosition(m_goalRotations).withFeedForward(getKgVolts()));
   }
 
   public Command goTo(DoubleSupplier angleSupplier) {
@@ -218,31 +227,34 @@ public class RealWristS extends Wrist {
     return sequence(runOnce(() -> setAngleRadians(getAngleRadians())), Commands.idle());
   }
 
-  public Trigger currentHomed = new Trigger(
-    ()->{
-      m_currentSig.refresh();
-      m_velocitySig.refresh();
-      return m_currentSig.getValueAsDouble() > 50 && Math.abs(m_velocitySig.getValueAsDouble()) < 0.05 && m_voltageReq.Output < 0;
-    }
-  ).debounce(0.25);
+  public Trigger currentHomed =
+      new Trigger(
+              () -> {
+                m_currentSig.refresh();
+                m_velocitySig.refresh();
+                return m_currentSig.getValueAsDouble() > 50
+                    && Math.abs(m_velocitySig.getValueAsDouble()) < 0.05
+                    && m_voltageReq.Output < 0;
+              })
+          .debounce(0.25);
 
   public Command driveToHome() {
     return sequence(
-      voltage(()->-1).until(currentHomed),
-      this.runOnce(()->m_leader.getConfigurator().setPosition(Degrees.of(-70-(70-64.6)))).ignoringDisable(true),
-      voltage(()->-1).withTimeout(0.5),
-      new ScheduleCommand(
-        LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(0.5)
-      )
-      
-    );
-  }
-  public Command coast() {
-    return this.startEnd(
-      ()->setNeutralMode(NeutralModeValue.Coast), ()->setNeutralMode(NeutralModeValue.Brake)).ignoringDisable(true);
+        voltage(() -> -1).until(currentHomed),
+        this.runOnce(() -> m_leader.getConfigurator().setPosition(Degrees.of(-70 - (70 - 64.6))))
+            .ignoringDisable(true),
+        voltage(() -> -1).withTimeout(0.5),
+        new ScheduleCommand(LightStripS.top.stateC(() -> TopStates.Intaked).withTimeout(0.5)));
   }
 
-private void setNeutralMode(NeutralModeValue mode) {
-  m_leader.setNeutralMode(mode);
-}
+  public Command coast() {
+    return this.startEnd(
+            () -> setNeutralMode(NeutralModeValue.Coast),
+            () -> setNeutralMode(NeutralModeValue.Brake))
+        .ignoringDisable(true);
+  }
+
+  private void setNeutralMode(NeutralModeValue mode) {
+    m_leader.setNeutralMode(mode);
+  }
 }

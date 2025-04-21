@@ -11,61 +11,75 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 @Logged
 public class ArmBrakeS extends SubsystemBase {
-  public final SparkFlex motor = new SparkFlex(ArmBrakeConstants.CAN_ID, MotorType.kBrushless); 
+  public final SparkFlex motor = new SparkFlex(ArmBrakeConstants.CAN_ID, MotorType.kBrushless);
+
   /** Creates a new ArmBreakS. */
   public ArmBrakeS() {
-    motor.configure(ArmBrakeConstants.configureMotor(new SparkFlexConfig()), ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-    setDefaultCommand(release());//.andThen(holdopen()));
+    motor.configure(
+        ArmBrakeConstants.configureMotor(new SparkFlexConfig()),
+        ResetMode.kNoResetSafeParameters,
+        PersistMode.kPersistParameters);
+    setDefaultCommand(release()); // .andThen(holdopen()));
   }
+
   public double getPosition() {
     return motor.getEncoder().getPosition();
   }
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
   }
+
   public Command start() {
-    return voltage (10).withTimeout(0.06);
+    return voltage(10).withTimeout(0.06);
   }
+
   public Command goTo(double position) {
-    return this.run(()->motor.getClosedLoopController().setReference(position, ControlType.kPosition));
+    return this.run(
+        () -> motor.getClosedLoopController().setReference(position, ControlType.kPosition));
   }
+
   public Command brake() {
-  return this.goTo(-5);//return voltage(-1);
+    return this.goTo(-5); // return voltage(-1);
   }
+
   public Command release() {
-    return goTo(1); //start().andThen(end());
+    return goTo(1); // start().andThen(end());
   }
+
   public Command holdopen() {
-return voltage(0.2);
-  }
-  public Command end () {
-return voltage(0);
-  }
-  public Command voltage (double volts) {
-return this.run(()-> motor.setVoltage(volts));
-
+    return voltage(0.2);
   }
 
-  public Command home () {
-    return this.runOnce(()->motor.getEncoder().setPosition(0)).ignoringDisable(true);
+  public Command end() {
+    return voltage(0);
   }
-public class ArmBrakeConstants {
-  public static final int CAN_ID = 35;
-  public static final int CURRENT_LIMIT =25;
-  public static SparkFlexConfig configureMotor(SparkFlexConfig config) {
-    config.smartCurrentLimit(CURRENT_LIMIT);
-    config.softLimit.forwardSoftLimit(1).forwardSoftLimitEnabled(true);
-    config.idleMode(IdleMode.kBrake);
-    config.closedLoop.p(10);
-    return config;
+
+  public Command voltage(double volts) {
+    return this.run(() -> motor.setVoltage(volts));
   }
-}
+
+  public Command home() {
+    return this.runOnce(() -> motor.getEncoder().setPosition(0)).ignoringDisable(true);
+  }
+
+  public class ArmBrakeConstants {
+    public static final int CAN_ID = 35;
+    public static final int CURRENT_LIMIT = 25;
+
+    public static SparkFlexConfig configureMotor(SparkFlexConfig config) {
+      config.smartCurrentLimit(CURRENT_LIMIT);
+      config.softLimit.forwardSoftLimit(1).forwardSoftLimitEnabled(true);
+      config.idleMode(IdleMode.kBrake);
+      config.closedLoop.p(10);
+      return config;
+    }
+  }
 }

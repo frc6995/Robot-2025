@@ -11,9 +11,6 @@ import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
 
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -28,7 +25,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.ctre.phoenix6.sim.ChassisReference;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
@@ -48,6 +44,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.util.NomadMathUtil;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 @Logged
 public class MainPivotS extends SubsystemBase {
@@ -58,10 +56,11 @@ public class MainPivotS extends SubsystemBase {
 
     public static final Angle CCW_LIMIT = Degrees.of(110);
     public static final Angle CW_LIMIT = Degrees.of(40);
-    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651 * 14.0/9.0;
+    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 79.3651 * 14.0 / 9.0;
     // Units=volts/pivot rotation/s
     public static final double K_V = 12.0 / (100 / MOTOR_ROTATIONS_PER_ARM_ROTATION);
-    public static final double K_A = 0.25 /*v/oldRot/s^2 */ * 9.0/14.0; /* newRot/oldRot */;
+    public static final double K_A = 0.25 /*v/oldRot/s^2 */ * 9.0 / 14.0; /* newRot/oldRot */
+    ;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
@@ -93,13 +92,17 @@ public class MainPivotS extends SubsystemBase {
     public static final double ENCODER_OFFSET_ROTATIONS = 0.12109375 + 0.125;
 
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
-      config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(K_P).withKD(0.4).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
-      //TEMP
+      config.Slot0.withKS(K_S)
+          .withKV(K_V)
+          .withKA(K_A)
+          .withKP(K_P)
+          .withKD(0.4)
+          .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
+      // TEMP
       config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(0.66);
-      //config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
+      // config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-      config.Feedback
-          .withFeedbackRemoteSensorID(30)
+      config.Feedback.withFeedbackRemoteSensorID(30)
           .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
           .withSensorToMechanismRatio(1)
           .withRotorToSensorRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
@@ -112,16 +115,14 @@ public class MainPivotS extends SubsystemBase {
     }
 
     public static TalonFXConfiguration configureFollower(TalonFXConfiguration config) {
-      config.Feedback
-          .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
-          config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
+      config.Feedback.withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
+      config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;
     }
 
     public static TalonFXConfiguration configureOppose(TalonFXConfiguration config) {
-      config.Feedback
-          .withSensorToMechanismRatio(-MOTOR_ROTATIONS_PER_ARM_ROTATION);
-          config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
+      config.Feedback.withSensorToMechanismRatio(-MOTOR_ROTATIONS_PER_ARM_ROTATION);
+      config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;
     }
 
@@ -146,8 +147,10 @@ public class MainPivotS extends SubsystemBase {
           false);
 
   private DoubleSupplier m_lengthSupplier = () -> ElevatorConstants.MIN_LENGTH.in(Meters);
-  private DoubleSupplier m_moiSupplier = () -> ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters));
+  private DoubleSupplier m_moiSupplier =
+      () -> ElevatorConstants.getMoI(ElevatorConstants.MIN_LENGTH.in(Meters));
   private DoubleSupplier m_accelerationSupplier = () -> 0;
+
   public void setLengthSupplier(DoubleSupplier lengthSupplier) {
     m_lengthSupplier = lengthSupplier;
   }
@@ -174,6 +177,7 @@ public class MainPivotS extends SubsystemBase {
   private double m_goalRotations;
   private CANcoder m_cancoder = new CANcoder(30);
   private StatusSignal<Angle> m_cancoderAngleSig = m_cancoder.getPosition();
+
   /** Creates a new MainPivotS. */
   public MainPivotS() {
     m_leader
@@ -188,7 +192,8 @@ public class MainPivotS extends SubsystemBase {
     m_oppose2
         .getConfigurator()
         .apply(MainPivotConstants.configureOppose(new TalonFXConfiguration()));
-    m_cancoder.getConfigurator()
+    m_cancoder
+        .getConfigurator()
         .apply(MainPivotConstants.configureEncoder(new CANcoderConfiguration()));
     m_leader.getSimState().Orientation = ChassisReference.Clockwise_Positive;
     m_follower.getSimState().Orientation = ChassisReference.Clockwise_Positive;
@@ -207,17 +212,21 @@ public class MainPivotS extends SubsystemBase {
 
   public Command coast() {
     return this.startEnd(
-      ()->setNeutralMode(NeutralModeValue.Coast), ()->setNeutralMode(NeutralModeValue.Brake)).ignoringDisable(true);
+            () -> setNeutralMode(NeutralModeValue.Coast),
+            () -> setNeutralMode(NeutralModeValue.Brake))
+        .ignoringDisable(true);
   }
 
   public double getSetpoint() {
     m_angleSetpointSig.refresh();
     return m_angleSetpointSig.getValueAsDouble();
   }
+
   public double getCanCoderAngle() {
     m_cancoderAngleSig.refresh();
     return m_cancoderAngleSig.getValueAsDouble();
   }
+
   private void setNeutralMode(NeutralModeValue mode) {
     m_leader.setNeutralMode(mode);
     m_follower.setNeutralMode(mode);
@@ -229,8 +238,8 @@ public class MainPivotS extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     MAIN_PIVOT.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
-    
-        if (DriverStation.isDisabled()) {
+
+    if (DriverStation.isDisabled()) {
       m_leader.set(0);
     }
   }
@@ -238,6 +247,7 @@ public class MainPivotS extends SubsystemBase {
   public double simulatedAngleRotations() {
     return Units.radiansToRotations(m_pivotSim.getAngleRads());
   }
+
   public void simulationPeriodic() {
     m_pivotSim.setMOI(m_moiSupplier.getAsDouble());
     m_pivotSim.setCGRadius(m_lengthSupplier.getAsDouble() / 2.0);
@@ -269,9 +279,14 @@ public class MainPivotS extends SubsystemBase {
       m_oppose1.getSimState().setRotorVelocity(-rotorVel);
       m_oppose2.getSimState().setRawRotorPosition(-rotorPos);
       m_oppose2.getSimState().setRotorVelocity(-rotorVel);
-      m_cancoder.getSimState().setRawPosition(-(Units.radiansToRotations(m_pivotSim.getAngleRads())-MainPivotConstants.ENCODER_OFFSET_ROTATIONS));
-      m_cancoder.getSimState().setVelocity(-(Units.radiansToRotations(m_pivotSim.getVelocityRadPerSec())));
-
+      m_cancoder
+          .getSimState()
+          .setRawPosition(
+              -(Units.radiansToRotations(m_pivotSim.getAngleRads())
+                  - MainPivotConstants.ENCODER_OFFSET_ROTATIONS));
+      m_cancoder
+          .getSimState()
+          .setVelocity(-(Units.radiansToRotations(m_pivotSim.getVelocityRadPerSec())));
     }
   }
 
@@ -289,52 +304,52 @@ public class MainPivotS extends SubsystemBase {
 
   public double getLengthKg() {
     return MathUtil.interpolate(
-      MainPivotConstants.K_G_RETRACTED,
-      MainPivotConstants.K_G_EXTENDED,
-      MathUtil.inverseInterpolate(
-          ElevatorConstants.MIN_LENGTH.in(Meters),
-          ElevatorConstants.MAX_LENGTH.in(Meters),
-          getLengthMeters()));
+        MainPivotConstants.K_G_RETRACTED,
+        MainPivotConstants.K_G_EXTENDED,
+        MathUtil.inverseInterpolate(
+            ElevatorConstants.MIN_LENGTH.in(Meters),
+            ElevatorConstants.MAX_LENGTH.in(Meters),
+            getLengthMeters()));
   }
+
   public double getKgVolts() {
-    return Math.cos(getAngleRadians())
-        * getLengthKg();
+    return Math.cos(getAngleRadians()) * getLengthKg();
   }
 
-  //public double getDrivebasePivotAcceleration(double db_vx, double db_ax, double cg_dist, double moi_piv) {
+  // public double getDrivebasePivotAcceleration(double db_vx, double db_ax, double cg_dist, double
+  // moi_piv) {
 
-    //A_drive x_drive + B_drive u_drive = [db_vx db_ax]
-    //A_arm x_arm + B_arm u_arm = [arm_v arm_a]
+  // A_drive x_drive + B_drive u_drive = [db_vx db_ax]
+  // A_arm x_arm + B_arm u_arm = [arm_v arm_a]
 
-    // u_arm = B_arm^-1 ([arm_v arm_a]-A_arm x_arm)
+  // u_arm = B_arm^-1 ([arm_v arm_a]-A_arm x_arm)
 
-    // var cg_dist = m_lengthSupplier.getAsDouble() / 2.0;
-    // var fx = 
-    // //moi around pivot = moi_cg * cg_dist^2
-    // var moi_cg = m_moiSupplier.getAsDouble() / (cg_dist*cg_dist);
-    // var torque_around_cg = 
-    // var alpha_rad_per_s = ax_base * cg_dist; // radians/second;
-    // return Units.radiansToRotations(alpha_rad_per_s);
+  // var cg_dist = m_lengthSupplier.getAsDouble() / 2.0;
+  // var fx =
+  // //moi around pivot = moi_cg * cg_dist^2
+  // var moi_cg = m_moiSupplier.getAsDouble() / (cg_dist*cg_dist);
+  // var torque_around_cg =
+  // var alpha_rad_per_s = ax_base * cg_dist; // radians/second;
+  // return Units.radiansToRotations(alpha_rad_per_s);
 
-    /*
-      [ cos th           l    ]  [ax]  = [-g sin theta]
-      [ m1+m2      m_2l cos th]  [ath]  = F+m_2 l vth^2 sin th]
+  /*
+   [ cos th           l    ]  [ax]  = [-g sin theta]
+   [ m1+m2      m_2l cos th]  [ath]  = F+m_2 l vth^2 sin th]
 
-     */
-    // var l = getLengthMeters();
-    // var m2 = Units.lbsToKilograms(13.2);
-    // var m1 = Units.lbsToKilograms(50);
-    // var sin_th = Math.sin(getAngleRadians());
-    // var cos_th = Math.cos(getAngleRadians());
-    // var alpha = (-db_ax*cos_th)/l;
-    //Math.cos(getAngleRadians())*db_ax + alpha*l = -g*Math.sin(getAngleRadians());
-  //}
+  */
+  // var l = getLengthMeters();
+  // var m2 = Units.lbsToKilograms(13.2);
+  // var m1 = Units.lbsToKilograms(50);
+  // var sin_th = Math.sin(getAngleRadians());
+  // var cos_th = Math.cos(getAngleRadians());
+  // var alpha = (-db_ax*cos_th)/l;
+  // Math.cos(getAngleRadians())*db_ax + alpha*l = -g*Math.sin(getAngleRadians());
+  // }
 
   public void setAngleRadians(double angle) {
     m_goalRotations = Units.radiansToRotations(angle);
 
-    m_leader.setControl(
-        m_profileReq.withPosition(m_goalRotations).withFeedForward(getKgVolts()));
+    m_leader.setControl(m_profileReq.withPosition(m_goalRotations).withFeedForward(getKgVolts()));
   }
 
   public Command goTo(DoubleSupplier angleSupplier) {
@@ -353,10 +368,12 @@ public class MainPivotS extends SubsystemBase {
   }
 
   public Command hold() {
-    return sequence(runOnce(() -> m_goalRotations = getAngleRotations()),
-      run(()->{
-        m_leader.setControl(
-          m_profileReq.withPosition(m_goalRotations).withFeedForward(getKgVolts()));
-      }));
+    return sequence(
+        runOnce(() -> m_goalRotations = getAngleRotations()),
+        run(
+            () -> {
+              m_leader.setControl(
+                  m_profileReq.withPosition(m_goalRotations).withFeedForward(getKgVolts()));
+            }));
   }
 }

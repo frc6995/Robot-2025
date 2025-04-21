@@ -9,15 +9,13 @@ import static frc.robot.logging.PowerDistributionSim.Channel.c11_BR_Drive;
 import static frc.robot.logging.PowerDistributionSim.Channel.c12_BR_Steer;
 import static frc.robot.logging.PowerDistributionSim.Channel.c15_BL_Drive;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
-
 import edu.wpi.first.units.measure.Current;
 import frc.robot.logging.PowerDistributionSim.Channel;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TalonFXPDHChannel {
 

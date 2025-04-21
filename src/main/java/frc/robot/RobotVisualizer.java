@@ -47,16 +47,50 @@ public class RobotVisualizer {
     ARM_PIVOT_BASE.append(pivot);
   }
 
-  final static double PIVOT_X = -Units.inchesToMeters(10);
-  final static double PIVOT_Z = Units.inchesToMeters(11);
-  final static Pose3d PIVOT_BASE = new Pose3d(PIVOT_X, 0, PIVOT_Z, Rotation3d.kZero);
-  private static Pose3d[] components = new Pose3d[] {Pose3d.kZero,Pose3d.kZero,Pose3d.kZero,new Pose3d(new Translation3d(ElevatorConstants.MIN_LENGTH.in(Meters), 0,0), new Rotation3d(0,0,0))};
-  public static Pose3d[] getComponents() {return components;}
+  static final double PIVOT_X = -Units.inchesToMeters(10);
+  static final double PIVOT_Z = Units.inchesToMeters(11);
+  static final Pose3d PIVOT_BASE = new Pose3d(PIVOT_X, 0, PIVOT_Z, Rotation3d.kZero);
+  private static Pose3d[] components =
+      new Pose3d[] {
+        Pose3d.kZero,
+        Pose3d.kZero,
+        Pose3d.kZero,
+        new Pose3d(
+            new Translation3d(ElevatorConstants.MIN_LENGTH.in(Meters), 0, 0),
+            new Rotation3d(0, 0, 0))
+      };
+
+  public static Pose3d[] getComponents() {
+    return components;
+  }
+
   public static void setArmPosition(ArmPosition position) {
-    components[0] = PIVOT_BASE.transformBy(new Transform3d(Translation3d.kZero, new Rotation3d(0,-position.pivotRadians(),0)));
-    components[1] = components[0].transformBy(new Transform3d(new Translation3d(
-      (position.elevatorMeters()-ElevatorConstants.MIN_LENGTH.in(Meters))/2  + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
-    components[2] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters() - ElevatorConstants.MIN_LENGTH.in(Meters) + Units.inchesToMeters(0), 0,0), Rotation3d.kZero));
-    components[3] = components[0].transformBy(new Transform3d(new Translation3d(position.elevatorMeters(), 0,0), new Rotation3d(0,-(position.wristRadians()),0)));
+    components[0] =
+        PIVOT_BASE.transformBy(
+            new Transform3d(Translation3d.kZero, new Rotation3d(0, -position.pivotRadians(), 0)));
+    components[1] =
+        components[0].transformBy(
+            new Transform3d(
+                new Translation3d(
+                    (position.elevatorMeters() - ElevatorConstants.MIN_LENGTH.in(Meters)) / 2
+                        + Units.inchesToMeters(0),
+                    0,
+                    0),
+                Rotation3d.kZero));
+    components[2] =
+        components[0].transformBy(
+            new Transform3d(
+                new Translation3d(
+                    position.elevatorMeters()
+                        - ElevatorConstants.MIN_LENGTH.in(Meters)
+                        + Units.inchesToMeters(0),
+                    0,
+                    0),
+                Rotation3d.kZero));
+    components[3] =
+        components[0].transformBy(
+            new Transform3d(
+                new Translation3d(position.elevatorMeters(), 0, 0),
+                new Rotation3d(0, -(position.wristRadians()), 0)));
   }
 }

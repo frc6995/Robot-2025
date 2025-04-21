@@ -13,11 +13,9 @@ public class NoneArm extends Arm {
 
   public NoneArm() {
     ARM = new MechanismLigament2d("arm-pivot", 0, 0);
-    this.position = new ArmPosition(
-      MainPivotConstants.CW_LIMIT,
-      ElevatorConstants.MIN_LENGTH,
-      WristConstants.CW_LIMIT
-    );
+    this.position =
+        new ArmPosition(
+            MainPivotConstants.CW_LIMIT, ElevatorConstants.MIN_LENGTH, WristConstants.CW_LIMIT);
   }
 
   @Override

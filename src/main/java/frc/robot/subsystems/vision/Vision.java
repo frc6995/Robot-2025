@@ -1,20 +1,6 @@
 package frc.robot.subsystems.vision;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.simulation.PhotonCameraSim;
-import org.photonvision.simulation.SimCameraProperties;
-import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.PhotonPipelineResult;
-
 import com.ctre.phoenix6.Utils;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.MathUtil;
@@ -32,6 +18,17 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.util.TriConsumer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 public class Vision {
   public interface VisionConsumer extends TriConsumer<Pose2d, Double, Vector<N3>> {}
@@ -84,42 +81,41 @@ public class Vision {
     public static final Map<String, Transform3d> CAMERAS =
         Map.of(
             "OV9281-BL",
-                new Transform3d(
-                  -(Units.inchesToMeters(14.25) - 0.102),
-                  (Units.inchesToMeters(14.25) - 0.066),
-                    Units.inchesToMeters(8.5),
-                    new Rotation3d(
-                        Units.degreesToRadians(0),
-                        Units.degreesToRadians(-13.65),
-                        Units.degreesToRadians(-170))),
+            new Transform3d(
+                -(Units.inchesToMeters(14.25) - 0.102),
+                (Units.inchesToMeters(14.25) - 0.066),
+                Units.inchesToMeters(8.5),
+                new Rotation3d(
+                    Units.degreesToRadians(0),
+                    Units.degreesToRadians(-13.65),
+                    Units.degreesToRadians(-170))),
             "OV9281-BR",
-                new Transform3d(
-                  -(Units.inchesToMeters(14.25) - 0.102),
-                  -(Units.inchesToMeters(14.25) - 0.072),
-                    Units.inchesToMeters(8.5),
-                    new Rotation3d(
-                        Units.degreesToRadians(0),
-                        Units.degreesToRadians(-13.65),
-                        Units.degreesToRadians(170))),
-                "OV9281-FR",
-                new Transform3d(
-                  Units.inchesToMeters(14.25) - 0.102,
-                  -(Units.inchesToMeters(14.25) - 0.112),
-                    Units.inchesToMeters(8.5),
-                    new Rotation3d(
-                        Units.degreesToRadians(0),
-                        Units.degreesToRadians(-13.65),
-                        Units.degreesToRadians(10))),
-                "OV9281-FL",
-                new Transform3d(
-                  (Units.inchesToMeters(14.25) - 0.102),
-                  (Units.inchesToMeters(14.25) - 0.066),
-                    Units.inchesToMeters(8.5),
-                    new Rotation3d(
-                        Units.degreesToRadians(0),
-                        Units.degreesToRadians(-13.65),
-                        Units.degreesToRadians(-10)))
-        );
+            new Transform3d(
+                -(Units.inchesToMeters(14.25) - 0.102),
+                -(Units.inchesToMeters(14.25) - 0.072),
+                Units.inchesToMeters(8.5),
+                new Rotation3d(
+                    Units.degreesToRadians(0),
+                    Units.degreesToRadians(-13.65),
+                    Units.degreesToRadians(170))),
+            "OV9281-FR",
+            new Transform3d(
+                Units.inchesToMeters(14.25) - 0.102,
+                -(Units.inchesToMeters(14.25) - 0.112),
+                Units.inchesToMeters(8.5),
+                new Rotation3d(
+                    Units.degreesToRadians(0),
+                    Units.degreesToRadians(-13.65),
+                    Units.degreesToRadians(10))),
+            "OV9281-FL",
+            new Transform3d(
+                (Units.inchesToMeters(14.25) - 0.102),
+                (Units.inchesToMeters(14.25) - 0.066),
+                Units.inchesToMeters(8.5),
+                new Rotation3d(
+                    Units.degreesToRadians(0),
+                    Units.degreesToRadians(-13.65),
+                    Units.degreesToRadians(-10))));
     public static final AprilTagFieldLayout FIELD_LAYOUT =
         AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
   }
@@ -174,7 +170,7 @@ public class Vision {
   }
 
   private boolean isReef(int id) {
-    return (id >= 6 && id <= 11) || (id >=17 && id <=22);
+    return (id >= 6 && id <= 11) || (id >= 17 && id <= 22);
   }
 
   private void handleResult(Camera camera, PhotonPipelineResult result) {
@@ -206,24 +202,27 @@ public class Vision {
 
     final double border = 15;
     for (var tgt : pose.targetsUsed) {
-      
-      // rule out 
+
+      // rule out
       for (var corner : tgt.detectedCorners) {
-        if (MathUtil.isNear(0, corner.x, border) ||
-          MathUtil.isNear(
-          VisionConstants.SIM_CAMERA_PROPERTIES.getResWidth(), corner.x, border) ||
-          MathUtil.isNear(0, corner.y, border) ||
-          MathUtil.isNear(
-          VisionConstants.SIM_CAMERA_PROPERTIES.getResHeight(), corner.y, border)) {
-            return;
-          }
-      } 
+        if (MathUtil.isNear(0, corner.x, border)
+            || MathUtil.isNear(
+                VisionConstants.SIM_CAMERA_PROPERTIES.getResWidth(), corner.x, border)
+            || MathUtil.isNear(0, corner.y, border)
+            || MathUtil.isNear(
+                VisionConstants.SIM_CAMERA_PROPERTIES.getResHeight(), corner.y, border)) {
+          return;
+        }
+      }
       double tdist = tgt.getBestCameraToTarget().getTranslation().getNorm();
       if (pose.targetsUsed.size() < 2) {
-        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(6) : Units.feetToMeters(6);
-        if (tdist > trustedDistance){
+        var trustedDistance =
+            isReef(pose.targetsUsed.get(0).fiducialId)
+                ? Units.feetToMeters(6)
+                : Units.feetToMeters(6);
+        if (tdist > trustedDistance) {
           return;
-        
+
         } else {
           closeEnoughTgts = 1;
         }
@@ -233,12 +232,15 @@ public class Vision {
         closestDistance = tdist;
       }
       if (pose.targetsUsed.size() >= 2) {
-        var trustedDistance = isReef(pose.targetsUsed.get(0).fiducialId) ? Units.feetToMeters(10) : Units.feetToMeters(8);
-        
-      if (tdist <= trustedDistance) {
-        closeEnoughTgts++;
+        var trustedDistance =
+            isReef(pose.targetsUsed.get(0).fiducialId)
+                ? Units.feetToMeters(10)
+                : Units.feetToMeters(8);
+
+        if (tdist <= trustedDistance) {
+          closeEnoughTgts++;
+        }
       }
-    }
       // ignore |= (tgt.getFiducialId() == 13);
       // ignore |= (tgt.getFiducialId() == 14);
     }
