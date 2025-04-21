@@ -39,6 +39,18 @@ public enum POI {
     L1_G(L1_A, Rotation2d.fromDegrees(180)),
     L1_I(L1_A, Rotation2d.fromDegrees(240)),
     L1_K(L1_A, Rotation2d.fromDegrees(300)),
+    L2_B(true),
+    L2_D(L2_B, Rotation2d.fromDegrees(60)),
+    L2_F(L2_B, Rotation2d.fromDegrees(120)),
+    L2_H(L2_B, Rotation2d.fromDegrees(180)),
+    L2_J(L2_B, Rotation2d.fromDegrees(240)),
+    L2_L(L2_B, Rotation2d.fromDegrees(300)),
+    L2_A(true),
+    L2_C(L2_A, Rotation2d.fromDegrees(60)),
+    L2_E(L2_A, Rotation2d.fromDegrees(120)),
+    L2_G(L2_A, Rotation2d.fromDegrees(180)),
+    L2_I(L2_A, Rotation2d.fromDegrees(240)),
+    L2_K(L2_A, Rotation2d.fromDegrees(300)),
     // Intake left, right
     SL1(false),
     SL2(false),
@@ -48,6 +60,9 @@ public enum POI {
     SR3(false),
     // Starting for corresponding pose
     STA(false),
+    STAP(false),
+    STAW(false),
+    STC(false),
     STE(false),
     STF(false),
     STG(false),
@@ -55,6 +70,9 @@ public enum POI {
     STH(false),
     STJ(false),
     STI(false),
+    STL(false),
+    STLW(false),
+    STCW(false),
     // Algae lineup for intake
     R1(false),
     R2(false),
@@ -68,7 +86,10 @@ public enum POI {
     CL1(false),
     
     CL2(false),
-    CL3(false);
+    CL3(false),
+    LP1(false),
+    LP2(false),
+    LP3(false);
 
     public final Pose2d bluePose;
     public final Pose2d redPose;
@@ -127,4 +148,59 @@ public enum POI {
         }
         return option;
     }
+
+    public static POI selectedL1POI(int branch) {
+        return switch (branch) {
+          case 0 -> POI.L1_A;
+          case 1 -> POI.L1_B;
+          case 2 -> POI.L1_C;
+          case 3 -> POI.L1_D;
+          case 4 -> POI.L1_E;
+          case 5 -> POI.L1_F;
+          case 6 -> POI.L1_G;
+          case 7 -> POI.L1_H;
+          case 8 -> POI.L1_I;
+          case 9 -> POI.L1_J;
+          case 10 -> POI.L1_K;
+          case 11 -> POI.L1_L;
+          default -> POI.L1_A;
+        };
+      }
+    
+      public static POI selectedPivotSidePOI(int branch) {
+        return switch (branch) {
+          case 0 -> POI.A;
+          case 1 -> POI.B;
+          case 2 -> POI.C;
+          case 3 -> POI.D;
+          case 4 -> POI.E;
+          case 5 -> POI.F;
+          case 6 -> POI.G;
+          case 7 -> POI.H;
+          case 8 -> POI.I;
+          case 9 -> POI.J;
+          case 10 -> POI.K;
+          case 11 -> POI.L;
+          default -> POI.A;
+        };
+      }
+      public static POI selectedBatterySidePOI(int branch){
+        return switch (branch) {
+          case 0 -> POI.L2_A;
+          case 1 -> POI.L2_B;
+          case 2 -> POI.L2_C;
+          case 3 -> POI.L2_D;
+          case 4 -> POI.L2_E;
+          case 5 -> POI.L2_F;
+          case 6 -> POI.L2_G;
+          case 7 -> POI.L2_H;
+          case 8 -> POI.L2_I;
+          case 9 -> POI.L2_J;
+          case 10 -> POI.L2_K;
+          case 11 -> POI.L2_L;
+          default -> POI.L2_A;
+        };
+      }
+    
+    
 }

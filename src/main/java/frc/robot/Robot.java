@@ -6,10 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
-import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
-import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
-import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 import java.util.ArrayList;
 
@@ -52,16 +49,18 @@ import frc.operator.RealOperatorBoard;
 import frc.operator.SimOperatorBoard;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ArmBrakeS;
-import frc.robot.subsystems.ClimbHookS;
+import frc.robot.subsystems.ClimbWheelsS;
 // import frc.robot.logging.TalonFXLogger;
 import frc.robot.subsystems.DriveBaseS;
-import frc.robot.subsystems.RealHandS;
+import frc.robot.subsystems.IntakeS;
+import frc.robot.subsystems.IntakeS.HandConstants;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.OuterStrip.OuterStates;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.AlertsUtil;
+import frc.robot.util.Capture;
 
 /**
  * The methods in this class are called automatically corresponding to each
@@ -77,9 +76,9 @@ public class Robot extends TimedRobot {
   private final OperatorBoard m_operatorBoard = Robot.isReal() ? new RealOperatorBoard(1) : new SimOperatorBoard(1);
   private final DriveBaseS m_drivebaseS = TunerConstants.createDrivetrain();
   private final RealArm m_arm = new RealArm();
-  private final RealHandS m_hand = new RealHandS();
-  private final ClimbHookS m_climbHookS = new ClimbHookS();
-  //private final ClimbWheelsS m_climbWheelsS = new ClimbWheelsS();
+  private final IntakeS m_hand = new IntakeS();
+  //private final ClimbHookS m_climbHookS = new ClimbHookS();
+  private final ClimbWheelsS m_climbWheelsS = new ClimbWheelsS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
   private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_armBrakeS,
       (traj, isStarting) -> {
@@ -141,14 +140,14 @@ public class Robot extends TimedRobot {
               if (DriverStation.isAutonomous()) {
                 return m_driveRequest.withVelocityX(0).withVelocityY(0).withRotationalRate(0);
               }
-              if (intakeAlignButton.getAsBoolean()) {
-                return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
-                  m_autos.intakeHeadingAllianceRelative()
-                );
-              }
+              // if (intakeAlignButton.getAsBoolean()) {
+              //   return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
+              //     m_autos.intakeHeadingAllianceRelative()
+              //   );
+              // }
               if (algaeAlignButton.getAsBoolean()) {
                 return m_headingAlignRequest.withVelocityX(xSpeed).withVelocityY(ySpeed).withTargetDirection(
-                  m_autos.closestSide().faceAlgaeHeading
+                  m_autos.closerAlgaeAlignHeadingAllianceRelative()
                 );
               }
               return m_driveRequest
@@ -171,38 +170,47 @@ public class Robot extends TimedRobot {
 // Coast mode when disabled
     m_driverController.back().or(()->!coastButton.get()).and(RobotModeTriggers.disabled()).whileTrue(
       parallel(m_arm.mainPivotS.coast(), m_arm.wristS.coast(), LightStripS.top.stateC(()->TopStates.CoastMode))
-    )
-    .whileTrue(m_climbHookS.coast());
+    );
+    //.whileTrue(m_climbHookS.coast());
     //Home wrist when disabled
     m_driverController.start().and(RobotModeTriggers.disabled())
         .onTrue(parallel(
           m_arm.elevatorS.home(),
           m_arm.wristS.home(),
-          runOnce(()->this.setAllHomed(true)).ignoringDisable(true)).ignoringDisable(true));
+          Commands.runOnce(()->this.setAllHomed(true)).ignoringDisable(true)).ignoringDisable(true));
         m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
     configureOperatorController();
+    new Trigger(m_hand.m_coralSensor::hasCoral).onFalse(
+      Commands.runOnce(()->{lastCoralPose.inner = getCoralPoseIfInHand();}).ignoringDisable(true));
     DriverStation.silenceJoystickConnectionWarning(true);
     RobotModeTriggers.autonomous().whileTrue(m_autos.m_autoChooser.selectedCommandScheduler());
   }
 
   private void configureOperatorController() {
     m_operatorBoard.left().onTrue(
-      m_arm.goToPosition(Arm.Positions.PRE_CLIMB)).onTrue(
-        m_climbHookS.release().withTimeout(5)
-    );
-    m_operatorBoard.center().onTrue(m_climbHookS.clamp())
+      m_arm.goToPosition(Arm.Positions.PRE_CLIMB))
+      .onTrue(m_climbWheelsS.in());
+    //   .onTrue(
+    //     m_climbHookS.release().withTimeout(5)
+    // );
+    m_operatorBoard.center().onTrue(m_climbWheelsS.in())//.onTrue(m_climbHookS.clamp())
     .whileTrue(parallel(LightStripS.top.stateC(()->TopStates.Climbing), LightStripS.outer.stateC(()->OuterStates.Climbing),
-      waitSeconds(2).andThen(
       parallel(
         m_arm.mainPivotS.voltage(()->
-          (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(30)) ? 0 : -2),
-        waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(60))
+          (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(10)) ? -0.5 : -5),
+          Commands.waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(70))
           .andThen(
-            m_arm.wristS.goTo(()->0.0)
-          ))))
+            m_arm.wristS.goTo(()->Units.degreesToRadians(90 + 35))
+          ),
+          Commands.waitUntil(()->m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(40))
+          .andThen(
+            m_arm.elevatorS.goToLength(()->1.05)
+          )
+        
+      ))
     );
-    m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release());
-    //.onTrue(m_climbWheelsS.stop());
+    m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release())
+    .onTrue(m_climbWheelsS.stop());
   }
   
   public void configureDriverController() {
@@ -210,25 +218,32 @@ public class Robot extends TimedRobot {
     // TODO: assign buttons to functions specified in comments
 
     // align to closest coral station (or left station if in workshop)
-    m_driverController.a().whileTrue(m_autos.autoCoralIntake());
+    m_driverController.a().onTrue(Commands.either(
+      m_autos.autoCoralIntake(),
+      sequence(
+        m_hand.voltage(2).withTimeout(0.1).onlyIf(()->m_hand.getVoltage() > 0.02).asProxy(),
+        m_autos.autoCoralGroundIntake().asProxy()
+      )
+      , m_operatorBoard.toggle())
+      );
     
     // go to processor position
     m_driverController.back()
         .onTrue(m_hand.inAlgae())
         .onTrue(sequence(
-            m_arm.goToPosition(Arm.Positions.SCORE_PROCESSOR)
+            m_arm.processorWithHome()
         ))
         ;
 
     // Align to barge
-    m_driverController.start().and(inWorkshop.negate())
+    m_driverController.start()//.and(inWorkshop.negate())
         .whileTrue(
             parallel(
               m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4)
             )
     );
     m_driverController.y()
-      .onTrue(m_autos.bargeUpAndOut());
+      .onTrue(m_autos.bargeUpAndOutVoltage());
       //.onTrue(m_hand.inAlgae());
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
     m_driverController.x()
@@ -237,17 +252,17 @@ public class Robot extends TimedRobot {
 
     // Stow
     m_driverController.b().onTrue(m_arm.goToPosition(Arm.Positions.GROUND_ALGAE)).onTrue(m_hand.inAlgae());
-    m_driverController.leftBumper().onTrue(m_arm.algaeStowWithHome());
+    m_driverController.leftBumper().onTrue(m_arm.goToPosition(Arm.Positions.STOW));
        // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
+    boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
-      either(m_hand.outCoralSlow().withTimeout(2),
+      either(m_hand.voltage(()->-1.5).withTimeout(0.5),// spit out if not safe to 
 
-        m_hand.outCoral().withTimeout(0.5).andThen(
-          new ScheduleCommand(m_arm.goToPosition(Arm.Positions.WALL_INTAKE_CORAL))
-            ),
-        ()->m_operatorBoard.getLevel() == 0
-      )
+      m_hand.voltage(()->m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5), 
+
+      ()->m_arm.wristS.getAngleRadians() < Units.degreesToRadians(20)
+      ).andThen(new ScheduleCommand(m_autos.stowAfterCoral(m_autos.lastScoringOption)))
     )
         ;
 
@@ -257,7 +272,7 @@ public class Robot extends TimedRobot {
         .onlyIf(()->
             m_arm.getPosition().elevatorMeters()>Arm.Positions.L3.elevatorMeters())));
     // Auto align to operator selected position on reef for coral scoring
-    m_driverController.rightTrigger().whileTrue(m_autos.autoScore());
+    m_driverController.rightTrigger().whileTrue(m_autos.autoScoreMap());
 
     /*
      * m_driverController.leftStick().whileTrue(Commands.none());
@@ -338,17 +353,19 @@ public class Robot extends TimedRobot {
 
   }
 
-  private final Rotation3d coral_hand_rotation = new Rotation3d(0, Units.degreesToRadians(20), 0);
-
+  Capture<Pose3d> lastCoralPose = new Capture<Pose3d>(Pose3d.kZero);
+  private Pose3d getCoralPoseIfInHand() {
+    return new Pose3d(m_drivebaseS.getPose()).plus(new Transform3d(
+      RobotVisualizer.getComponents()[3].getTranslation(),
+      RobotVisualizer.getComponents()[3].getRotation())).plus(
+          new Transform3d(
+              HandConstants.CORAL_LENGTH_METERS/2.0 - Units.inchesToMeters(0.9) - m_hand.getCoralInlineOffset(), 0.0, -Units.inchesToMeters(9.978-0.25), Rotation3d.kZero));
+  }
   public Pose3d getCoralPose() {
     if (m_autos.hasCoral()) {
-      return new Pose3d(m_drivebaseS.getPose()).plus(new Transform3d(
-          RobotVisualizer.getComponents()[3].getTranslation(),
-          RobotVisualizer.getComponents()[3].getRotation())).plus(
-              new Transform3d(
-                  -0.04, -m_autos.getDistanceSensorOffset(), 0.18, coral_hand_rotation));
+      return getCoralPoseIfInHand();
     } else {
-      return Pose3d.kZero;
+      return lastCoralPose.inner;
     }
   }
 
@@ -357,7 +374,7 @@ public class Robot extends TimedRobot {
         RobotVisualizer.getComponents()[3].getTranslation(),
         RobotVisualizer.getComponents()[3].getRotation())).plus(
             new Transform3d(
-                0.2, 0, 0.3, Rotation3d.kZero));
+                0.42, 0, -0.02, Rotation3d.kZero));
   }
 
   /**

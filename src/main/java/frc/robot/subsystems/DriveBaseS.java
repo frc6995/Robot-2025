@@ -148,6 +148,8 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
   @NotLogged
   public SwerveDriveState state = getState();
+  @NotLogged
+  public SwerveDriveState lastState = getState().clone();
   /** Re-expose the state as a method of the subclass so Epilogue finds it. */
   public SwerveDriveState state() {
     return state;
@@ -268,6 +270,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   
   @Override
   public void periodic() {
+    lastState = state;
     state = getStateCopy();
     if (RobotBase.isReal()) {
       
@@ -413,7 +416,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
     return applyRequest(() -> {
       var pose = state().Pose;
       var targetSpeeds = new ChassisSpeeds(
-          m_pathXController.calculate(pose.getX(), x.getAsDouble()),
+          MathUtil.clamp(m_pathXController.calculate(pose.getX(), x.getAsDouble()), -1, 1),
           (AllianceFlipUtil.shouldFlip() ? -1 : 1) *ySpeed.getAsDouble(),
           m_pathThetaController.calculate(
               pose.getRotation().getRadians(), heading.get().getRadians()));
@@ -464,7 +467,7 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
   }
 
   /* DRIVE TO POSE using Trapezoid Profiles */
-  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2, 1.5);
+  private TrapezoidProfile.Constraints driveToPoseConstraints = new Constraints(2.5, 1.75);
   private TrapezoidProfile.Constraints driveToPoseRotationConstraints = new Constraints(3, 6);
   private TrapezoidProfile driveToPoseProfile = new TrapezoidProfile(driveToPoseConstraints);
   private TrapezoidProfile driveToPoseRotationProfile = new TrapezoidProfile(driveToPoseRotationConstraints);
@@ -499,6 +502,14 @@ public class DriveBaseS extends TunerSwerveDrivetrain implements Subsystem {
             .withWheelForceFeedforwardsY(swerveSetpoint.feedforwards().robotRelativeForcesYNewtons())
             ;
   }
+
+  
+  public double calculateDrivetrainFwdBackAcceleration() {
+    var speeds_0 = lastState.Speeds;
+    var speeds_1 = state.Speeds;
+    return (speeds_1.vxMetersPerSecond - speeds_0.vxMetersPerSecond)/(state.Timestamp-lastState.Timestamp);
+  }
+
 
   Capture<Pose2d> start = new Capture<Pose2d>(new Pose2d());
   // The goal (populated from poseSupplier at command start)

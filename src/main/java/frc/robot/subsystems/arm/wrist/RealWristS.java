@@ -6,16 +6,13 @@ package frc.robot.subsystems.arm.wrist;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.wpilibj2.command.Commands.sequence;
-import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -33,7 +30,9 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -52,12 +51,12 @@ public class RealWristS extends Wrist {
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
     // rotations per arm rotation.
 
-    public static final Angle CCW_LIMIT = Rotations.of(0.141).minus(Degrees.of(10));
-    public static final Angle CW_LIMIT = Rotations.of(-0.314);
+    public static final Angle CCW_LIMIT = Degrees.of(146.8);
+    public static final Angle CW_LIMIT = Degrees.of(-70);
     public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
     // Units=volts/pivot rotation/s
-    public static final double K_V = 5.01;
-    public static final double K_A = 0.2;
+    public static final double K_V = 4.548;
+    public static final double K_A = 0.2 * 0.45/0.25;
     public static final double CG_DIST = Units.inchesToMeters(10);
     public static final LinearSystem<N2, N1, N2> PLANT =
         LinearSystemId.identifyPositionSystem(
@@ -73,8 +72,10 @@ public class RealWristS extends Wrist {
     public static final double OUT_VOLTAGE = 0;
     public static final double IN_VOLTAGE = 0;
 
-    public static final double K_G = 0.25;
-    public static final Angle K_G_ANGLE = Rotations.of(-0.072);
+    public static final double K_G = 0.45;
+    public static final Angle K_G_ANGLE = Degrees.of(35.06);//Rotations.of(-0.072);
+
+    public static final Angle K_G_ANGLE_WITH_CORAL = Degrees.of(45);
     public static final double K_S = 0;
     // arm plus hand
     public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
@@ -83,16 +84,16 @@ public class RealWristS extends Wrist {
       config.CurrentLimits.withStatorCurrentLimitEnable(true).withStatorCurrentLimit(120)
       .withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(60);
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(50).withKD(0);
-      config.MotionMagic.withMotionMagicCruiseVelocity(4).withMotionMagicAcceleration(10);
+      config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(2.8);
       config.Feedback
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
           .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
-      config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
+      config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(false)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
-          .withReverseSoftLimitEnable(true);
+          .withReverseSoftLimitEnable(false);
       config.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
       return config;
     }
@@ -113,6 +114,7 @@ public class RealWristS extends Wrist {
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private VoltageOut m_voltageReqHome = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();
+  private StatusSignal<AngularVelocity> m_velocitySig = m_leader.getVelocity();
   private StatusSignal<Double> m_setpointSig = m_leader.getClosedLoopReference();
   private StatusSignal<Current> m_currentSig = m_leader.getStatorCurrent();
   private double m_goalRotations;
@@ -126,8 +128,8 @@ public class RealWristS extends Wrist {
     m_leader
         .getConfigurator()
         .apply(WristConstants.configureLeader(new TalonFXConfiguration()));
-    m_leader.getSimState().Orientation = ChassisReference.Clockwise_Positive;
-    m_pivotSim.setState(VecBuilder.fill(WristConstants.CCW_LIMIT.in(Radians), 0));
+    m_leader.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
+    m_pivotSim.setState(VecBuilder.fill(0, 0));
     m_setpointSig.setUpdateFrequency(50);
     m_currentSig.setUpdateFrequency(50);
     setDefaultCommand(hold());
@@ -138,6 +140,10 @@ public class RealWristS extends Wrist {
     BaseStatusSignal.refreshAll(m_currentSig, m_angleSig);
     // This method will be called once per scheduler run
     WRIST.setAngle(Units.rotationsToDegrees(m_angleSig.getValueAsDouble()));
+    if (DriverStation.isDisabled()) {
+      m_leader.set(0);
+    }
+
   }
 
   public double setpoint() {
@@ -145,7 +151,7 @@ public class RealWristS extends Wrist {
     return m_setpointSig.getValueAsDouble();
   }
   public Command home() {
-    return this.runOnce(()->m_leader.getConfigurator().setPosition(WristConstants.CCW_LIMIT)).ignoringDisable(true);
+    return this.runOnce(()->m_leader.getConfigurator().setPosition(WristConstants.CW_LIMIT)).ignoringDisable(true);
   }
 
   public void simulationPeriodic() {
@@ -215,29 +221,16 @@ public class RealWristS extends Wrist {
   public Trigger currentHomed = new Trigger(
     ()->{
       m_currentSig.refresh();
-      return m_currentSig.getValueAsDouble() > 7;
+      m_velocitySig.refresh();
+      return m_currentSig.getValueAsDouble() > 50 && Math.abs(m_velocitySig.getValueAsDouble()) < 0.05 && m_voltageReq.Output < 0;
     }
   ).debounce(0.25);
 
   public Command driveToHome() {
-    var existingConfig = new SoftwareLimitSwitchConfigs();
     return sequence(
-      runOnce(()-> {
-    
-      m_leader.getConfigurator().refresh(existingConfig);
-      existingConfig.withForwardSoftLimitEnable(false);
-      var statusCode = m_leader.getConfigurator().apply(existingConfig);
-      }
-      ),
-      voltage(()->1).until(currentHomed),
-      runOnce(()-> {
-        m_leader.getConfigurator().refresh(existingConfig);
-        existingConfig.withForwardSoftLimitEnable(true);
-        var statusCode = m_leader.getConfigurator().apply(existingConfig);
-        }
-        ),
-      home(),
-      waitSeconds(0.5),
+      voltage(()->-1).until(currentHomed),
+      this.runOnce(()->m_leader.getConfigurator().setPosition(Degrees.of(-70-(70-64.6)))).ignoringDisable(true),
+      voltage(()->-1).withTimeout(0.5),
       new ScheduleCommand(
         LightStripS.top.stateC(()->TopStates.Intaked).withTimeout(0.5)
       )
