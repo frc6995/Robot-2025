@@ -48,6 +48,7 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Per;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.TiltedElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -85,13 +86,13 @@ public class RealElevatorS extends Elevator {
           .withReverseSoftLimitEnable(true)
           .withReverseSoftLimitThreshold(MIN_LENGTH_ROTATIONS);
       config.CurrentLimits.withSupplyCurrentLimitEnable(true)
-        .withSupplyCurrentLimit(Amps.of(60));
+        .withSupplyCurrentLimit(Amps.of(80));
       config.Slot0.withKS(0)
           .withKV(K_V.in(VoltsPerRotationPerSecond))
           .withKA(K_A.in(VoltsPerRotationPerSecondSquared))
           .withKP(1)
           .withKD(0.25);
-      config.MotionMagic.withMotionMagicAcceleration(200)
+      config.MotionMagic.withMotionMagicAcceleration(150)
           .withMotionMagicCruiseVelocity(72);
       return config;
     }
@@ -114,7 +115,7 @@ public class RealElevatorS extends Elevator {
         VoltsPerRotationPerSecond.ofNative(0.15 * 1.508/1.4397);
 
     public static final Per<VoltageUnit, AngularAccelerationUnit> K_A =
-        VoltsPerRotationPerSecondSquared.ofNative(0.006 * 1.508/1.4397);
+        VoltsPerRotationPerSecondSquared.ofNative(0.006 * 1.508/1.4397 * 1.15);
 
     public static final double K_C = -0.17 * 1.508/1.4397;
     public static final LinearSystem<N2, N1, N2> PLANT =
@@ -232,6 +233,10 @@ public class RealElevatorS extends Elevator {
     // This method will be called once per scheduler run
     BaseStatusSignal.refreshAll(positionSignal);
     ELEVATOR.setLength(getLengthMeters());
+
+        if (DriverStation.isDisabled()) {
+      leader.set(0);
+    }
   }
 
   VoltageOut voltage = new VoltageOut(0);
