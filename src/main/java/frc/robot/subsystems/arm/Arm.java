@@ -43,6 +43,9 @@ public abstract class Arm {
           && MathUtil.isNear(this.wristRadians(), other.wristRadians(), wristRadians);
     }
 
+    /*
+     * A version of this position which is clamped to a maximum elevator length.
+     */
     public ArmPosition premove() {
       return new ArmPosition(
           mainPivotAngle,
@@ -50,10 +53,6 @@ public abstract class Arm {
               ? SAFE_PIVOT_ELEVATOR_LENGTH
               : elevatorLength,
           wristAngle);
-    }
-
-    public ArmPosition safeWrist() {
-      return new ArmPosition(mainPivotAngle, elevatorLength, WristConstants.K_G_ANGLE_WITH_CORAL);
     }
   }
   ;
@@ -76,28 +75,21 @@ public abstract class Arm {
         new ArmPosition(Degrees.of(87), ElevatorConstants.MAX_LENGTH, Degrees.of(140));
     public static final ArmPosition L3_PIV =
         new ArmPosition(Degrees.of(88), Meters.of(1.025).minus(Inches.of(6)), Degrees.of(90 + 35));
-    public static final ArmPosition L2 =
-        new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH, Degrees.of(90 + 55));
     public static final ArmPosition L1 =
         new ArmPosition(
             Degrees.of(50),
             ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
             Degrees.of(-40));
 
-    public static final ArmPosition L4_OPP =
+    public static final ArmPosition L4_BATT =
         new ArmPosition(
             Degrees.of(68), ElevatorConstants.MAX_LENGTH.minus(Inches.of(0)), Degrees.of(55));
     public static final ArmPosition L3_BATT =
         new ArmPosition(
             Degrees.of(50), ElevatorConstants.MIN_LENGTH.plus(Inches.of(14)), Degrees.of(95));
-    public static final ArmPosition L3_HIGH_ALG =
-        new ArmPosition(
-            Degrees.of(45), ElevatorConstants.MIN_LENGTH.plus(Inches.of(14)), Degrees.of(-70));
-    public static final ArmPosition L2_OPP =
+    public static final ArmPosition L2_BATT =
         new ArmPosition(
             Degrees.of(35), ElevatorConstants.MIN_LENGTH.plus(Inches.of(4)), Degrees.of(110));
-    public static final ArmPosition CORAL_STOW =
-        new ArmPosition(Degrees.of(68), ElevatorConstants.MIN_PADDED_LENGTH, Degrees.of(50));
     public static final ArmPosition LOW_ALGAE_REEF =
         new ArmPosition(
             Degrees.of(105), ElevatorConstants.MIN_LENGTH.plus(Inches.of(0)), Degrees.of(77));
@@ -115,8 +107,6 @@ public abstract class Arm {
         new ArmPosition(Degrees.of(70), Meters.of(0.75), Radians.of(0));
     public static final ArmPosition PRE_CLIMB =
         new ArmPosition(Degrees.of(92), ElevatorConstants.MIN_PADDED_LENGTH, Degrees.of(-50));
-    public static final ArmPosition SCORE_BARGE_VERTICAL =
-        new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH, Degrees.of(-20));
     public static final ArmPosition SCORE_BARGE =
         new ArmPosition(Degrees.of(70), ElevatorConstants.MAX_LENGTH, Degrees.of(0));
     public static final ArmPosition SCORE_BARGE_PRE =

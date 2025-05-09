@@ -38,20 +38,20 @@ public enum ReefScoringOption {
       ),
   L2(
       POI::selectedBatterySidePOI,
-      (autos) -> autos.m_arm.goToPosition(Arm.Positions.L2_OPP),
+      (autos) -> autos.m_arm.goToPosition(Arm.Positions.L2_BATT),
       4,
-      Arm.Positions.L2_OPP,
+      Arm.Positions.L2_BATT,
       (autos) ->
           autos.m_arm.goToPosition(
               // intentional, we want a pivot up
               new ArmPosition(
                   Arm.Positions.L3_BATT.mainPivotAngle(),
                   ElevatorConstants.MIN_PADDED_LENGTH,
-                  Arm.Positions.L2_OPP.wristAngle())),
+                  Arm.Positions.L2_BATT.wristAngle())),
       (autos) ->
           new ScheduleCommand(
               autos.m_arm.goToPosition(
-                  Arm.Positions.L2_OPP)) // so tapping the align button goes to L2
+                  Arm.Positions.L2_BATT)) // so tapping the align button goes to L2
       ),
   L3_BATT(
       POI::selectedBatterySidePOI,
@@ -72,21 +72,21 @@ public enum ReefScoringOption {
                   Arm.Positions.L3_BATT.wristAngle()))),
   L4_BATT(
       POI::selectedBatterySidePOI,
-      (autos) -> autos.m_arm.goToPosition(Arm.Positions.L4_OPP),
+      (autos) -> autos.m_arm.goToPosition(Arm.Positions.L4_BATT),
       6,
-      Arm.Positions.L4_OPP,
+      Arm.Positions.L4_BATT,
       (autos) ->
           autos.m_arm.goToPosition(
               new ArmPosition(
-                  Arm.Positions.L4_OPP.mainPivotAngle(),
+                  Arm.Positions.L4_BATT.mainPivotAngle(),
                   ElevatorConstants.MIN_PADDED_LENGTH,
-                  Arm.Positions.L4_OPP.wristAngle())),
+                  Arm.Positions.L4_BATT.wristAngle())),
       (autos) ->
           autos.m_arm.goToPosition(
               new ArmPosition(
-                  Arm.Positions.L4_OPP.mainPivotAngle(),
+                  Arm.Positions.L4_BATT.mainPivotAngle(),
                   ElevatorConstants.MIN_PADDED_LENGTH,
-                  Arm.Positions.L4_OPP.wristAngle()))),
+                  Arm.Positions.L4_BATT.wristAngle()))),
   L3_PIV(
       POI::selectedPivotSidePOI,
       (autos) -> autos.m_arm.goToPosition(Arm.Positions.L3_PIV),
