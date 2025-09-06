@@ -9,6 +9,7 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -40,7 +41,9 @@ public class IntakeS extends SubsystemBase {
   public class HandConstants {
 
     public static final double CORAL_LENGTH_METERS = Units.inchesToMeters(11.875);
-    public static final int CAN_ID = 51;
+    public static final int MOTOR_1_CAN_ID = 51;
+    public static final int MOTOR_2_CAN_ID = 52;
+    public static final int MOTOR_3_CAN_ID = 53;
 
     public static final double IN_CORAL_VOLTAGE = 8;
 
@@ -56,16 +59,35 @@ public class IntakeS extends SubsystemBase {
     public static final double GROUND_INTAKE_OFFSET = -Units.inchesToMeters(0);
     public static final double CORAL_METERS_PER_WHEEL_ROT = (Units.inchesToMeters(2.375)/(0.443-0.201));
 
-    public static TalonFXConfiguration configureMotor(TalonFXConfiguration config) {
+    public static TalonFXConfiguration configureMotor1(TalonFXConfiguration config) {
       config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
       // volts per wheel rotation = 8-9 inches of coral
       config.Slot0.withKP(6);
       return config;
     }
+    public static TalonFXConfiguration configureMotor2(TalonFXConfiguration config) {
+      config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
+      config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
+      // volts per wheel rotation = 8-9 inches of coral
+      config.Slot0.withKP(6);
+      return config;
+    }
+
+    public static TalonFXConfiguration configureMotor3(TalonFXConfiguration config) {
+        config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
+        config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
+        // volts per wheel rotation = 8-9 inches of coral
+        config.Slot0.withKP(6);
+        return config;
+      
+    }
   }
 
-  private final TalonFX motor = new TalonFX(HandConstants.CAN_ID);
+  private final TalonFX motor1 = new TalonFX(HandConstants.MOTOR_1_CAN_ID);
+  private final TalonFX motor2 = new TalonFX(HandConstants.MOTOR_2_CAN_ID);
+  private final TalonFX motor3 = new TalonFX(HandConstants.MOTOR_3_CAN_ID);
+
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
   private final PositionVoltage positionRequest = new PositionVoltage(0).withPosition(0);
@@ -74,7 +96,7 @@ public class IntakeS extends SubsystemBase {
       DCMotor.getKrakenX60(1));
 
   public void simulationPeriodic() {
-    var simState = motor.getSimState();
+    var simState = motor1.getSimState();
     simState.setSupplyVoltage(12);
     // simState.getMotorVoltage is counterclockwise negative
     double volts = simState.getMotorVoltage();
@@ -88,8 +110,8 @@ public class IntakeS extends SubsystemBase {
 
   public CoralSensor m_coralSensor = new CoralSensor();
 
-  public StatusSignal<Angle> m_positionSig = motor.getPosition();
-  public StatusSignal<Voltage> m_voltageSig = motor.getMotorVoltage();
+  public StatusSignal<Angle> m_positionSig = motor1.getPosition();
+  public StatusSignal<Voltage> m_voltageSig = motor1.getMotorVoltage();
   
   private Optional<Double> lastRotationsAtSensorTrip = Optional.empty();
 
@@ -103,7 +125,12 @@ public class IntakeS extends SubsystemBase {
   /** Creates a new HandRollerS. */
   public IntakeS() {
     super();
-    motor.getConfigurator().apply(HandConstants.configureMotor(new TalonFXConfiguration()));
+    motor1.getConfigurator().apply(HandConstants.configureMotor1(new TalonFXConfiguration()));
+    motor2.getConfigurator().apply(HandConstants.configureMotor2(new TalonFXConfiguration()));
+    motor3.getConfigurator().apply(HandConstants.configureMotor3(new TalonFXConfiguration()));
+
+    motor2.setControl(new Follower(motor1.getDeviceID(), false));
+    motor3.setControl(new Follower(motor1.getDeviceID(), false));
     setDefaultCommand(stop());
     new Trigger(m_coralSensor::hasCoral).onTrue(
         Commands.runOnce(this::setHasCoral).ignoringDisable(true));
@@ -155,7 +182,7 @@ public class IntakeS extends SubsystemBase {
     //     ).repeatedly();
   }
   public Command voltage(DoubleSupplier voltage) {
-    return this.run(() -> motor.setControl(voltageRequest.withOutput(voltage.getAsDouble())));
+    return this.run(() -> motor1.setControl(voltageRequest.withOutput(voltage.getAsDouble())));
   }
 
   public Command voltage(double voltage) {
