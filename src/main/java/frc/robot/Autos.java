@@ -953,7 +953,7 @@ public class Autos {
         toReef,
         lastCycle.scoreArm,
         after.map((opt) -> opt.apply(routine)),
-        Arm.Positions.CORAL_STOW,
+        Arm.Positions.STOW,
         Optional.of(() -> true));
     return routine.cmd();
   }
