@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.CoralSensor;
+import frc.robot.Robot;
 
 
 
@@ -89,9 +90,9 @@ public class IntakeS extends SubsystemBase {
     }
   }
 
-  private final TalonFX motor1 = new TalonFX(HandConstants.MOTOR_1_CAN_ID);
-  private final TalonFX motor2 = new TalonFX(HandConstants.MOTOR_2_CAN_ID);
-  private final TalonFX motor3 = new TalonFX(HandConstants.MOTOR_3_CAN_ID);
+  private final TalonFX motor1 = new TalonFX(HandConstants.MOTOR_1_CAN_ID, Robot.m_notSwerveBus);
+  private final TalonFX motor2 = new TalonFX(HandConstants.MOTOR_2_CAN_ID, Robot.m_notSwerveBus);
+  private final TalonFX motor3 = new TalonFX(HandConstants.MOTOR_3_CAN_ID, Robot.m_notSwerveBus);
 
 
   private final VoltageOut voltageRequest = new VoltageOut(0);

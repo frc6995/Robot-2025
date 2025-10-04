@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Robot;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.TopStrip.TopStates;
 import frc.robot.util.NomadMathUtil;
@@ -109,7 +110,7 @@ public class RealWristS extends Wrist {
 
   public final MechanismLigament2d WRIST =
       new MechanismLigament2d("wrist", 0, 0, 4, new Color8Bit(235, 137, 52));
-  private TalonFX m_leader = new TalonFX(WristConstants.LEADER_CAN_ID);
+  private TalonFX m_leader = new TalonFX(WristConstants.LEADER_CAN_ID, Robot.m_notSwerveBus);
   private MotionMagicVoltage m_profileReq = new MotionMagicVoltage(0);
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private VoltageOut m_voltageReqHome = new VoltageOut(0);

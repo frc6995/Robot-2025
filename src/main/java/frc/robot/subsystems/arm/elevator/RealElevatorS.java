@@ -54,6 +54,7 @@ import edu.wpi.first.wpilibj.simulation.TiltedElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Robot;
 import frc.robot.subsystems.arm.pivot.MainPivotS.MainPivotConstants;
 
 @Logged
@@ -133,8 +134,8 @@ public class RealElevatorS extends Elevator {
     }
   }
 
-  private TalonFX leader = new TalonFX(ElevatorConstants.LEADER_ID);
-  private TalonFX follower = new TalonFX(ElevatorConstants.FOLLOWER_ID);
+  private TalonFX leader = new TalonFX(ElevatorConstants.LEADER_ID, Robot.m_notSwerveBus);
+  private TalonFX follower = new TalonFX(ElevatorConstants.FOLLOWER_ID, Robot.m_notSwerveBus);
   private PositionVoltage positionReq = new PositionVoltage(ElevatorConstants.MIN_LENGTH_ROTATIONS);
   private MotionMagicVoltage profileReq =
       new MotionMagicVoltage(ElevatorConstants.MIN_LENGTH_ROTATIONS);

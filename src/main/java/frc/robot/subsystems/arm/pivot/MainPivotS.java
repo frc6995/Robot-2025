@@ -46,6 +46,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.util.NomadMathUtil;
 
@@ -162,10 +163,10 @@ public class MainPivotS extends SubsystemBase {
 
   public final MechanismLigament2d MAIN_PIVOT =
       new MechanismLigament2d("main_pivot", 0, 0, 4, new Color8Bit(235, 137, 52));
-  private TalonFX m_leader = new TalonFX(MainPivotConstants.LEADER_CAN_ID);
-  private TalonFX m_follower = new TalonFX(MainPivotConstants.FOLLOWER_CAN_ID);
-  private TalonFX m_oppose1 = new TalonFX(MainPivotConstants.OPPOSING1_CAN_ID);
-  private TalonFX m_oppose2 = new TalonFX(MainPivotConstants.OPPOSING2_CAN_ID);
+  private TalonFX m_leader = new TalonFX(MainPivotConstants.LEADER_CAN_ID, Robot.m_notSwerveBus);
+  private TalonFX m_follower = new TalonFX(MainPivotConstants.FOLLOWER_CAN_ID, Robot.m_notSwerveBus);
+  private TalonFX m_oppose1 = new TalonFX(MainPivotConstants.OPPOSING1_CAN_ID, Robot.m_notSwerveBus);
+  private TalonFX m_oppose2 = new TalonFX(MainPivotConstants.OPPOSING2_CAN_ID, Robot.m_notSwerveBus);
   private MotionMagicVoltage m_profileReq = new MotionMagicVoltage(0);
   private VoltageOut m_voltageReq = new VoltageOut(0);
   private StatusSignal<Angle> m_angleSig = m_leader.getPosition();

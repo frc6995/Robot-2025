@@ -9,7 +9,7 @@ import edu.wpi.first.math.util.Units;
 @Logged
 public class CoralSensor {
 
-    CANrange m_backCANrange = new CANrange(CoralSensorConstants.BACK_CANRANGE_ID, "CANivore");
+    CANrange m_backCANrange = new CANrange(CoralSensorConstants.BACK_CANRANGE_ID, Robot.m_notSwerveBus);
     CANrangeConfiguration m_backCANrangeConfigurator = new CANrangeConfiguration();
 //todo: set can bus
    // private final TimeOfFlight tof = new TimeOfFlight(CoralSensorConstants.CAN_ID);
@@ -46,7 +46,11 @@ public class CoralSensor {
 
     }
     public class CoralSensorConstants {
-        public static final int BACK_CANRANGE_ID = 54;
+        public static final int BACK_CANRANGE_ID = 55;
+        public static final int RIGHT_CANRANGE_ID = 56;
+        public static final int LEFT_CANRANGE_ID = 57;
+        public static final int CENTER_CANRANGE_ID = 58;
+        
         public static final double MAX_DISTANCE = 0.39;
         public static final double CENTER_DISTANCE = 0.179 - Units.inchesToMeters(0.7-0.6);
     }
