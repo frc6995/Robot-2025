@@ -31,6 +31,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.CoralSensor;
 
+
+
 @Logged
 public class IntakeS extends SubsystemBase {
   public final MechanismLigament2d TOP_ROLLER = new MechanismLigament2d(
@@ -44,6 +46,7 @@ public class IntakeS extends SubsystemBase {
     public static final int MOTOR_1_CAN_ID = 51;
     public static final int MOTOR_2_CAN_ID = 52;
     public static final int MOTOR_3_CAN_ID = 53;
+
 
     public static final double IN_CORAL_VOLTAGE = 8;
 
@@ -59,6 +62,8 @@ public class IntakeS extends SubsystemBase {
     public static final double GROUND_INTAKE_OFFSET = -Units.inchesToMeters(0);
     public static final double CORAL_METERS_PER_WHEEL_ROT = (Units.inchesToMeters(2.375)/(0.443-0.201));
 
+    
+
     public static TalonFXConfiguration configureMotor1(TalonFXConfiguration config) {
       config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
@@ -70,7 +75,7 @@ public class IntakeS extends SubsystemBase {
       config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
       // volts per wheel rotation = 8-9 inches of coral
-      config.Slot0.withKP(6);
+      //config.Slot0.withKP(6);
       return config;
     }
 
@@ -78,7 +83,7 @@ public class IntakeS extends SubsystemBase {
         config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
         config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
         // volts per wheel rotation = 8-9 inches of coral
-        config.Slot0.withKP(6);
+        //config.Slot0.withKP(6);
         return config;
       
     }
