@@ -219,14 +219,17 @@ public class Robot extends TimedRobot {
 
   public void configureDriverController() {
 
-    // TODO: assign buttons to functions specified in comments
-
     // align to closest coral station (or left station if in workshop)
     m_driverController.a().onTrue(Commands.either(
         m_autos.autoCoralIntake(),
-        sequence(
-            m_hand.voltage(2).withTimeout(0.1).onlyIf(() -> m_hand.getVoltage() > 0.02).asProxy(),
-            m_autos.autoCoralGroundIntake().asProxy()),
+        Commands.either(
+            sequence(
+                m_hand.voltage(2).withTimeout(0.1).onlyIf(() -> m_hand.getVoltage() > 0.02).asProxy(),
+                m_autos.autoCoralGroundIntake().asProxy()),
+            //TODO: add actual ground l1 intake functioanlity!!!
+            Commands.runOnce(() -> System.out.print("ground l1")),
+            () -> m_operatorBoard.getLevel() != 0
+            ),
         m_operatorBoard.toggle()));
 
     // go to processor position
