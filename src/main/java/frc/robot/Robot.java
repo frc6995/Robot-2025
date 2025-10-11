@@ -224,7 +224,7 @@ public class Robot extends TimedRobot {
         m_autos.autoCoralIntake(),
         Commands.either(
             sequence(
-                m_hand.voltage(2).withTimeout(0.1).onlyIf(() -> m_hand.getVoltage() > 0.02).asProxy(),
+                m_hand.rollerVoltage(2).withTimeout(0.1).onlyIf(() -> m_hand.getVoltage() > 0.02).asProxy(),
                 m_autos.autoCoralGroundIntake().asProxy()),
             //TODO: add actual ground l1 intake functioanlity!!!
             Commands.runOnce(() -> System.out.print("ground l1")),
@@ -258,9 +258,9 @@ public class Robot extends TimedRobot {
     // Score coral and stow
     boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
-        either(m_hand.voltage(() -> -1.5).withTimeout(0.5), // spit out if not safe to
+        either(m_hand.rollerVoltage(() -> -1.5).withTimeout(0.5), // spit out if not safe to
 
-            m_hand.voltage(() -> m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5),
+            m_hand.rollerVoltage(() -> m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5),
 
             () -> m_arm.wristS.getAngleRadians() < Units.degreesToRadians(20))
             .andThen(new ScheduleCommand(m_autos.stowAfterCoral(m_autos.lastScoringOption))));

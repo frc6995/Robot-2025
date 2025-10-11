@@ -10,7 +10,22 @@ import edu.wpi.first.math.util.Units;
 public class CoralSensor {
 
     CANrange m_backCANrange = new CANrange(CoralSensorConstants.BACK_CANRANGE_ID, Robot.m_notSwerveBus);
+    CANrange m_rightCANrange = new CANrange(CoralSensorConstants.RIGHT_CANRANGE_ID, Robot.m_notSwerveBus);
+    CANrange m_leftCANrange = new CANrange(CoralSensorConstants.LEFT_CANRANGE_ID, Robot.m_notSwerveBus);
+    CANrange m_centerCANrange = new CANrange(CoralSensorConstants.CENTER_CANRANGE_ID, Robot.m_notSwerveBus);
+
     CANrangeConfiguration m_backCANrangeConfigurator = new CANrangeConfiguration();
+
+    public enum CoralState {
+        BackOnly,
+        CenterOnly,
+        LeftOnly,
+        RightOnly,
+        BackAndCenter,
+        RightAndLeft,
+        None
+    }
+
 //todo: set can bus
    // private final TimeOfFlight tof = new TimeOfFlight(CoralSensorConstants.CAN_ID);
     private double simDistance = CoralSensorConstants.MAX_DISTANCE;
@@ -55,7 +70,23 @@ public class CoralSensor {
         public static final double CENTER_DISTANCE = 0.179 - Units.inchesToMeters(0.7-0.6);
     }
 
-    public boolean hasCoral(){
-        return m_backCANrange.getIsDetected().getValue();
+    public CoralState getCoralSensorState(){
+        if (m_backCANrange.getIsDetected().getValue() && m_centerCANrange.getIsDetected().getValue()) {
+            return CoralState.BackAndCenter;
+        }
+        else if (m_leftCANrange.getIsDetected().getValue() && m_rightCANrange.getIsDetected().getValue()) {
+            return CoralState.RightAndLeft;
+        }
+        else {
+            return CoralState.None;
+        }
     }
+
+    public boolean hasCoral() {
+        if (getCoralSensorState() == CoralState.None)
+            return false;
+        else
+            return true;
+    }
+
 }

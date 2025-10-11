@@ -54,7 +54,7 @@ public class RealWristS extends Wrist {
 
     public static final Angle CCW_LIMIT = Degrees.of(146.8);
     public static final Angle CW_LIMIT = Degrees.of(-70);
-    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
+    public static final double MOTOR_ROTATIONS_PER_HAND_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
     // Units=volts/pivot rotation/s
     public static final double K_V = 4.548;
     public static final double K_A = 0.2 * 0.45/0.25;
@@ -66,12 +66,9 @@ public class RealWristS extends Wrist {
     // Pose
 
     // CAN IDs
-    public static final int LEADER_CAN_ID = 50;
+    public static final int LEADER_CAN_ID = 52;
 
     public static final int CURRENT_LIMIT = 10;
-
-    public static final double OUT_VOLTAGE = 0;
-    public static final double IN_VOLTAGE = 0;
 
     public static final double K_G = 0.45;
     public static final Angle K_G_ANGLE = Degrees.of(35.06);//Rotations.of(-0.072);
@@ -79,8 +76,8 @@ public class RealWristS extends Wrist {
     public static final Angle K_G_ANGLE_WITH_CORAL = Degrees.of(45);
     public static final double K_S = 0;
     // arm plus hand
-    public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
-    public static final double MOI = 0.10829;
+    public static final DCMotor GEARBOX = DCMotor.getFalcon500(1);
+    public static final double MOI = 0.10829 * 0.8;
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.CurrentLimits.withStatorCurrentLimitEnable(true).withStatorCurrentLimit(120)
       .withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(60);
@@ -89,7 +86,7 @@ public class RealWristS extends Wrist {
       config.Feedback
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
-          .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
+          .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_HAND_ROTATION);
       config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(false)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
@@ -103,7 +100,7 @@ public class RealWristS extends Wrist {
 
   private final SingleJointedArmSim m_pivotSim =
       new SingleJointedArmSim(
-        WristConstants.GEARBOX, WristConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION, 
+        WristConstants.GEARBOX, WristConstants.MOTOR_ROTATIONS_PER_HAND_ROTATION, 
         WristConstants.MOI, 0.2, WristConstants.CW_LIMIT.in(Radians), 
         WristConstants.CCW_LIMIT.in(Radians), false, 0
       );
@@ -169,11 +166,11 @@ public class RealWristS extends Wrist {
       m_pivotSim.update(0.01);
       var rotorPos =
           m_pivotSim.getAngleRads()
-              * WristConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION
+              * WristConstants.MOTOR_ROTATIONS_PER_HAND_ROTATION
               / (2 * Math.PI);
       var rotorVel =
           m_pivotSim.getVelocityRadPerSec()
-              * WristConstants.MOTOR_ROTATIONS_PER_ARM_ROTATION
+              * WristConstants.MOTOR_ROTATIONS_PER_HAND_ROTATION
               / (2 * Math.PI);
 
       simState.setRawRotorPosition(rotorPos);

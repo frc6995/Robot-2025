@@ -374,7 +374,7 @@ public class Autos {
           waitSeconds(1.3),
           m_drivebase.driveToPoseSupC(targetSup))
           .andThen(deadline(
-              waitSeconds(0.05).andThen(m_hand.voltage(score.outtakeVoltage).withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop())));
+              waitSeconds(0.05).andThen(m_hand.rollerVoltage(score.outtakeVoltage).withTimeout(outtakeSeconds).asProxy()), m_drivebase.stop())));
     
   }
 
@@ -728,9 +728,9 @@ public class Autos {
   public Command coralIntakeSelfCenter() {
     return           sequence(
       m_hand.inCoralSlow().until(this::hasCoral),
-      m_hand.voltage(-1).until(()->!this.hasCoral()),
-      m_hand.voltage(0.5).until(this::hasCoral),
-      m_hand.voltage(0.5).withTimeout(0.4)
+      m_hand.rollerVoltage(-1).until(()->!this.hasCoral()),
+      m_hand.rollerVoltage(0.5).until(this::hasCoral),
+      m_hand.rollerVoltage(0.5).withTimeout(0.4)
     );
   }
   public Command autoCoralIntake() {
