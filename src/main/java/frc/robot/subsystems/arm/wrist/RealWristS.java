@@ -66,7 +66,7 @@ public class RealWristS extends Wrist {
     // Pose
 
     // CAN IDs
-    public static final int LEADER_CAN_ID = 50;
+    public static final int LEADER_CAN_ID = 52;
 
     public static final int CURRENT_LIMIT = 10;
 

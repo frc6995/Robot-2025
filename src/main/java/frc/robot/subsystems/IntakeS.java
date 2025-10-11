@@ -45,16 +45,16 @@ public class IntakeS extends SubsystemBase {
 
     public static final double CORAL_LENGTH_METERS = Units.inchesToMeters(11.875);
     public static final int MOTOR_1_CAN_ID = 51;
-    public static final int MOTOR_2_CAN_ID = 52;
-    public static final int MOTOR_3_CAN_ID = 53;
+    public static final int MOTOR_2_CAN_ID = 53;
+    public static final int MOTOR_3_CAN_ID = 54;
 
 
-    public static final double IN_CORAL_VOLTAGE = 8;
+    public static final double IN_CORAL_VOLTAGE = -8;
 
     public static final double OUT_CORAL_VOLTAGE = -6; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_SLOW = -4; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_REVERSE = 6;
-    public static final double IN_ALGAE_VOLTAGE = -10;
+    public static final double IN_ALGAE_VOLTAGE = 10;
 
     public static final double OUT_ALGAE_VOLTAGE = 4;
     public static final double OUT_ALGAE_VOLTAGE_SLOW = 2;
@@ -68,6 +68,7 @@ public class IntakeS extends SubsystemBase {
     public static TalonFXConfiguration configureMotor1(TalonFXConfiguration config) {
       config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
+    
       // volts per wheel rotation = 8-9 inches of coral
       config.Slot0.withKP(6);
       return config;
@@ -136,7 +137,7 @@ public class IntakeS extends SubsystemBase {
     motor3.getConfigurator().apply(HandConstants.configureMotor3(new TalonFXConfiguration()));
 
     motor2.setControl(new Follower(motor1.getDeviceID(), false));
-    motor3.setControl(new Follower(motor1.getDeviceID(), false));
+    motor3.setControl(new Follower(motor1.getDeviceID(), true));
     setDefaultCommand(stop());
     new Trigger(m_coralSensor::hasCoral).onTrue(
         Commands.runOnce(this::setHasCoral).ignoringDisable(true));
