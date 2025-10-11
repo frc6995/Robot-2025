@@ -13,6 +13,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -51,8 +52,8 @@ public class IntakeS extends SubsystemBase {
 
     public static final double IN_CORAL_VOLTAGE = -8;
 
-    public static final double OUT_CORAL_VOLTAGE = -6; // worked with -6 but coral bounced
-    public static final double OUT_CORAL_VOLTAGE_SLOW = -4; // worked with -6 but coral bounced
+    public static final double OUT_CORAL_VOLTAGE = -9; // worked with -6 but coral bounced
+    public static final double OUT_CORAL_VOLTAGE_SLOW = -6; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_REVERSE = 6;
     public static final double IN_ALGAE_VOLTAGE = 10;
 
@@ -74,7 +75,7 @@ public class IntakeS extends SubsystemBase {
       return config;
     }
     public static TalonFXConfiguration configureMotor2(TalonFXConfiguration config) {
-      config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
+      config.CurrentLimits.withStatorCurrentLimit(60).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
       // volts per wheel rotation = 8-9 inches of coral
       //config.Slot0.withKP(6);
@@ -82,7 +83,7 @@ public class IntakeS extends SubsystemBase {
     }
 
     public static TalonFXConfiguration configureMotor3(TalonFXConfiguration config) {
-        config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
+        config.CurrentLimits.withStatorCurrentLimit(60).withStatorCurrentLimitEnable(true);
         config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
         // volts per wheel rotation = 8-9 inches of coral
         //config.Slot0.withKP(6);
@@ -135,6 +136,10 @@ public class IntakeS extends SubsystemBase {
     motor1.getConfigurator().apply(HandConstants.configureMotor1(new TalonFXConfiguration()));
     motor2.getConfigurator().apply(HandConstants.configureMotor2(new TalonFXConfiguration()));
     motor3.getConfigurator().apply(HandConstants.configureMotor3(new TalonFXConfiguration()));
+
+    motor1.setNeutralMode(NeutralModeValue.Brake);
+    motor2.setNeutralMode(NeutralModeValue.Brake);
+    motor3.setNeutralMode(NeutralModeValue.Brake);
 
     motor2.setControl(new Follower(motor1.getDeviceID(), false));
     motor3.setControl(new Follower(motor1.getDeviceID(), true));
@@ -209,7 +214,7 @@ public class IntakeS extends SubsystemBase {
   }
 
   public Command inCoralSlow() {
-    return voltage(2.5);
+    return voltage(-2.5);
   }
 
   public Command outCoral() {

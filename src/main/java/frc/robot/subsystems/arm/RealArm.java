@@ -92,10 +92,10 @@ public class RealArm extends Arm {
   }
 
   public Command goToPosition(ArmPosition position) {
-    if (position.pivotRadians() < Units.degreesToRadians(17)) {
+    if (position.pivotRadians() < Units.degreesToRadians(0)) {
       double shrunkenElevator = MathUtil.clamp(position.elevatorMeters(), MIN_ELEVATOR_LENGTH.in(Meters),
       SAFE_PIVOT_ELEVATOR_LENGTH.in(Meters));
-      Angle wristSafeToLower = position.wristAngle().lt(Degrees.of(0)) ? Degrees.of(0) : position.wristAngle();
+      Angle wristSafeToLower = position.wristAngle().lt(Degrees.of(-70)) ? Degrees.of(0) : position.wristAngle();
       return
         goToPositionWithoutTuckCheck(new ArmPosition(Degrees.of(17), Meters.of(shrunkenElevator), wristSafeToLower))
         .until(()->wristS.getAngleRadians() > Units.degreesToRadians(-3))
@@ -127,7 +127,7 @@ public class RealArm extends Arm {
     return wristS.goTo(
       () -> {
         double dontGoIntoBumperMinLimit = 
-        mainPivotRadians.getAsDouble() < Units.degreesToRadians(17) || mainPivotS.getAngleRadians() < Units.degreesToRadians(17)
+        mainPivotRadians.getAsDouble() < Units.degreesToRadians(0) || mainPivotS.getAngleRadians() < Units.degreesToRadians(0)
           ? 0
           : WristConstants.CW_LIMIT.in(Radians);
         // Only if nearly fully extended can the wrist go to its full limit, since the algae roller touches the tube

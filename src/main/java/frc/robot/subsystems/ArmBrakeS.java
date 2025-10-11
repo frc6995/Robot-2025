@@ -59,7 +59,7 @@ return this.run(()-> motor.setVoltage(volts));
   }
 public class ArmBrakeConstants {
   public static final int CAN_ID = 35;
-  public static final int CURRENT_LIMIT =25;
+  public static final int CURRENT_LIMIT = 10;
   public static SparkFlexConfig configureMotor(SparkFlexConfig config) {
     config.smartCurrentLimit(CURRENT_LIMIT);
     config.softLimit.forwardSoftLimit(1).forwardSoftLimitEnabled(true);

@@ -727,10 +727,10 @@ public class Autos {
 
   public Command coralIntakeSelfCenter() {
     return           sequence(
-      m_hand.inCoralSlow().until(this::hasCoral),
-      m_hand.voltage(-1).until(()->!this.hasCoral()),
-      m_hand.voltage(0.5).until(this::hasCoral),
-      m_hand.voltage(0.5).withTimeout(0.4)
+      m_hand.inCoralSlow().until(this::hasCoral)
+      // ,m_hand.voltage(-1).until(()->!this.hasCoral()),
+      // m_hand.voltage(0.5).until(this::hasCoral),
+      // m_hand.voltage(0.5).withTimeout(0.4)
     );
   }
   public Command autoCoralIntake() {
@@ -750,8 +750,6 @@ public class Autos {
           
             sequence(
               m_hand.inCoral()
- 
-              
               .until(this::hasCoral)//,
               //m_hand.inCoral().withTimeout(0.1)
             ).unless(this::hasCoral).andThen(

@@ -56,17 +56,17 @@ public abstract class Arm {
 
   public class Positions {
     // NEW HAND
-    public static final ArmPosition GROUND_CORAL = new ArmPosition(Degrees.of(2.3), ElevatorConstants.MIN_LENGTH,
-        Degrees.of(-30));
-    public static final ArmPosition GROUND_ALGAE = new ArmPosition(Degrees.of(21.5),  Meters.of(0.75),
-        Degrees.of(-70));
+    public static final ArmPosition GROUND_CORAL = new ArmPosition(Degrees.of(1), ElevatorConstants.MIN_LENGTH,
+        Degrees.of(-46));
+    public static final ArmPosition GROUND_ALGAE = new ArmPosition(Degrees.of(6.7),  Meters.of(0.75),
+        Degrees.of(-50));
     public static final ArmPosition WALL_INTAKE_CORAL = new ArmPosition(Degrees.of(69.4), Meters.of(0.814),
         Degrees.of(-24));
 
     public static final ArmPosition POST_INTAKE_CORAL = new ArmPosition(Degrees.of(85),
-        ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(1)), Degrees.of(5));
+        ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(0)), Degrees.of(5));
     //public static final ArmPosition L4_CLOSE = new ArmPosition(Degrees.of(86), ElevatorConstants.MAX_LENGTH, Degrees.of(135));
-    public static final ArmPosition L4 = new ArmPosition(Degrees.of(96.5), ElevatorConstants.MAX_LENGTH, Degrees.of(140));
+    public static final ArmPosition L4 = new ArmPosition(Degrees.of(96.5), ElevatorConstants.MAX_LENGTH, Degrees.of(100));
     public static final ArmPosition L3 = new ArmPosition(Degrees.of(88), Meters.of(1.025).minus(Inches.of(6)),
         Degrees.of(90 + 35));
     public static final ArmPosition L2 = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH,
@@ -81,7 +81,7 @@ public abstract class Arm {
         Degrees.of(-70));
     public static final ArmPosition L2_OPP = new ArmPosition(Degrees.of(35), ElevatorConstants.MIN_LENGTH.plus(Inches.of(4)),
         Degrees.of(110));
-    public static final ArmPosition CORAL_STOW = new ArmPosition(Degrees.of(68), ElevatorConstants.MIN_PADDED_LENGTH, Degrees.of(0));
+    public static final ArmPosition CORAL_STOW = new ArmPosition(Degrees.of(87), ElevatorConstants.MIN_PADDED_LENGTH, Degrees.of(80));
     public static final ArmPosition LOW_ALGAE_REEF = new ArmPosition(Degrees.of(108),
     ElevatorConstants.MIN_LENGTH.plus(Inches.of(1.5)), Degrees.of(77));
     public static final ArmPosition LOW_ALGAE = new ArmPosition(Degrees.of(55),

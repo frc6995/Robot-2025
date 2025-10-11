@@ -52,9 +52,9 @@ public class RealWristS extends Wrist {
     // [Things related to hardware] such as motor hard limits, can ids, pid constants, motor
     // rotations per arm rotation.
 
-    public static final Angle CCW_LIMIT = Degrees.of(146.8);
+    public static final Angle CCW_LIMIT = Degrees.of(102);
     public static final Angle CW_LIMIT = Degrees.of(-70);
-    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;
+    public static final double MOTOR_ROTATIONS_PER_ARM_ROTATION = 48.0/9.0 * 40.0/15.0 * 40.0/15.0;//48.0/9.0 * 40.0/15.0 * 40.0/15.0 50.0/9.0 * 32.0/12.0 * 32.0/12.0
     // Units=volts/pivot rotation/s
     public static final double K_V = 4.548;
     public static final double K_A = 0.2 * 0.45/0.25;
@@ -90,11 +90,12 @@ public class RealWristS extends Wrist {
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
           .withSensorToMechanismRatio(MOTOR_ROTATIONS_PER_ARM_ROTATION);
-      config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(false)
+      config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
-          .withReverseSoftLimitEnable(false);
+          .withReverseSoftLimitEnable(true);
+      config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+
       config.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
       return config;
     }
