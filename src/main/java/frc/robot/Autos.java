@@ -273,9 +273,9 @@ public class Autos {
         public Command outtakeCoralEitherSide() {
           return either(
               // if scoring out battery side
-              m_hand.outCoralReverse(),
-              // if scoring out pivot side
               m_hand.outCoral(),
+              // if scoring out pivot side
+              m_hand.outCoralReverse(),
               ()->m_arm.position.wristRadians() > 0);
         }
         private record GroundAutoCycle(Optional<Function<AutoRoutine, AutoTrajectory>> after, POI start, POI score, ReefScoringOption scoreArm){

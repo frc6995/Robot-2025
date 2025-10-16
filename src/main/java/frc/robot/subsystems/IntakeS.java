@@ -53,7 +53,7 @@ public class IntakeS extends SubsystemBase {
     public static final double IN_CORAL_VOLTAGE = -8;
 
     public static final double OUT_CORAL_VOLTAGE = -9; // worked with -6 but coral bounced
-    public static final double OUT_CORAL_VOLTAGE_SLOW = -6; // worked with -6 but coral bounced
+    public static final double OUT_CORAL_VOLTAGE_SLOW = 6; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_REVERSE = 6;
     public static final double IN_ALGAE_VOLTAGE = 10;
 

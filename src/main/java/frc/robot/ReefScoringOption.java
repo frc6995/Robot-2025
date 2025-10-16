@@ -26,7 +26,7 @@ public enum ReefScoringOption{
       
     L2(
       POI::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L2_OPP),
-      4, Arm.Positions.L2_OPP, 0,
+      -4, Arm.Positions.L2_OPP, 0,
       (autos)->autos.m_arm.goToPosition(
         // intentional, we want a pivot up
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L2_OPP.wristAngle())),
@@ -35,7 +35,7 @@ public enum ReefScoringOption{
       ),
     L3(
       POI::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3_OPP),
-      4, Arm.Positions.L3_OPP, 0,
+      -4, Arm.Positions.L3_OPP, 0,
       (autos)->autos.m_arm.goToPosition(
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3_OPP.wristAngle())),
       (autos)->autos.m_arm.goToPosition(
@@ -51,7 +51,8 @@ public enum ReefScoringOption{
     ),
     L4(
       POI::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L4_OPP),
-      HandConstants.OUT_CORAL_VOLTAGE_REVERSE, Arm.Positions.L4_OPP, -Units.inchesToMeters(2),
+      //HandConstants.OUT_CORAL_VOLTAGE_REVERSE
+      -4, Arm.Positions.L4_OPP, -Units.inchesToMeters(2),
       (autos)->autos.m_arm.goToPosition(
         new ArmPosition(Arm.Positions.L4_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L4_OPP.wristAngle())),
       (autos)->autos.m_arm.goToPosition(
@@ -59,7 +60,7 @@ public enum ReefScoringOption{
     ),
     L3_PIV(
       POI::selectedPivotSidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3),
-      -4, Arm.Positions.L3, 0,
+      4, Arm.Positions.L3, 0,
       (autos)->autos.m_arm.goToPosition(
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle())),
       (autos)->autos.m_arm.goToPosition(
@@ -67,7 +68,7 @@ public enum ReefScoringOption{
     ),
     L4_PIV(
       POI::selectedPivotSidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L4),
-      -4, Arm.Positions.L4, 0,
+      4, Arm.Positions.L4, 0,
       (autos)->Commands.sequence(
         autos.m_arm.goToPosition(
           new ArmPosition(
