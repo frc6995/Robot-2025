@@ -237,7 +237,7 @@ public class IntakeS extends SubsystemBase {
   }
 
   public Command outAlgae() {
-    return voltage(10);//HandConstants.OUT_ALGAE_VOLTAGE);
+    return voltage(-10);//HandConstants.OUT_ALGAE_VOLTAGE);
   }
 
   public Command outAlgaeSlow() {

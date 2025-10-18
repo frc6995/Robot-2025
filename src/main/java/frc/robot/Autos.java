@@ -149,7 +149,7 @@ public class Autos {
       autos.put("Backside H-2Alg", () -> flexAuto(POI.STH, POI.SL3, Optional.of(
         (routine)->{
           var traj = routine.trajectory("1");
-          traj.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.LOW_ALGAE_REEF)).onTrue(m_hand.inAlgae());
+          traj.atTime(0).onTrue(m_arm.goToPosition(Arm.Positions.PIVOT_SIDE_LOW_ALGAE)).onTrue(m_hand.inAlgae());
           
           var toScore = routine.trajectory("3");
           traj.chain(toScore);
@@ -528,7 +528,7 @@ public class Autos {
   }
 
   public enum AlgaeHeight {
-    LOW(Arm.Positions.LOW_ALGAE_REEF, Arm.Positions.LOW_ALGAE),
+    LOW(Arm.Positions.PIVOT_SIDE_LOW_ALGAE, Arm.Positions.BATTERY_SIDE_LOW_ALGAE),
     HIGH(Arm.Positions.HIGH_ALGAE_REEF, Arm.Positions.HIGH_ALGAE);
     AlgaeHeight(ArmPosition pivotPosition, ArmPosition batteryPosition) {
           this.pivotPosition = pivotPosition;
@@ -794,9 +794,9 @@ public class Autos {
   
   public Command bargeUpAndOutVoltage() {
     BooleanSupplier release = ()-> m_arm.position.elevatorMeters() > 
-    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(16);
+    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(18);
     BooleanSupplier nohardstop = ()-> m_arm.position.elevatorMeters() > 
-    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(10);
+    Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(8);
     return
       sequence(
         // prep position
