@@ -224,7 +224,6 @@ public class Robot extends TimedRobot {
         m_autos.autoCoralIntake(),
         Commands.either(
             // TODO: add actual ground l1 intake functioanlity!!!
-            //Commands.runOnce(() -> System.out.println("ground l1")),
             m_autos.coralIntakeL1().asProxy(),
             sequence(
                 m_hand.voltage(2).withTimeout(0.1).onlyIf(() -> m_hand.getVoltage() > 0.02).asProxy(),

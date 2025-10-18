@@ -226,7 +226,7 @@ public class IntakeS extends SubsystemBase {
 
   public Command intakeRollersStart() {
     return voltageTopOnly(HandConstants.IN_L1_CORAL_VOLTAGE)
-        .withTimeout(0.3);
+        .withTimeout(1.5);
 
   }
 
@@ -245,7 +245,7 @@ public class IntakeS extends SubsystemBase {
   }
 
   public Command inL1Coral() {
-    return Commands.sequence(intakeRollersStart(), voltageTopOnly(HandConstants.IN_L1_CORAL_VOLTAGE));
+    return Commands.sequence(intakeRollersStart(), intakeRollersUntilStop());
   }
 
   public Command inCoralSlow() {
