@@ -61,7 +61,7 @@ public abstract class Arm {
     public static final ArmPosition GROUND_ALGAE = new ArmPosition(Degrees.of(6.7),  Meters.of(0.75),
         Degrees.of(-50));
     public static final ArmPosition WALL_INTAKE_CORAL = new ArmPosition(Degrees.of(69.4), Meters.of(0.814),
-        Degrees.of(-24));
+        Degrees.of(-70));
 
     public static final ArmPosition POST_INTAKE_CORAL = new ArmPosition(Degrees.of(85),
         ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(0)), Degrees.of(5));
@@ -71,8 +71,8 @@ public abstract class Arm {
         Degrees.of(90 + 35));
     public static final ArmPosition L2 = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH,
         Degrees.of(90 + 55));
-    public static final ArmPosition L1 = new ArmPosition(Degrees.of(50), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
-        Degrees.of(-40));
+    public static final ArmPosition L1 = new ArmPosition(Degrees.of(30), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
+        Degrees.of(-60 ));
 
     public static final ArmPosition L4_OPP = new ArmPosition(Degrees.of(68), ElevatorConstants.MAX_LENGTH.minus(Inches.of(0)), Degrees.of(55));
     public static final ArmPosition L3_OPP = new ArmPosition(Degrees.of(50), ElevatorConstants.MIN_LENGTH.plus(Inches.of(14)),
