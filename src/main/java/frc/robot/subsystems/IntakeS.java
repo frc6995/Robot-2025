@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
@@ -51,6 +53,7 @@ public class IntakeS extends SubsystemBase {
 
 
     public static final double IN_CORAL_VOLTAGE = -8;
+    public static final Voltage IN_L1_CORAL_VOLTAGE = Voltage.ofBaseUnits(-5.0, Volts);
 
     public static final double OUT_CORAL_VOLTAGE = -9; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_SLOW = 6; // worked with -6 but coral bounced
@@ -146,6 +149,8 @@ public class IntakeS extends SubsystemBase {
     setDefaultCommand(stop());
     new Trigger(m_coralSensor::hasCoral).onTrue(
         Commands.runOnce(this::setHasCoral).ignoringDisable(true));
+    new Trigger(m_coralSensor::hasFrontCoral).onTrue(
+        Commands.runOnce(this::setHasFrontCoral).ignoringDisable(true));
     if (RobotBase.isSimulation()) {
       new Trigger(() -> {
         m_voltageSig.refresh();
@@ -163,7 +168,11 @@ public class IntakeS extends SubsystemBase {
     } else {
       coralPositionAtSensorTrip = Optional.of(HandConstants.CORAL_LENGTH_METERS / 2.0+Units.inchesToMeters(2));
     }
+    m_coralSensor.setHasCoral(true);
+  }
 
+  private void setHasFrontCoral() {
+    m_coralSensor.setHasCoral(true);
   }
 
   private void setHasNoCoral() {
@@ -205,12 +214,25 @@ public class IntakeS extends SubsystemBase {
     m_voltageSig.refresh();
     return m_voltageSig.getValueAsDouble();
   }
+
+  public Command voltageTopOnly(Voltage voltage) {
+    return Commands.parallel(
+      Commands.run(() -> motor1.setControl(voltageRequest.withOutput(voltage))),
+      Commands.run(() -> motor2.setControl(voltageRequest.withOutput(0))),
+      Commands.run(() -> motor3.setControl(voltageRequest.withOutput(0)))
+    );
+  }
+
   public Command stop() {
     return voltage(0);
   }
 
   public Command inCoral() {
     return voltage(HandConstants.IN_CORAL_VOLTAGE);
+  }
+
+  public Command inL1Coral() {
+    return voltageTopOnly(HandConstants.IN_L1_CORAL_VOLTAGE);
   }
 
   public Command inCoralSlow() {
