@@ -5,6 +5,8 @@ import com.ctre.phoenix6.hardware.CANrange;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 
 @Logged
 public class CoralSensor {
@@ -56,6 +58,12 @@ public class CoralSensor {
     }
 
     public boolean hasCoral(){
-        return m_backCANrange.getIsDetected().getValue();
+       return m_backCANrange.getIsDetected().getValue();
+    }
+    public boolean noHasCoral() {
+        return !(m_backCANrange.getIsDetected().getValue());
+    }
+    public Command checkCoral() {
+        return Commands.runOnce(()->hasCoral());
     }
 }

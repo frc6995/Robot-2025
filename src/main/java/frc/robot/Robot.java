@@ -256,7 +256,7 @@ public class Robot extends TimedRobot {
 
     // Stow
     m_driverController.b().onTrue(m_arm.goToPosition(Arm.Positions.GROUND_ALGAE)).onTrue(m_hand.inAlgae());
-    m_driverController.leftBumper().onTrue(m_arm.goToPosition(Arm.Positions.STOW));
+    //m_driverController.leftBumper().onTrue(m_arm.goToPosition(Arm.Positions.STOW));
     // m_arm.goToPosition(Arm.Positions.STOW));
     // Score coral and stow
     boolean coralPivotSide = false;
@@ -269,10 +269,7 @@ public class Robot extends TimedRobot {
             .andThen(new ScheduleCommand(m_autos.stowAfterCoral(m_autos.lastScoringOption))));
 
     // Score algae and stow if at barge position
-    m_driverController.leftTrigger().onTrue(parallel(
-        m_hand.outAlgaeSlow().withTimeout(0.5)).andThen(
-            new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
-                .onlyIf(() -> m_arm.getPosition().elevatorMeters() > Arm.Positions.L3.elevatorMeters())));
+    m_driverController.leftBumper().onTrue(m_hand.m_coralSensor.checkCoral());
     // Auto align to operator selected position on reef for coral scoring
     m_driverController.rightTrigger().whileTrue(m_autos.autoScoreMap());
 

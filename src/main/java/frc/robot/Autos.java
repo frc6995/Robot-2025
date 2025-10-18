@@ -445,12 +445,12 @@ public class Autos {
 
   public Command premoveAfterCoralIntake(Supplier<ReefScoringOption> option) {
     return select(Map.of(
-      ReefScoringOption.L1, ReefScoringOption.L1.premove.apply(this),
-      ReefScoringOption.L2, ReefScoringOption.L2.premove.apply(this),
-      ReefScoringOption.L3, ReefScoringOption.L3.premove.apply(this),
-      //ReefScoringOption.L4, ReefScoringOption.L4.premove.apply(this),
-      ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.premove.apply(this),
-      ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.premove.apply(this)
+      ReefScoringOption.L1, ReefScoringOption.L1.stow.apply(this),
+      ReefScoringOption.L2, ReefScoringOption.L2.stow.apply(this),
+      ReefScoringOption.L3, ReefScoringOption.L3.stow.apply(this),
+      //ReefScoringOption.L4, ReefScoringOption.L4.stow.apply(this),
+      ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.stow.apply(this),
+      ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.stow.apply(this)
     ), option);
   }
 
