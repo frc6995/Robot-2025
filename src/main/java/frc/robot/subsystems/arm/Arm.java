@@ -81,6 +81,9 @@ public abstract class Arm {
         Degrees.of(-70));
     public static final ArmPosition L2_OPP = new ArmPosition(Degrees.of(35), ElevatorConstants.MIN_LENGTH.plus(Inches.of(4)),
         Degrees.of(110));
+
+        public static final ArmPosition NEW_CORAL_STOW = new ArmPosition(Arm.Positions.L3.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle());
+
     public static final ArmPosition CORAL_STOW = new ArmPosition(Degrees.of(87), ElevatorConstants.MIN_PADDED_LENGTH, Degrees.of(80));
     public static final ArmPosition LOW_ALGAE_REEF = new ArmPosition(Degrees.of(108),
     ElevatorConstants.MIN_LENGTH.plus(Inches.of(1.5)), Degrees.of(77));
@@ -92,7 +95,7 @@ public abstract class Arm {
     public static final ArmPosition HIGH_ALGAE = new ArmPosition(Degrees.of(63),
         ElevatorConstants.MIN_LENGTH.plus(Inches.of(22)), Degrees.of(-60));
 
-    public static final ArmPosition STOW = new ArmPosition(Degrees.of(70), Meters.of(0.75),
+    public static final ArmPosition STOW = new ArmPosition(Degrees.of(70), Meters.of(0.75),//algae stow
         Radians.of(0));
     public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(92), ElevatorConstants.MIN_PADDED_LENGTH,
         Degrees.of(-50));
@@ -104,6 +107,7 @@ public abstract class Arm {
         Degrees.of(0));
     public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(Degrees.of(35),
         Meters.of(0.75), Degrees.of(-70));
+
   }
 
   public Arm() {

@@ -31,7 +31,7 @@ public enum ReefScoringOption{
         // intentional, we want a pivot up
         new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L2_OPP.wristAngle())),
       
-      (autos)->new ScheduleCommand(autos.m_arm.goToPosition(Arm.Positions.L2_OPP)) // so tapping the align button goes to L1
+      (autos)->new ScheduleCommand(autos.m_arm.goToPosition(Arm.Positions.NEW_CORAL_STOW)) // so tapping the align button goes to L1
       ),
     L3(
       POI::selectedBatterySidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L3_OPP),
