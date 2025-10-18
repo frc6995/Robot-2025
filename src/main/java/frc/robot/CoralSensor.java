@@ -97,4 +97,10 @@ public class CoralSensor {
         }
         return (detected == sensors.length);
     }
+    public boolean noHasCoral() {
+        return !(m_backCANrange.getIsDetected().getValue());
+    }
+    public Command checkCoral() {
+        return Commands.runOnce(()->hasCoral());
+    }
 }

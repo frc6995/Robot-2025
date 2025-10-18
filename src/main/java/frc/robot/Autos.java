@@ -427,10 +427,8 @@ public class Autos {
       }
       return ReefScoringOption.L4_PIV;
     }
-    if (m_board.getLevel() == 2) {
-      return ReefScoringOption.L3;
-    }
-    return ReefScoringOption.L4;
+    if(m_board.getLevel() == 2) {return ReefScoringOption.L3;}
+    return ReefScoringOption.L4_PIV;
   }
 
   public Command autoScoreOption(ReefScoringOption option) {
@@ -448,33 +446,36 @@ public class Autos {
 
   public Command autoScoreMap() {
     return select(Map.of(
-        ReefScoringOption.L1, autoScoreOption(ReefScoringOption.L1),
-        ReefScoringOption.L2, autoScoreOption(ReefScoringOption.L2),
-        ReefScoringOption.L3, autoScoreOption(ReefScoringOption.L3),
-        ReefScoringOption.L4, autoScoreOption(ReefScoringOption.L4),
-        ReefScoringOption.L3_HIGH_ALG, autoScoreOption(ReefScoringOption.L3_HIGH_ALG),
-        ReefScoringOption.L3_PIV, autoScoreOption(ReefScoringOption.L3_PIV),
-        ReefScoringOption.L4_PIV, autoScoreOption(ReefScoringOption.L4_PIV)), this::selectedScoringOption);
+      ReefScoringOption.L1, autoScoreOption(ReefScoringOption.L1),
+      ReefScoringOption.L2, autoScoreOption(ReefScoringOption.L2),
+      ReefScoringOption.L3, autoScoreOption(ReefScoringOption.L3),
+      //ReefScoringOption.L4, autoScoreOption(ReefScoringOption.L4),
+      ReefScoringOption.L3_HIGH_ALG, autoScoreOption(ReefScoringOption.L3_HIGH_ALG),
+      ReefScoringOption.L3_PIV, autoScoreOption(ReefScoringOption.L3_PIV),
+      ReefScoringOption.L4_PIV, autoScoreOption(ReefScoringOption.L4_PIV)
+    ), this::selectedScoringOption);
   }
 
   public Command stowAfterCoral(Supplier<ReefScoringOption> option) {
     return select(Map.of(
-        ReefScoringOption.L1, ReefScoringOption.L1.stow.apply(this),
-        ReefScoringOption.L2, ReefScoringOption.L2.stow.apply(this),
-        ReefScoringOption.L3, ReefScoringOption.L3.stow.apply(this),
-        ReefScoringOption.L4, ReefScoringOption.L4.stow.apply(this),
-        ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.stow.apply(this),
-        ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.stow.apply(this)), option);
+      ReefScoringOption.L1, ReefScoringOption.L1.stow.apply(this),
+      ReefScoringOption.L2, ReefScoringOption.L2.stow.apply(this),
+      ReefScoringOption.L3, ReefScoringOption.L3.stow.apply(this),
+      //ReefScoringOption.L4, ReefScoringOption.L4.stow.apply(this),
+      ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.stow.apply(this),
+      ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.stow.apply(this)
+    ), option);
   }
 
   public Command premoveAfterCoralIntake(Supplier<ReefScoringOption> option) {
     return select(Map.of(
-        ReefScoringOption.L1, ReefScoringOption.L1.premove.apply(this),
-        ReefScoringOption.L2, ReefScoringOption.L2.premove.apply(this),
-        ReefScoringOption.L3, ReefScoringOption.L3.premove.apply(this),
-        ReefScoringOption.L4, ReefScoringOption.L4.premove.apply(this),
-        ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.premove.apply(this),
-        ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.premove.apply(this)), option);
+      ReefScoringOption.L1, ReefScoringOption.L1.stow.apply(this),
+      ReefScoringOption.L2, ReefScoringOption.L2.stow.apply(this),
+      ReefScoringOption.L3, ReefScoringOption.L3.stow.apply(this),
+      //ReefScoringOption.L4, ReefScoringOption.L4.stow.apply(this),
+      ReefScoringOption.L3_PIV, ReefScoringOption.L3_PIV.stow.apply(this),
+      ReefScoringOption.L4_PIV, ReefScoringOption.L4_PIV.stow.apply(this)
+    ), option);
   }
 
   // public POI selectedReefPOI() {
