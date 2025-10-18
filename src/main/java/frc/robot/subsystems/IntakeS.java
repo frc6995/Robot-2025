@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Volts;
-
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
@@ -53,7 +51,7 @@ public class IntakeS extends SubsystemBase {
 
 
     public static final double IN_CORAL_VOLTAGE = -8;
-    public static final Voltage IN_L1_CORAL_VOLTAGE = Voltage.ofBaseUnits(-5.0, Volts);
+    public static final double IN_L1_CORAL_VOLTAGE = -5.0;
 
     public static final double OUT_CORAL_VOLTAGE = -9; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_SLOW = 6; // worked with -6 but coral bounced
@@ -215,7 +213,7 @@ public class IntakeS extends SubsystemBase {
     return m_voltageSig.getValueAsDouble();
   }
 
-  public Command voltageTopOnly(Voltage voltage) {
+  public Command voltageTopOnly(double voltage) {
     return Commands.parallel(
       Commands.run(() -> motor1.setControl(voltageRequest.withOutput(voltage))),
       Commands.run(() -> motor2.setControl(voltageRequest.withOutput(0))),
