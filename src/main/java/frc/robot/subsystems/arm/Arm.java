@@ -82,7 +82,8 @@ public abstract class Arm {
     public static final ArmPosition L2_OPP = new ArmPosition(Degrees.of(35), ElevatorConstants.MIN_LENGTH.plus(Inches.of(4)),
         Degrees.of(110));
 
-        public static final ArmPosition NEW_CORAL_STOW = new ArmPosition(Arm.Positions.L3.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3.wristAngle());
+        public static final ArmPosition NEW_CORAL_STOW = new ArmPosition(Degrees.of(88), Meters.of(1.025).minus(Inches.of(6)),
+        Degrees.of(90 + 35));
 
     public static final ArmPosition CORAL_STOW = new ArmPosition(Degrees.of(87), ElevatorConstants.MIN_PADDED_LENGTH, Degrees.of(80));
     public static final ArmPosition LOW_ALGAE_REEF = new ArmPosition(Degrees.of(108),
