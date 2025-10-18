@@ -763,12 +763,13 @@ public class Autos {
         new ScheduleCommand(
             sequence(
                 m_hand.inL1Coral()
-                    .until(this::hasL1Coral)
-            ).unless(this::hasL1Coral).andThen(
+                    //.until(this::hasL1Coral)
+                    .until(() -> m_hand.motor1.getStatorCurrent().getValueAsDouble() > 65)
+            ).unless(/*this::hasL1Coral*/() -> m_hand.motor1.getStatorCurrent().getValueAsDouble() > 65).andThen(
                 parallel(
                     new ScheduleCommand(premoveAfterCoralIntake(() -> ReefScoringOption.L1)),
 
-                    new ScheduleCommand(m_hand.stop()),
+                    new ScheduleCommand(m_hand.voltageTopOnly(-2)),
                     new ScheduleCommand(
                         LightStripS.top.stateC(() -> TopStates.Intaked).withTimeout(1))))));
   }

@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
@@ -20,6 +22,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -32,8 +35,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.CoralSensor;
 import frc.robot.Robot;
-
-
 
 @Logged
 public class IntakeS extends SubsystemBase {
@@ -49,9 +50,10 @@ public class IntakeS extends SubsystemBase {
     public static final int MOTOR_2_CAN_ID = 53;
     public static final int MOTOR_3_CAN_ID = 54;
 
-
     public static final double IN_CORAL_VOLTAGE = -8;
     public static final double IN_L1_CORAL_VOLTAGE = -5.0;
+
+    public static final Current L1_INTAKE_STATOR_LIMIT = Amps.of(65);
 
     public static final double OUT_CORAL_VOLTAGE = -9; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_SLOW = 6; // worked with -6 but coral bounced
@@ -63,40 +65,38 @@ public class IntakeS extends SubsystemBase {
 
     public static final double CLEAR_SENSOR_OFFSET = -Units.inchesToMeters(7.2);
     public static final double GROUND_INTAKE_OFFSET = -Units.inchesToMeters(0);
-    public static final double CORAL_METERS_PER_WHEEL_ROT = (Units.inchesToMeters(2.375)/(0.443-0.201));
-
-    
+    public static final double CORAL_METERS_PER_WHEEL_ROT = (Units.inchesToMeters(2.375) / (0.443 - 0.201));
 
     public static TalonFXConfiguration configureMotor1(TalonFXConfiguration config) {
       config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
-    
+
       // volts per wheel rotation = 8-9 inches of coral
       config.Slot0.withKP(6);
       return config;
     }
+
     public static TalonFXConfiguration configureMotor2(TalonFXConfiguration config) {
       config.CurrentLimits.withStatorCurrentLimit(60).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
       // volts per wheel rotation = 8-9 inches of coral
-      //config.Slot0.withKP(6);
+      // config.Slot0.withKP(6);
       return config;
     }
 
     public static TalonFXConfiguration configureMotor3(TalonFXConfiguration config) {
-        config.CurrentLimits.withStatorCurrentLimit(60).withStatorCurrentLimitEnable(true);
-        config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
-        // volts per wheel rotation = 8-9 inches of coral
-        //config.Slot0.withKP(6);
-        return config;
-      
+      config.CurrentLimits.withStatorCurrentLimit(60).withStatorCurrentLimitEnable(true);
+      config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
+      // volts per wheel rotation = 8-9 inches of coral
+      // config.Slot0.withKP(6);
+      return config;
+
     }
   }
 
-  private final TalonFX motor1 = new TalonFX(HandConstants.MOTOR_1_CAN_ID, Robot.m_notSwerveBus);
+  public final TalonFX motor1 = new TalonFX(HandConstants.MOTOR_1_CAN_ID, Robot.m_notSwerveBus);
   private final TalonFX motor2 = new TalonFX(HandConstants.MOTOR_2_CAN_ID, Robot.m_notSwerveBus);
   private final TalonFX motor3 = new TalonFX(HandConstants.MOTOR_3_CAN_ID, Robot.m_notSwerveBus);
-
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
   private final PositionVoltage positionRequest = new PositionVoltage(0).withPosition(0);
@@ -121,7 +121,7 @@ public class IntakeS extends SubsystemBase {
 
   public StatusSignal<Angle> m_positionSig = motor1.getPosition();
   public StatusSignal<Voltage> m_voltageSig = motor1.getMotorVoltage();
-  
+
   private Optional<Double> lastRotationsAtSensorTrip = Optional.empty();
 
   public double lastRotationsAtSensorTrip() {
@@ -162,9 +162,9 @@ public class IntakeS extends SubsystemBase {
     m_positionSig.refresh();
     lastRotationsAtSensorTrip = Optional.of(m_positionSig.getValueAsDouble());
     if (m_voltageSig.getValueAsDouble() >= 0) {
-      coralPositionAtSensorTrip = Optional.of(-HandConstants.CORAL_LENGTH_METERS / 2.0+Units.inchesToMeters(2.0));
+      coralPositionAtSensorTrip = Optional.of(-HandConstants.CORAL_LENGTH_METERS / 2.0 + Units.inchesToMeters(2.0));
     } else {
-      coralPositionAtSensorTrip = Optional.of(HandConstants.CORAL_LENGTH_METERS / 2.0+Units.inchesToMeters(2));
+      coralPositionAtSensorTrip = Optional.of(HandConstants.CORAL_LENGTH_METERS / 2.0 + Units.inchesToMeters(2));
     }
     m_coralSensor.setHasCoral(true);
   }
@@ -187,19 +187,23 @@ public class IntakeS extends SubsystemBase {
   public Command driveToOffset(double offsetMeters) {
     return voltage(0);
     // Capture<Double> targetMotorRotations = new Capture<Double>(0.0);
-    
+
     // return either(
-    //     runOnce(() -> {
-    //       targetMotorRotations.inner = m_positionSig.getValueAsDouble()
-    //           + ((offsetMeters - getCoralInlineOffset()) / HandConstants.CORAL_METERS_PER_WHEEL_ROT);
-    //     }).andThen(run(() -> motor.setControl(positionRequest.withPosition(targetMotorRotations.inner)))
-        
-    //     ),
-    //     voltage(0),
-    //     () -> !lastRotationsAtSensorTrip.isEmpty()).onlyWhile(m_coralSensor::hasCoral).andThen(
-    //       waitUntil(m_coralSensor::hasCoral)
-    //     ).repeatedly();
+    // runOnce(() -> {
+    // targetMotorRotations.inner = m_positionSig.getValueAsDouble()
+    // + ((offsetMeters - getCoralInlineOffset()) /
+    // HandConstants.CORAL_METERS_PER_WHEEL_ROT);
+    // }).andThen(run(() ->
+    // motor.setControl(positionRequest.withPosition(targetMotorRotations.inner)))
+
+    // ),
+    // voltage(0),
+    // () ->
+    // !lastRotationsAtSensorTrip.isEmpty()).onlyWhile(m_coralSensor::hasCoral).andThen(
+    // waitUntil(m_coralSensor::hasCoral)
+    // ).repeatedly();
   }
+
   public Command voltage(DoubleSupplier voltage) {
     return this.run(() -> motor1.setControl(voltageRequest.withOutput(voltage.getAsDouble())));
   }
@@ -215,10 +219,21 @@ public class IntakeS extends SubsystemBase {
 
   public Command voltageTopOnly(double voltage) {
     return Commands.parallel(
-      Commands.run(() -> motor1.setControl(voltageRequest.withOutput(voltage))),
-      Commands.run(() -> motor2.setControl(voltageRequest.withOutput(0))),
-      Commands.run(() -> motor3.setControl(voltageRequest.withOutput(0)))
-    );
+        Commands.run(() -> motor1.setControl(voltageRequest.withOutput(voltage))),
+        Commands.run(() -> motor2.setControl(voltageRequest.withOutput(0))),
+        Commands.run(() -> motor3.setControl(voltageRequest.withOutput(0))));
+  }
+
+  public Command intakeRollersStart() {
+    return voltageTopOnly(HandConstants.IN_L1_CORAL_VOLTAGE)
+        .withTimeout(0.3);
+
+  }
+
+  public Command intakeRollersUntilStop() {
+    return voltageTopOnly(HandConstants.IN_L1_CORAL_VOLTAGE)
+        .until(() -> motor1.getStatorCurrent().getValueAsDouble() > HandConstants.L1_INTAKE_STATOR_LIMIT
+            .in(Amps));
   }
 
   public Command stop() {
@@ -230,7 +245,7 @@ public class IntakeS extends SubsystemBase {
   }
 
   public Command inL1Coral() {
-    return voltageTopOnly(HandConstants.IN_L1_CORAL_VOLTAGE);
+    return Commands.sequence(intakeRollersStart(), voltageTopOnly(HandConstants.IN_L1_CORAL_VOLTAGE));
   }
 
   public Command inCoralSlow() {
@@ -257,7 +272,7 @@ public class IntakeS extends SubsystemBase {
   }
 
   public Command outAlgae() {
-    return voltage(10);//HandConstants.OUT_ALGAE_VOLTAGE);
+    return voltage(10);// HandConstants.OUT_ALGAE_VOLTAGE);
   }
 
   public Command outAlgaeSlow() {
@@ -272,7 +287,7 @@ public class IntakeS extends SubsystemBase {
     } else {
       m_positionSig.refresh();
       var deltaWheelPositionRotations = m_positionSig.getValueAsDouble() - lastRotationsAtSensorTrip.get();
-      var deltaCoralPositionMeters = deltaWheelPositionRotations *HandConstants.CORAL_METERS_PER_WHEEL_ROT;
+      var deltaCoralPositionMeters = deltaWheelPositionRotations * HandConstants.CORAL_METERS_PER_WHEEL_ROT;
       return coralPositionAtSensorTrip.get() + deltaCoralPositionMeters;
     }
   }

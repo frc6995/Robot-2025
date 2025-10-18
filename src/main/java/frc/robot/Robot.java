@@ -245,8 +245,8 @@ public class Robot extends TimedRobot {
             parallel(
                 m_autos.alignToBarge(() -> -m_driverController.getLeftX() * 4)));
 
-    // m_driverController.y()
-    // .onTrue(m_autos.bargeUpAndOutVoltage());
+    m_driverController.y()
+    .onTrue(m_autos.bargeUpAndOutVoltage());
 
     // .onTrue(m_hand.inAlgae());
     // Intake algae from reef (autoalign, move arm to position, intake and stow)
@@ -269,12 +269,14 @@ public class Robot extends TimedRobot {
             .andThen(new ScheduleCommand(m_autos.stowAfterCoral(m_autos.lastScoringOption))));
 
     // Score algae and stow if at barge position
-    // m_driverController.leftTrigger().onTrue(parallel(
-    // m_hand.outAlgaeSlow().withTimeout(0.5)).andThen(
-    // new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
-    // .onlyIf(() -> m_arm.getPosition().elevatorMeters() >
-    // Arm.Positions.L3.elevatorMeters())));
-    m_driverController.y().onTrue(m_hand.m_coralSensor.setHasCoralC(!m_hand.m_coralSensor.hasCoral()));
+    m_driverController.leftTrigger().onTrue(parallel(
+    m_hand.outAlgaeSlow().withTimeout(0.5)).andThen(
+    new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
+    .onlyIf(() -> m_arm.getPosition().elevatorMeters() >
+    Arm.Positions.L3.elevatorMeters())));
+
+    //m_driverController.y().onTrue(m_hand.m_coralSensor.setHasCoralC(!m_hand.m_coralSensor.hasCoral()));
+
     // Auto align to operator selected position on reef for coral scoring
     m_driverController.rightTrigger().whileTrue(m_autos.autoScoreMap());
 
