@@ -18,6 +18,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentric;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 
+import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -120,7 +121,7 @@ public class Robot extends TimedRobot {
     LightStripS.start();
     DriverStation.startDataLog(DataLogManager.getLog());
     VISUALIZER = RobotVisualizer.MECH_VISUALIZER;
-    //Epilogue.bind(this);
+    Epilogue.bind(this);
     m_driverDisplay.setAllHomedSupplier(() -> false)
         .setHasCoralSupplier(m_autos::hasCoral)
         .setBranchSupplier(m_operatorBoard::getBranch)
@@ -328,7 +329,7 @@ public class Robot extends TimedRobot {
 
     m_arm.update();
     RobotVisualizer.setArmPosition(m_arm.getPosition());
-    //Epilogue.talonFXLogger.refreshAll();
+    Epilogue.talonFXLogger.refreshAll();
     // pdh.update();
     // if (m_operatorBoard.getToggle()) {
     // LightStripS.top.requestState(TopStates.ReadyToIntake);
