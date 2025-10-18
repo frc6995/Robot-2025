@@ -81,6 +81,16 @@ public class Autos {
   @Logged
   public final CoralSensor m_coralSensor;
 
+  /**
+   * Summary Here
+   * 
+   * @param drivebase
+   * @param arm
+   * @param hand
+   * @param board
+   * @param armBrakeS
+   * @param trajlogger
+   */
   public Autos(DriveBaseS drivebase, RealArm arm, IntakeS hand, OperatorBoard board,
       ArmBrakeS armBrakeS, TrajectoryLogger<SwerveSample> trajlogger) {
     m_drivebase = drivebase;
