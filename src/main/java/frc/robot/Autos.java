@@ -768,7 +768,7 @@ public class Autos {
                 parallel(
                     new ScheduleCommand(premoveAfterCoralIntake(() -> ReefScoringOption.L1)),
 
-                    new ScheduleCommand(m_hand.stop()),
+                    new ScheduleCommand(m_hand.postInL1Coral()),
                     new ScheduleCommand(
                         LightStripS.top.stateC(() -> TopStates.Intaked).withTimeout(1))))));
   }

@@ -52,6 +52,7 @@ public class IntakeS extends SubsystemBase {
 
     public static final double IN_CORAL_VOLTAGE = -8;
     public static final double IN_L1_CORAL_VOLTAGE = -5.0;
+    public static final double POST_IN_L1_CORAL_VOLTAGE = -1;
 
     public static final double OUT_CORAL_VOLTAGE = -9; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_SLOW = 6; // worked with -6 but coral bounced
@@ -68,7 +69,7 @@ public class IntakeS extends SubsystemBase {
     
 
     public static TalonFXConfiguration configureMotor1(TalonFXConfiguration config) {
-      config.CurrentLimits.withStatorCurrentLimit(120).withStatorCurrentLimitEnable(true);
+      config.CurrentLimits.withStatorCurrentLimit(80).withStatorCurrentLimitEnable(true);
       config.Feedback.SensorToMechanismRatio = 16.0 / 3.0;
     
       // volts per wheel rotation = 8-9 inches of coral
@@ -231,6 +232,10 @@ public class IntakeS extends SubsystemBase {
 
   public Command inL1Coral() {
     return voltageTopOnly(HandConstants.IN_L1_CORAL_VOLTAGE);
+  }
+
+  public Command postInL1Coral() {
+    return voltageTopOnly(HandConstants.POST_IN_L1_CORAL_VOLTAGE);
   }
 
   public Command inCoralSlow() {
