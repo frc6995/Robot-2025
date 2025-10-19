@@ -26,7 +26,7 @@ public class CoralSensor {
 
     public CoralSensor() {
         m_backCANrangeConfigurator.ProximityParams.ProximityThreshold = 0.1;
-        m_frontCANrangeConfigurator.ProximityParams.ProximityThreshold = 0.1;
+        m_frontCANrangeConfigurator.ProximityParams.ProximityThreshold = 0.05;
         m_leftCANrangeConfigurator.ProximityParams.ProximityThreshold = 0.1;
         m_rightCANrangeConfigurator.ProximityParams.ProximityThreshold = 0.1;
 
