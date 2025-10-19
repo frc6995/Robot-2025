@@ -66,8 +66,8 @@ public abstract class Arm {
     public static final ArmPosition POST_INTAKxdfbvE_CORAL = new ArmPosition(Degrees.of(85),
         ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(0)), Degrees.of(5));
     //public static final ArmPosition L4_CLOSE = new ArmPosition(Degrees.of(86), ElevatorConstants.MAX_LENGTH, Degrees.of(135));
-    public static final ArmPosition L4 = new ArmPosition(Degrees.of(96.5), ElevatorConstants.MAX_LENGTH, Degrees.of(100));
-    public static final ArmPosition L3 = new ArmPosition(Degrees.of(89), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(10)),
+    public static final ArmPosition L4 = new ArmPosition(Degrees.of(89), ElevatorConstants.MAX_LENGTH, Degrees.of(100));
+    public static final ArmPosition L3 = new ArmPosition(Degrees.of(89), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(9)),
         Degrees.of(88));
     public static final ArmPosition L2 = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH.plus(Inches.of(5)),
         Degrees.of(90 + 55));
@@ -75,7 +75,7 @@ public abstract class Arm {
         Degrees.of(-40));
 
     public static final ArmPosition L4_OPP = new ArmPosition(Degrees.of(65), ElevatorConstants.MAX_LENGTH.minus(Inches.of(0)), Degrees.of(30));
-    public static final ArmPosition L3_OPP = new ArmPosition(Degrees.of(52), ElevatorConstants.MIN_LENGTH.plus(Inches.of(16)),
+    public static final ArmPosition L3_OPP = new ArmPosition(Degrees.of(52), ElevatorConstants.MIN_LENGTH.plus(Inches.of(17)),
         Degrees.of(56));
     public static final ArmPosition L3_HIGH_ALG = new ArmPosition(Degrees.of(45), ElevatorConstants.MIN_LENGTH.plus(Inches.of(14)),
         Degrees.of(-70));

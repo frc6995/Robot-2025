@@ -15,7 +15,11 @@ import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.arm.elevator.RealElevatorS.ElevatorConstants;
 import frc.robot.subsystems.arm.wrist.RealWristS.WristConstants;
 
+
+
 public enum ReefScoringOption{
+
+
     L1(
       POI::selectedL1POI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L1),
       -1,//ignored by bindings
@@ -75,20 +79,23 @@ public enum ReefScoringOption{
             Arm.Positions.L4.mainPivotAngle().minus(Degrees.of(5)),
             Arm.Positions.L4.elevatorLength(),
             Arm.Positions.L3.wristAngle()))
-          .until(()->
-            autos.m_arm.position.pivotRadians() < Arm.Positions.L4.pivotRadians()-Units.degreesToRadians(4)
-          )
-          .withTimeout(1),
-      autos.m_arm.goToPosition(
-        new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3_OPP.wristAngle()))),
-        (autos)->autos.m_arm.goToPosition(
-          new ArmPosition(Arm.Positions.L4.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.K_G_ANGLE_WITH_CORAL))
-    )
-    ;
-    public final Function<Integer,POI> selectedPOI;
-    public final Function<Autos,Command> scoringPosition;
-    public final double outtakeVoltage;
-    public final ArmPosition arm;
+
+                      .until(()->
+                        autos.m_arm.position.pivotRadians() < Arm.Positions.L4.pivotRadians()-Units.degreesToRadians(4)
+                      )
+                      .withTimeout(1),
+                  autos.m_arm.goToPosition(
+                    new ArmPosition(Arm.Positions.L3_OPP.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, Arm.Positions.L3_OPP.wristAngle()))),
+                    
+                    (autos)->autos.m_arm.goToPosition(
+                      new ArmPosition(Arm.Positions.L4.mainPivotAngle(), ElevatorConstants.MIN_PADDED_LENGTH, WristConstants.K_G_ANGLE_WITH_CORAL))
+                )
+                ;
+                public final Function<Integer,POI> selectedPOI;
+                public final Function<Autos,Command> scoringPosition;
+                public final double outtakeVoltage;
+                public final ArmPosition arm;
+
     public final double coralOffsetMeters;
     public final Function<Autos,Command> stow;
     public final Function<Autos,Command> premove;

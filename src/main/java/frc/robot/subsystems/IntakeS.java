@@ -52,8 +52,8 @@ public class IntakeS extends SubsystemBase {
 
     public static final double IN_CORAL_VOLTAGE = -8;
 
-    public static final double OUT_CORAL_VOLTAGE = -9; // worked with -6 but coral bounced
-    public static final double OUT_CORAL_VOLTAGE_SLOW = 6; // worked with -6 but coral bounced
+    public static final double OUT_CORAL_VOLTAGE = -6; // wored with -6 but coral bounced
+    public static final double OUT_CORAL_VOLTAGE_SLOW = 4; // worked with -6 but coral bounced
     public static final double OUT_CORAL_VOLTAGE_REVERSE = 6;
     public static final double IN_ALGAE_VOLTAGE = 10;
 
@@ -92,7 +92,7 @@ public class IntakeS extends SubsystemBase {
     }
   }
 
-  private final TalonFX motor1 = new TalonFX(HandConstants.MOTOR_1_CAN_ID, Robot.m_notSwerveBus);
+  public final TalonFX motor1 = new TalonFX(HandConstants.MOTOR_1_CAN_ID, Robot.m_notSwerveBus);
   private final TalonFX motor2 = new TalonFX(HandConstants.MOTOR_2_CAN_ID, Robot.m_notSwerveBus);
   private final TalonFX motor3 = new TalonFX(HandConstants.MOTOR_3_CAN_ID, Robot.m_notSwerveBus);
 
@@ -199,6 +199,10 @@ public class IntakeS extends SubsystemBase {
 
   public Command voltage(double voltage) {
     return voltage(() -> voltage);
+  }
+
+  public Command l4coralmove() {
+    return run(() -> motor1.setVoltage(-2)).withTimeout(0.5);
   }
 
   public double getVoltage() {
