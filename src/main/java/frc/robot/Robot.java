@@ -207,10 +207,10 @@ public class Robot extends TimedRobot {
                     .voltage(() -> (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(10)) ? -0.5 : -5),
                 Commands.waitUntil(() -> m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(70))
                     .andThen(
-                        m_arm.wristS.goTo(() -> Units.degreesToRadians(90 + 35))),
+                        m_arm.wristS.goTo(() -> Units.degreesToRadians(25))),
                 Commands.waitUntil(() -> m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(40))
                     .andThen(
-                        m_arm.elevatorS.goToLength(() -> 1.05))
+                        m_arm.elevatorS.goToLength(() -> 0.75))
 
             )));
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release())
@@ -261,7 +261,7 @@ public class Robot extends TimedRobot {
     // Score coral and stow
     boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
-        either(m_hand.voltage(() -> -4).withTimeout(0.5), // spit out if not safe to
+        either(m_hand.voltage(() -> 4).withTimeout(0.5), // spit out if not safe to
 
             m_hand.voltage(() -> m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5),
 

@@ -173,7 +173,7 @@ public class MainPivotS extends SubsystemBase {
   private StatusSignal<Double> m_angleSetpointSig = m_leader.getClosedLoopReference();
 
   private double m_goalRotations;
-  private CANcoder m_cancoder = new CANcoder(30);
+  private CANcoder m_cancoder = new CANcoder(30, Robot.m_notSwerveBus);
   private StatusSignal<Angle> m_cancoderAngleSig = m_cancoder.getPosition();
   /** Creates a new MainPivotS. */
   public MainPivotS() {
