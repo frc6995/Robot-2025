@@ -96,7 +96,7 @@ public class MainPivotS extends SubsystemBase {
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(K_P).withKD(0.4).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
       //TEMP
-      config.MotionMagic.withMotionMagicCruiseVelocity(0.5).withMotionMagicAcceleration(0.66);
+      config.MotionMagic.withMotionMagicCruiseVelocity(0.63).withMotionMagicAcceleration(0.82);//0.5, 0.66
       //config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(4);
       config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
       config.Feedback
@@ -108,6 +108,7 @@ public class MainPivotS extends SubsystemBase {
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(Degrees.of(1.34))
           .withReverseSoftLimitEnable(true);
+         // config.Voltage.withPeakForwardVoltage(10).withPeakReverseVoltage(-10);
       config.CurrentLimits.withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(40);
       return config;
     }
