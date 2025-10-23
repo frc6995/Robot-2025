@@ -13,11 +13,13 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 @Logged
 public class ClimbWheelsS extends SubsystemBase {
   public class ClimbWheelsConstants {
     public static final int CAN_ID = 55;
     public static final int CURRENT_LIMIT = 120;
+    
     public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){
       config.CurrentLimits
         .withStatorCurrentLimit(CURRENT_LIMIT)
@@ -61,6 +63,6 @@ public class ClimbWheelsS extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
   }
-  public final TalonFX motor = new TalonFX(ClimbWheelsConstants.CAN_ID);
+  public final TalonFX motor = new TalonFX(ClimbWheelsConstants.CAN_ID, Robot.m_notSwerveBus);
   private final VoltageOut voltageReq = new VoltageOut(0);
 }
