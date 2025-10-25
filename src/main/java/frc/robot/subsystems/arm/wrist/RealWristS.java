@@ -83,9 +83,10 @@ public class RealWristS extends Wrist {
     public static final double MOI = 0.10829;
     public static TalonFXConfiguration configureLeader(TalonFXConfiguration config) {
       config.CurrentLimits.withStatorCurrentLimitEnable(true).withStatorCurrentLimit(120)
+      
       .withSupplyCurrentLimitEnable(true).withSupplyCurrentLimit(60);
       config.Slot0.withKS(K_S).withKV(K_V).withKA(K_A).withKP(50).withKD(0);
-      config.MotionMagic.withMotionMagicCruiseVelocity(1).withMotionMagicAcceleration(2.8);
+      config.MotionMagic.withMotionMagicCruiseVelocity(1.25).withMotionMagicAcceleration(3.5); //1, 2.8
       config.Feedback
           // .withFeedbackRemoteSensorID(34)
           // .withFeedbackSensorSource(FeedbackSensorSourceValue.SyncCANcoder)
@@ -93,10 +94,13 @@ public class RealWristS extends Wrist {
       config.SoftwareLimitSwitch.withForwardSoftLimitEnable(true)
           .withForwardSoftLimitThreshold(CCW_LIMIT)
           .withReverseSoftLimitThreshold(CW_LIMIT)
+          
           .withReverseSoftLimitEnable(true);
       config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
       config.MotorOutput.withNeutralMode(NeutralModeValue.Brake);
+     // config.Voltage.withPeakForwardVoltage(10).withPeakReverseVoltage(-10);
+      
       return config;
     }
 

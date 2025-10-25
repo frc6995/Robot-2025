@@ -17,13 +17,17 @@ import frc.robot.Robot;
 @Logged
 public class ClimbWheelsS extends SubsystemBase {
   public class ClimbWheelsConstants {
-    public static final int CAN_ID = 55;
-    public static final int CURRENT_LIMIT = 120;
+    public static final int CAN_ID = 61;
+    public static final int STATOR_CURRENT_LIMIT = 120;
+    public static final int SUPPLY_CURRENT_LIMIT = 16;
+
     
     public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){
       config.CurrentLimits
-        .withStatorCurrentLimit(CURRENT_LIMIT)
+        .withStatorCurrentLimit(STATOR_CURRENT_LIMIT)
         .withStatorCurrentLimitEnable(true)
+        .withSupplyCurrentLimitEnable(true)
+        .withSupplyCurrentLimit(SUPPLY_CURRENT_LIMIT)
         ;
       config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
       config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
@@ -32,10 +36,10 @@ public class ClimbWheelsS extends SubsystemBase {
   
   }
   public Command in(){
-    return voltage(-5);
+    return voltage(2.5);
   }
   public Command out(){
-    return voltage(1);
+    return voltage(-1);
   }
   public Command stop(){
     return voltage(0);

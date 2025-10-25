@@ -71,8 +71,12 @@ public abstract class Arm {
         Degrees.of(88));
     public static final ArmPosition L2 = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH.plus(Inches.of(5)),
         Degrees.of(90 + 55));
-    public static final ArmPosition L1 = new ArmPosition(Degrees.of(40), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
-        Degrees.of(-40));
+
+        //10/22 wokrshop:     public static final ArmPosition L1 = new ArmPosition(Degrees.of(31), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
+       // Degrees.of(-41));
+
+    public static final ArmPosition L1 = new ArmPosition(Degrees.of(30), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
+        Degrees.of(-26));
 
     public static final ArmPosition L4_OPP = new ArmPosition(Degrees.of(65), ElevatorConstants.MAX_LENGTH.minus(Inches.of(0)), Degrees.of(30)); // this is battside
     public static final ArmPosition L3_OPP = new ArmPosition(Degrees.of(52), ElevatorConstants.MIN_LENGTH.plus(Inches.of(17)),
@@ -94,7 +98,7 @@ public abstract class Arm {
 
     public static final ArmPosition STOW = new ArmPosition(Degrees.of(70), Meters.of(0.75),
         Degrees.of(-25));
-    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(92), ElevatorConstants.MIN_PADDED_LENGTH,
+    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(96), ElevatorConstants.MIN_PADDED_LENGTH,
         Degrees.of(-50));
     public static final ArmPosition SCORE_BARGE_VERTICAL = new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH,
         Degrees.of(-20));
