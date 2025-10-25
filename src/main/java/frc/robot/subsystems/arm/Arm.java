@@ -106,8 +106,8 @@ public abstract class Arm {
         Degrees.of(-25));
     public static final ArmPosition SCORE_BARGE_PRE = new ArmPosition(Degrees.of(70), Meters.of(0.75),
         Degrees.of(-25));
-    public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(Degrees.of(35),
-        Meters.of(0.75), Degrees.of(-70));
+        public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(Degrees.of(17.5),
+        Meters.of(0.75), Degrees.of(-40));
   }
 
   public Arm() {
