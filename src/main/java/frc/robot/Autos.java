@@ -833,7 +833,7 @@ public class Autos {
   }
   
   private double bargeTargetX() {
-    final double blueX = 7.53-Units.inchesToMeters(10);
+    final double blueX = 7.53-Units.inchesToMeters(8);
     return (m_drivebase.getPose().getX() > AllianceFlipUtil.fieldLength/2.0) ? AllianceFlipUtil.flipX(blueX) : blueX;
   }
 

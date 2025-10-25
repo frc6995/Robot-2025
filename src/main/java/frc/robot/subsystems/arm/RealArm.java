@@ -176,9 +176,7 @@ public class RealArm extends Arm {
     Units.degreesToRadians(3600)
     )),
     parallel(
-    new ScheduleCommand(
-    wristS.driveToHome()
-    ),
+    new ScheduleCommand(wristS.driveToHome()),
     new ScheduleCommand(
       elevatorDirectlyTo(Arm.Positions.SCORE_PROCESSOR.elevatorMeters())
       ),

@@ -239,7 +239,7 @@ public class Robot extends TimedRobot {
     m_driverController.back()
         .onTrue(m_hand.inAlgae())
         .onTrue(sequence(
-            m_arm.processorWithHome()));
+            m_arm.processorWithHome())); 
 
     // Align to barge
     m_driverController.start()// .and(inWorkshop.negate())
@@ -261,7 +261,7 @@ public class Robot extends TimedRobot {
     // Score coral and stow
     boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
-        either(m_hand.voltage(() -> 4).withTimeout(0.5), // spit out if not safe to
+        either(m_hand.voltage(() -> -4).withTimeout(0.5), // spit out if not safe to
 
             m_hand.voltage(() -> m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5),
 
