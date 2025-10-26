@@ -19,7 +19,7 @@ public class ClimbWheelsS extends SubsystemBase {
   public class ClimbWheelsConstants {
     public static final int CAN_ID = 61;
     public static final int STATOR_CURRENT_LIMIT = 120;
-    public static final int SUPPLY_CURRENT_LIMIT = 16;
+    public static final int SUPPLY_CURRENT_LIMIT = 25;
 
     
     public static TalonFXConfiguration configuremotor(TalonFXConfiguration config){

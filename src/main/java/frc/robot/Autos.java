@@ -797,6 +797,7 @@ public class Autos {
     Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(18);
     BooleanSupplier nohardstop = ()-> m_arm.position.elevatorMeters() > 
     Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(8);
+    final double elevatorVoltage = 4.3;
     return
       sequence(
         // prep position
@@ -810,13 +811,13 @@ public class Autos {
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->4)
+          m_arm.elevatorS.voltage(()->elevatorVoltage)
         ).alongWith(m_hand.inAlgae()).until(release),
         // stop
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->4.3)
+          m_arm.elevatorS.voltage(()->elevatorVoltage)
         ).alongWith(m_hand.outAlgae()).until(nohardstop),
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
