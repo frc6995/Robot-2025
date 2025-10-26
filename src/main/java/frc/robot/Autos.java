@@ -816,7 +816,7 @@ public class Autos {
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
           m_arm.wristS.goTo(Arm.Positions.SCORE_BARGE::wristRadians),
-          m_arm.elevatorS.voltage(()->4)
+          m_arm.elevatorS.voltage(()->4.3)
         ).alongWith(m_hand.outAlgae()).until(nohardstop),
         parallel(
           m_arm.mainPivotS.goTo(Arm.Positions.SCORE_BARGE::pivotRadians),
