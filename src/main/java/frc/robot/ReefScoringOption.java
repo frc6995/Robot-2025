@@ -72,7 +72,7 @@ public enum ReefScoringOption{
     ),
     L4_PIV(
       POI::selectedPivotSidePOI, (autos)->autos.m_arm.goToPosition(Arm.Positions.L4),
-      4, Arm.Positions.L4, 0,
+      5, Arm.Positions.L4, 0,
       (autos)->Commands.sequence(
         autos.m_arm.goToPosition(
           new ArmPosition(
