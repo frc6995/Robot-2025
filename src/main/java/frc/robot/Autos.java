@@ -797,7 +797,7 @@ public class Autos {
     Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(18);
     BooleanSupplier nohardstop = ()-> m_arm.position.elevatorMeters() > 
     Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(8);
-    final double elevatorVoltage = 4.3;
+    final double elevatorVoltage = 4.8;
     return
       sequence(
         // prep position
