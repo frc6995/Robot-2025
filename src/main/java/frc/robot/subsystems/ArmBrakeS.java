@@ -37,11 +37,11 @@ public class ArmBrakeS extends SubsystemBase {
   public Command goTo(double position) {
     return this.run(()->motor.getClosedLoopController().setReference(position, ControlType.kPosition));
   }
-  public Command brake() {
-  return this.goTo(-5);//return voltage(-1);
+  public Command brake() {  
+  return this.goTo(-0.01);//return voltage(-1);   
   }
   public Command release() {
-    return goTo(1); //start().andThen(end());
+    return goTo(0.03); //start().andThen(end());
   }
   public Command holdopen() {
 return voltage(0.2);
@@ -59,12 +59,12 @@ return this.run(()-> motor.setVoltage(volts));
   }
 public class ArmBrakeConstants {
   public static final int CAN_ID = 35;
-  public static final int CURRENT_LIMIT = 10;
+  public static final int CURRENT_LIMIT = 15;
   public static SparkFlexConfig configureMotor(SparkFlexConfig config) {
     config.smartCurrentLimit(CURRENT_LIMIT);
-    config.softLimit.forwardSoftLimit(1).forwardSoftLimitEnabled(true);
+    config.softLimit.reverseSoftLimit(-1).reverseSoftLimitEnabled(true);
     config.idleMode(IdleMode.kBrake);
-    config.closedLoop.p(10);
+    config.closedLoop.p(10 );
     return config;
   }
 }

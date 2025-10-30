@@ -61,7 +61,7 @@ public abstract class Arm {
     public static final ArmPosition GROUND_ALGAE = new ArmPosition(Degrees.of(6.7),  Meters.of(0.75),
         Degrees.of(-55));
     public static final ArmPosition WALL_INTAKE_CORAL = new ArmPosition(Degrees.of(65), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2.5)),
-        Degrees.of(-55));
+        Degrees.of(-52));
 
     public static final ArmPosition POST_INTAKxdfbvE_CORAL = new ArmPosition(Degrees.of(85),
         ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(0)), Degrees.of(5));

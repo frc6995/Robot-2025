@@ -666,8 +666,8 @@
    },
    "SL3":{
     "x":{
-     "exp":"1.545925521850586 m - cos(SL3.heading) * CS_BACKUP - (2 in * sin(SL3.heading))",
-     "val":1.5720113128733686
+     "exp":"1.245925521850586 m - cos(SL3.heading) * CS_BACKUP - (2 in * sin(SL3.heading))",
+     "val":1.2720113128733683
     },
     "y":{
      "exp":"7.544474220275879 m - sin(SL3.heading) * CS_BACKUP + (2 in * cos(SL3.heading))",
@@ -709,7 +709,7 @@
    "SR3":{
     "x":{
      "exp":"SL3.x",
-     "val":1.5720113128733686
+     "val":1.2720113128733683
     },
     "y":{
      "exp":"FieldWidth - SL3.y",
@@ -938,8 +938,8 @@
    "val":7.1225000000000005
   },
   "radius":{
-   "exp":"1.96 in",
-   "val":0.049783999999999995
+   "exp":"1.952 in",
+   "val":0.049580799999999994
   },
   "vmax":{
    "exp":"5700 RPM",
