@@ -57,5 +57,6 @@ public class CoralSensor {
 
     public boolean hasCoral(){
         return m_backCANrange.getIsDetected().getValue();
+        
     }
 }

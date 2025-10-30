@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -81,6 +82,7 @@ public class Robot extends TimedRobot {
   // private final ClimbHookS m_climbHookS = new ClimbHookS();
   private final ClimbWheelsS m_climbWheelsS = new ClimbWheelsS();
   private final ArmBrakeS m_armBrakeS = new ArmBrakeS();
+
   private final Autos m_autos = new Autos(m_drivebaseS, m_arm, m_hand, m_operatorBoard, m_armBrakeS,
       (traj, isStarting) -> {
       });
@@ -285,7 +287,8 @@ public class Robot extends TimedRobot {
         .onTrue(LightStripS.top.stateC(() -> TopStates.Intaked).withTimeout(0.5));
 
     m_driverController.povCenter().negate().whileTrue(driveIntakeRelativePOV());
-
+    new Trigger(()-> m_autos.hasCoral()).onTrue(
+      Commands.run(() -> m_driverController.setRumble(RumbleType.kBothRumble, 1)).andThen(Commands.run(()->m_driverController.setRumble(RumbleType.kBothRumble, 1))));
   }
 
   private RobotCentric m_robotCentricRequest = new RobotCentric().withDriveRequestType(DriveRequestType.Velocity);
@@ -454,6 +457,8 @@ public class Robot extends TimedRobot {
     // default:
     // LightStripS.outer.requestState(OuterStates.Default);
     // }
+
+    
   }
 
   /** This function is called once when the robot is disabled. */

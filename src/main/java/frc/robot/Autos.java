@@ -107,6 +107,7 @@ public class Autos {
         true,
         m_drivebase,
         m_drivebase::logTrajectory);
+
     addAutos();
     if (RobotBase.isSimulation()) {
     new Trigger(() -> DriverStation.getStickButton(4, 1))
