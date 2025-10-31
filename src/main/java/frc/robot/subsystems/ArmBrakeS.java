@@ -41,7 +41,7 @@ public class ArmBrakeS extends SubsystemBase {
   return this.goTo(-0.01);//return voltage(-1);   
   }
   public Command release() {
-    return goTo(0.03); //start().andThen(end());
+    return goTo(1); //start().andThen(end());
   }
   public Command holdopen() {
 return voltage(0.2);
@@ -59,7 +59,7 @@ return this.run(()-> motor.setVoltage(volts));
   }
 public class ArmBrakeConstants {
   public static final int CAN_ID = 35;
-  public static final int CURRENT_LIMIT = 15;
+  public static final int CURRENT_LIMIT = 25;
   public static SparkFlexConfig configureMotor(SparkFlexConfig config) {
     config.smartCurrentLimit(CURRENT_LIMIT);
     config.softLimit.reverseSoftLimit(-1).reverseSoftLimitEnabled(true);
