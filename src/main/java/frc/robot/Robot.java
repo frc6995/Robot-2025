@@ -177,7 +177,7 @@ public class Robot extends TimedRobot {
         parallel(m_arm.mainPivotS.coast(), m_arm.wristS.coast(), LightStripS.top.stateC(() -> TopStates.CoastMode)));
     // .whileTrue(m_climbHookS.coast());
     // Home wrist when disabled
-    m_driverController.start().and(RobotModeTriggers.disabled())
+    m_driverController.povDown().and(RobotModeTriggers.disabled())
         .onTrue(parallel(
             m_arm.elevatorS.home(),
             m_arm.wristS.home(),
