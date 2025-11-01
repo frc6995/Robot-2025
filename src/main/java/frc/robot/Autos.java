@@ -364,7 +364,7 @@ public class Autos {
       toReef = nextToReef;
     }
     var lastCycle = scores.get(scores.size()-1);
-    bindScore(toReef, lastCycle.scoreArm, lastCycle.after().map((opt)->opt.apply(routine)), Arm.Positions.CORAL_STOW, Optional.of(()->true));
+    bindScore(toReef, lastCycle.scoreArm, lastCycle.after().map((opt)->opt.apply(routine)), Arm.Positions.L2, Optional.of(()->true));
     return routine.cmd();
   }
 

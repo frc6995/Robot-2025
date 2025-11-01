@@ -21,11 +21,11 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"LP1.x", "val":1.3825314415512402}, "y":{"exp":"LP1.y", "val":5.738155567974513}, "heading":{"exp":"LP1.heading", "val":2.503777629414391}, "intervals":50, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"LP1.x", "val":1.3760840475653748}, "y":{"exp":"LP1.y", "val":5.730308866876195}, "heading":{"exp":"LP1.heading", "val":2.403777629414391}, "intervals":50, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"2.606339931488037 m", "val":2.606339931488037}, "y":{"exp":"4.533218860626221 m", "val":4.533218860626221}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":16, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"L2_A.x", "val":3.0229080922758}, "y":{"exp":"L2_A.y", "val":4.1854845123291}, "heading":{"exp":"L2_A.heading", "val":6.283185307179586}, "intervals":27, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"1.933192253112793 m", "val":1.933192253112793}, "y":{"exp":"5.216314792633057 m", "val":5.216314792633057}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"LP1.x", "val":1.3825314415512402}, "y":{"exp":"LP1.y", "val":5.738155567974513}, "heading":{"exp":"LP1.heading", "val":2.503777629414391}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"LP1.x", "val":1.3760840475653748}, "y":{"exp":"LP1.y", "val":5.730308866876195}, "heading":{"exp":"LP1.heading", "val":2.403777629414391}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
