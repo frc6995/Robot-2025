@@ -185,25 +185,34 @@ public class Autos {
     //   new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_A, ReefScoringOption.L2)
     //   //new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
     //   ));
-    autos.put("Left Lolp AB L2B", ()->flexGroundAuto(
+   /*  autos.put("Left Lolp AB L2B (bad)", ()->flexGroundAuto(
       new GroundAutoCycle(Optional.empty(), POI.STA, POI.A, ReefScoringOption.L4_PIV),
       new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
       ,
       new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
       ));
-
-    autos.put("Left Wall Lolp AB L2B", ()->flexGroundAuto(
+*/
+    autos.put("Left Wall Right 2 Lolp AB L2B", ()->flexGroundAuto(
       new GroundAutoCycle(Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
       new GroundAutoCycle(Optional.empty(), POI.LP2, POI.B, ReefScoringOption.L4_PIV)
       ,
       new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
       ));
-    autos.put("Left Wall Right Lolp AB", ()->flexGroundAuto(
+    autos.put("Left Wall Left 2 Lolp AB L2B", ()->flexGroundAuto(
       new GroundAutoCycle(Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
        new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
         new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_B, ReefScoringOption.L2))
+        
       );
-    
+
+      /* 
+      autos.put("Left Wall All 2 Lolp AB 2 L2", ()->flexGroundAuto(
+        new GroundAutoCycle(Optional.empty(), POI.STAW, POI.A, ReefScoringOption.L4_PIV),
+         new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
+        new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_A, ReefScoringOption.L2),
+        new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2))
+        );
+    */
     //   autos.put("Ground L-A-B WALL", ()->flexGroundAuto(
     //     new GroundAutoCycle(Optional.empty(), POI.STLW, POI.L, ReefScoringOption.L4_PIV),
     //     new GroundAutoCycle(Optional.empty(), POI.LP1, POI.A, ReefScoringOption.L4_PIV),
@@ -228,7 +237,7 @@ public class Autos {
   //     new GroundAutoCycle(Optional.empty(), POI.LP1, POI.B, ReefScoringOption.L4_PIV),
   //     new GroundAutoCycle(Optional.empty(), POI.LP2, POI.L2_B, ReefScoringOption.L2)
   //  ));
-    autos.put("Push Left Front A-B", ()->
+   /*  autos.put("Push Left Front A-B", ()->
     sequence(
       m_autoFactory.resetOdometry("8").asProxy(),
       m_autoFactory.trajectoryCmd("8").asProxy(),
@@ -238,6 +247,7 @@ public class Autos {
       ,
       new GroundAutoCycle(Optional.empty(), POI.LP3, POI.L2_B, ReefScoringOption.L2)
     )));
+    */
 
     autos.put("Push Left Wall A-B", ()->
     sequence(
@@ -803,7 +813,7 @@ public class Autos {
     Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(18);
     BooleanSupplier nohardstop = ()-> m_arm.position.elevatorMeters() > 
     Arm.Positions.SCORE_BARGE.elevatorMeters() - Units.inchesToMeters(8);
-    final double elevatorVoltage = 4.8;
+    final double elevatorVoltage = 4.55;
     return
       sequence(
         // prep position
