@@ -974,9 +974,9 @@
  },
  "generationFeatures":[],
  "codegen":{
-  "root":null,
+  "root":"..\\..\\java\\frc\\robot",
   "genVars":true,
   "genTrajNames":true,
-  "genTrajData":false
+  "genTrajData":true
  }
 }
