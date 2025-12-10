@@ -974,9 +974,8 @@
  },
  "generationFeatures":[],
  "codegen":{
-  "root":"..\\..\\java\\frc\\robot",
+  "root":"..\\..\\java\\frc\\robot\\trajectories",
   "genVars":true,
-  "genTrajNames":true,
   "genTrajData":true
  }
 }
