@@ -1,0 +1,40 @@
+{
+ "name":"SR3_F",
+ "version":2,
+ "snapshot":{
+  "waypoints":[
+    {"x":1.6720113128733682, "y":0.7298559129976354, "heading":-2.199114857512855, "intervals":63, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":5.363107168309131, "y":2.842758176529184, "heading":5.235987755982989, "intervals":60, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":1.6720113128733682, "y":0.7298559129976354, "heading":-2.199114857512855, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+  "constraints":[
+    {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":1, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":1, "to":"last", "data":{"type":"MaxVelocity", "props":{"max":3.5}}, "enabled":true},
+    {"from":"first", "to":1, "data":{"type":"MaxVelocity", "props":{"max":2.7}}, "enabled":true}],
+  "targetDt":0.05
+ },
+ "params":{
+  "waypoints":[
+    {"x":{"exp":"SR3.x", "val":1.6720113128733682}, "y":{"exp":"SR3.y", "val":0.7298559129976354}, "heading":{"exp":"SR3.heading", "val":-2.199114857512855}, "intervals":63, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"F.x", "val":5.363107168309131}, "y":{"exp":"F.y", "val":2.842758176529184}, "heading":{"exp":"F.heading", "val":5.235987755982989}, "intervals":60, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"SR3.x", "val":1.6720113128733682}, "y":{"exp":"SR3.y", "val":0.7298559129976354}, "heading":{"exp":"SR3.heading", "val":-2.199114857512855}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+  "constraints":[
+    {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":1, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":1, "to":"last", "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MAX_INTAKE_VEL", "val":3.5}}}, "enabled":true},
+    {"from":"first", "to":1, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MAX_VEL", "val":2.7}}}, "enabled":true}],
+  "targetDt":{
+   "exp":"0.05 s",
+   "val":0.05
+  }
+ },
+ "trajectory":{
+  "sampleType":null,
+  "waypoints":[],
+  "samples":[],
+  "splits":[]
+ },
+ "events":[]
+}

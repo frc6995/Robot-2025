@@ -1,0 +1,50 @@
+{
+ "name":"LP2_B",
+ "version":2,
+ "snapshot":{
+  "waypoints":[
+    {"x":1.396378903923582, "y":4.061209894144896, "heading":-2.792526803190927, "intervals":32, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":2.5883970260620117, "y":3.899647474288941, "heading":3.141592653589793, "intervals":15, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":3.0229080922758, "y":3.867436782836916, "heading":3.141592653589793, "intervals":30, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":2.141139268875122, "y":4.322998332977295, "heading":-2.792526803190927, "intervals":35, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":1.396378903923582, "y":4.061209894144896, "heading":-2.792526803190927, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+  "constraints":[
+    {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":2, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":0, "to":4, "data":{"type":"MaxVelocity", "props":{"max":1.0}}, "enabled":false},
+    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":2.7}}, "enabled":true},
+    {"from":3, "to":4, "data":{"type":"MaxVelocity", "props":{"max":0.5}}, "enabled":true},
+    {"from":1, "to":2, "data":{"type":"MaxVelocity", "props":{"max":1.25}}, "enabled":true},
+    {"from":3, "to":4, "data":{"type":"MaxAngularVelocity", "props":{"max":0.0}}, "enabled":true}],
+  "targetDt":0.05
+ },
+ "params":{
+  "waypoints":[
+    {"x":{"exp":"LP2.x", "val":1.396378903923582}, "y":{"exp":"LP2.y", "val":4.061209894144896}, "heading":{"exp":"LP2.heading", "val":-2.792526803190927}, "intervals":32, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"2.5883970260620117 m", "val":2.5883970260620117}, "y":{"exp":"3.8996474742889404 m", "val":3.899647474288941}, "heading":{"exp":"180 deg", "val":3.141592653589793}, "intervals":15, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"B.x", "val":3.0229080922758}, "y":{"exp":"B.y", "val":3.867436782836916}, "heading":{"exp":"B.heading", "val":3.141592653589793}, "intervals":30, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"LP2_APP.x", "val":2.141139268875122}, "y":{"exp":"LP2_APP.y", "val":4.322998332977295}, "heading":{"exp":"LP2_APP.heading", "val":-2.792526803190927}, "intervals":35, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":{"exp":"LP2.x", "val":1.396378903923582}, "y":{"exp":"LP2.y", "val":4.061209894144896}, "heading":{"exp":"LP2.heading", "val":-2.792526803190927}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+  "constraints":[
+    {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":2, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
+    {"from":0, "to":4, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"1 m / s", "val":1.0}}}, "enabled":false},
+    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MAX_VEL", "val":2.7}}}, "enabled":true},
+    {"from":3, "to":4, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MAX_LP_VEL", "val":0.5}}}, "enabled":true},
+    {"from":1, "to":2, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"APPROACH", "val":1.25}}}, "enabled":true},
+    {"from":3, "to":4, "data":{"type":"MaxAngularVelocity", "props":{"max":{"exp":"0 rad / s", "val":0.0}}}, "enabled":true}],
+  "targetDt":{
+   "exp":"0.05 s",
+   "val":0.05
+  }
+ },
+ "trajectory":{
+  "sampleType":null,
+  "waypoints":[],
+  "samples":[],
+  "splits":[]
+ },
+ "events":[]
+}
