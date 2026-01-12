@@ -1,0 +1,12 @@
+{
+    "game": "Reefscape",
+    "field-unit": "meter",
+    "field-corners": {
+        "bottom-right": [18.048,8.552],
+        "top-left": [0.5, 0.5]
+    },
+    "field-size": [17.548, 8.052],
+    "size-pixels":  [18.548, 9.052],
+    "field-image": "reefscape.svg",
+    "origin-fraction": [0,0]
+}

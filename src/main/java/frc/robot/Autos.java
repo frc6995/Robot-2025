@@ -61,10 +61,12 @@ import frc.robot.subsystems.arm.Arm.ArmPosition;
 import frc.robot.subsystems.arm.RealArm;
 import frc.robot.subsystems.led.LightStripS;
 import frc.robot.subsystems.led.TopStrip.TopStates;
+import frc.robot.trajectories.ChoreoTraj;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.Capture;
 
 @Logged(strategy = Strategy.OPT_IN)
+
 public class Autos {
   protected final DriveBaseS m_drivebase;
   protected final RealArm m_arm;
@@ -117,6 +119,7 @@ public class Autos {
       new Capture<ReefScoringOption>(ReefScoringOption.L1);
   //#region Auto Routines
   public void addAutos() {
+    ChoreoTraj traj = ChoreoTraj.;
     m_autoChooser.setDefaultCmd(
       () -> {
         var moveField = new SwerveRequest.FieldCentric();

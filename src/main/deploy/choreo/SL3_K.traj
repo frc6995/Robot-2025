@@ -1,10 +1,10 @@
 {
  "name":"SL3_K",
- "version":2,
+ "version":3,
  "snapshot":{
   "waypoints":[
-    {"x":1.6720113128733682, "y":7.322144087002364, "heading":2.199114857512855, "intervals":55, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":3.498450517654419, "y":5.714933395385742, "heading":0.0, "intervals":36, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":1.6720113128733682, "y":7.322144087002364, "heading":2.199114857512855, "intervals":37, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":3.498450517654419, "y":5.714933395385742, "heading":0.0, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":3.899844205744824, "y":5.373566107070669, "heading":2.0943951023931953, "intervals":42, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":1.6720113128733682, "y":7.322144087002364, "heading":2.199114857512855, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
@@ -18,8 +18,8 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"SL3.x", "val":1.6720113128733682}, "y":{"exp":"SL3.y", "val":7.322144087002364}, "heading":{"exp":"SL3.heading", "val":2.199114857512855}, "intervals":55, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"3.498450517654419 m", "val":3.498450517654419}, "y":{"exp":"5.714933395385742 m", "val":5.714933395385742}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":36, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":{"exp":"SL3.x", "val":1.6720113128733682}, "y":{"exp":"SL3.y", "val":7.322144087002364}, "heading":{"exp":"SL3.heading", "val":2.199114857512855}, "intervals":37, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"3.498450517654419 m", "val":3.498450517654419}, "y":{"exp":"5.714933395385742 m", "val":5.714933395385742}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"K.x", "val":3.899844205744824}, "y":{"exp":"K.y", "val":5.373566107070669}, "heading":{"exp":"K.heading", "val":2.0943951023931953}, "intervals":42, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"SL3.x", "val":1.6720113128733682}, "y":{"exp":"SL3.y", "val":7.322144087002364}, "heading":{"exp":"SL3.heading", "val":2.199114857512855}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
@@ -35,6 +35,29 @@
   }
  },
  "trajectory":{
+  "config":{
+   "frontLeft":{
+    "x":0.288925,
+    "y":0.288925
+   },
+   "backLeft":{
+    "x":-0.288925,
+    "y":0.288925
+   },
+   "mass":66.67807839000001,
+   "inertia":6.0,
+   "gearing":7.1225000000000005,
+   "radius":0.049783999999999995,
+   "vmax":596.9026041820607,
+   "tmax":0.4,
+   "cof":1.5,
+   "bumper":{
+    "front":0.4445,
+    "side":0.4445,
+    "back":0.4445
+   },
+   "differentialTrackWidth":0.5588
+  },
   "sampleType":"Swerve",
   "waypoints":[0.0,1.40931,2.01376,3.87253],
   "samples":[

@@ -1,14 +1,14 @@
 {
  "name":"SL3_C",
- "version":2,
+ "version":3,
  "snapshot":{
   "waypoints":[
-    {"x":1.6720113128733682, "y":7.322144087002364, "heading":2.199114857512855, "intervals":46, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":2.223389148712158, "y":6.145318031311035, "heading":0.0, "intervals":37, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":2.7632617950439453, "y":3.3784706592559814, "heading":0.0, "intervals":42, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":3.620492494471631, "y":2.842758176529184, "heading":4.1887902047863905, "intervals":42, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":2.7632617950439453, "y":3.3784706592559814, "heading":0.0, "intervals":37, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":2.223389148712158, "y":6.145318031311035, "heading":0.0, "intervals":46, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":1.6720113128733682, "y":7.322144087002364, "heading":2.199114857512855, "intervals":36, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":2.223389148712158, "y":6.145318031311035, "heading":0.0, "intervals":48, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":2.7632617950439453, "y":3.3784706592559814, "heading":0.0, "intervals":33, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":3.620492494471631, "y":2.842758176529184, "heading":4.1887902047863905, "intervals":33, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":2.7632617950439453, "y":3.3784706592559814, "heading":0.0, "intervals":48, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":2.223389148712158, "y":6.145318031311035, "heading":0.0, "intervals":36, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":1.6720113128733682, "y":7.322144087002364, "heading":2.199114857512855, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
@@ -20,12 +20,12 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"SL3.x", "val":1.6720113128733682}, "y":{"exp":"SL3.y", "val":7.322144087002364}, "heading":{"exp":"SL3.heading", "val":2.199114857512855}, "intervals":46, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"M2_SL3_C.x", "val":2.223389148712158}, "y":{"exp":"M2_SL3_C.y", "val":6.145318031311035}, "heading":{"exp":"M2_SL3_C.heading", "val":0.0}, "intervals":37, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"M_SL3_C.x", "val":2.7632617950439453}, "y":{"exp":"M_SL3_C.y", "val":3.3784706592559814}, "heading":{"exp":"M_SL3_C.heading", "val":0.0}, "intervals":42, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"C.x", "val":3.620492494471631}, "y":{"exp":"C.y", "val":2.842758176529184}, "heading":{"exp":"C.heading", "val":4.1887902047863905}, "intervals":42, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"M_SL3_C.x", "val":2.7632617950439453}, "y":{"exp":"M_SL3_C.y", "val":3.3784706592559814}, "heading":{"exp":"M_SL3_C.heading", "val":0.0}, "intervals":37, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"M2_SL3_C.x", "val":2.223389148712158}, "y":{"exp":"M2_SL3_C.y", "val":6.145318031311035}, "heading":{"exp":"M2_SL3_C.heading", "val":0.0}, "intervals":46, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":{"exp":"SL3.x", "val":1.6720113128733682}, "y":{"exp":"SL3.y", "val":7.322144087002364}, "heading":{"exp":"SL3.heading", "val":2.199114857512855}, "intervals":36, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"M2_SL3_C.x", "val":2.223389148712158}, "y":{"exp":"M2_SL3_C.y", "val":6.145318031311035}, "heading":{"exp":"M2_SL3_C.heading", "val":0.0}, "intervals":48, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":{"exp":"M_SL3_C.x", "val":2.7632617950439453}, "y":{"exp":"M_SL3_C.y", "val":3.3784706592559814}, "heading":{"exp":"M_SL3_C.heading", "val":0.0}, "intervals":33, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":{"exp":"C.x", "val":3.620492494471631}, "y":{"exp":"C.y", "val":2.842758176529184}, "heading":{"exp":"C.heading", "val":4.1887902047863905}, "intervals":33, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"M_SL3_C.x", "val":2.7632617950439453}, "y":{"exp":"M_SL3_C.y", "val":3.3784706592559814}, "heading":{"exp":"M_SL3_C.heading", "val":0.0}, "intervals":48, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":{"exp":"M2_SL3_C.x", "val":2.223389148712158}, "y":{"exp":"M2_SL3_C.y", "val":6.145318031311035}, "heading":{"exp":"M2_SL3_C.heading", "val":0.0}, "intervals":36, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"SL3.x", "val":1.6720113128733682}, "y":{"exp":"SL3.y", "val":7.322144087002364}, "heading":{"exp":"SL3.heading", "val":2.199114857512855}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
@@ -39,6 +39,29 @@
   }
  },
  "trajectory":{
+  "config":{
+   "frontLeft":{
+    "x":0.288925,
+    "y":0.288925
+   },
+   "backLeft":{
+    "x":-0.288925,
+    "y":0.288925
+   },
+   "mass":66.67807839000001,
+   "inertia":6.0,
+   "gearing":7.1225000000000005,
+   "radius":0.049783999999999995,
+   "vmax":596.9026041820607,
+   "tmax":0.4,
+   "cof":1.5,
+   "bumper":{
+    "front":0.4445,
+    "side":0.4445,
+    "back":0.4445
+   },
+   "differentialTrackWidth":0.5588
+  },
   "sampleType":"Swerve",
   "waypoints":[0.0,0.87957,1.97055,2.76458,3.55861,4.64959,5.52916],
   "samples":[

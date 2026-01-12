@@ -166,8 +166,8 @@
      "val":3.0229080922758
     },
     "y":{
-     "exp":"REEF.y - (A.y - REEF.y)",
-     "val":3.867436782836916
+     "exp":"Field.mirrorY(A.y)",
+     "val":3.8665154876709
     },
     "heading":{
      "exp":"A.heading",
@@ -279,7 +279,7 @@
     },
     "y":{
      "exp":"B.y",
-     "val":3.867436782836916
+     "val":3.8665154876709
     },
     "heading":{
      "exp":"0 deg",
@@ -419,7 +419,7 @@
     },
     "y":{
      "exp":"B.y",
-     "val":3.867436782836916
+     "val":3.8665154876709
     },
     "heading":{
      "exp":"B.heading + 180 deg",
@@ -825,7 +825,7 @@
     },
     "y":{
      "exp":"G.y",
-     "val":3.867436782836916
+     "val":3.8665154876709
     },
     "heading":{
      "exp":"0 deg",
@@ -976,6 +976,7 @@
  "codegen":{
   "root":"..\\..\\java\\frc\\robot\\trajectories",
   "genVars":true,
-  "genTrajData":true
+  "genTrajData":true,
+  "useChoreoLib":true
  }
 }

@@ -2,9 +2,8 @@ package frc.robot.trajectories;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
-
-import static edu.wpi.first.units.Units.*;
 
 /**
  * Generated file containing variables defined in Choreo.
@@ -12,24 +11,24 @@ import static edu.wpi.first.units.Units.*;
  * in the Choreo GUI.
  */
 public final class ChoreoVars {
-    public static final Distance ALG_BACK = Meters.of(0.254);
-    public static final Distance ALG_DIST = Meters.of(1.554);
-    public static final LinearVelocity APPROACH = MetersPerSecond.of(1.25);
-    public static final Angle A_CS = Radians.of(0.628);
-    public static final Distance BACKUP = Meters.of(0.165);
-    public static final Distance CS_BACKUP = Meters.of(0.114);
-    public static final Distance FieldWidth = Meters.of(8.052);
+    public static final Distance ALG_BACK = Units.Meters.of(0.254);
+    public static final Distance ALG_DIST = Units.Meters.of(1.554);
+    public static final LinearVelocity APPROACH = Units.MetersPerSecond.of(1.25);
+    public static final Angle A_CS = Units.Radians.of(0.628);
+    public static final Distance BACKUP = Units.Meters.of(0.165);
+    public static final Distance CS_BACKUP = Units.Meters.of(0.114);
+    public static final Distance FieldWidth = Units.Meters.of(8.052);
     public static final double L1 = 8.14;
     public static final double L1p = 7.123;
     public static final double L2 = 6.75;
     public static final double L2p = 5.906;
     public static final double L3 = 6.12;
     public static final double L3p = 5.355;
-    public static final Distance LP_SHORT = Meters.of(0.102);
-    public static final LinearVelocity MAX_INTAKE_VEL = MetersPerSecond.of(3.5);
-    public static final LinearVelocity MAX_LP_VEL = MetersPerSecond.of(0.5);
-    public static final LinearVelocity MAX_START_VEL = MetersPerSecond.of(2.5);
-    public static final LinearVelocity MAX_VEL = MetersPerSecond.of(2.7);
+    public static final Distance LP_SHORT = Units.Meters.of(0.102);
+    public static final LinearVelocity MAX_INTAKE_VEL = Units.MetersPerSecond.of(3.5);
+    public static final LinearVelocity MAX_LP_VEL = Units.MetersPerSecond.of(0.5);
+    public static final LinearVelocity MAX_START_VEL = Units.MetersPerSecond.of(2.5);
+    public static final LinearVelocity MAX_VEL = Units.MetersPerSecond.of(2.7);
 
     public static final class Poses {
         public static final Pose2d A = new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142));

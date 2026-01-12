@@ -4,7 +4,12 @@ package frc.robot.trajectories;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Map;
-import java.util.Optional;
+import java.util.OptionalInt;
+
+// If these imports cause errors because you're not using ChoreoLib,
+// turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
+import choreo.auto.AutoRoutine;
+import choreo.auto.AutoTrajectory;
 
 /**
  * A class containing the name, start pose, end pose, and total time of every Choreo trajectory.
@@ -14,1032 +19,2276 @@ import java.util.Optional;
  */
 public record ChoreoTraj(
     String name,
-    Optional<Integer> segment,
+    OptionalInt segment,
     double totalTimeSecs,
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue
 ) {
     
-  public static final ChoreoTraj A1 = new ChoreoTraj(
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/A1.svg">
+	 */public static final ChoreoTraj A1 = new ChoreoTraj(
 	    "A1",
-	    Optional.empty(),
-	    3.62572,
+	    OptionalInt.empty(),
+	    3.66458,
 	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142)),
 	    new Pose2d(2.631, 4.016, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj A3 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/A2.svg">
+	 */public static final ChoreoTraj A2 = new ChoreoTraj(
+	    "A2",
+	    OptionalInt.empty(),
+	    0.77036,
+	    new Pose2d(2.631, 4.016, Rotation2d.fromRadians(0)),
+	    new Pose2d(3.139, 4.016, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/A3.svg">
+	 */public static final ChoreoTraj A3 = new ChoreoTraj(
 	    "A3",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    0.86256,
 	    new Pose2d(3.139, 4.016, Rotation2d.fromRadians(0)),
 	    new Pose2d(2.575, 3.981, Rotation2d.fromRadians(-0.617))
 	);
-	public static final ChoreoTraj AB2 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/AB1.svg">
+	 */public static final ChoreoTraj AB1 = new ChoreoTraj(
+	    "AB1",
+	    OptionalInt.empty(),
+	    1.00136,
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142)),
+	    new Pose2d(2.674, 4.026, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/AB2.svg">
+	 */public static final ChoreoTraj AB2 = new ChoreoTraj(
 	    "AB2",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    0.79066,
 	    new Pose2d(2.674, 4.026, Rotation2d.fromRadians(0)),
 	    new Pose2d(3.209, 4.026, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj Alg_1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/Alg_1.svg">
+	 */public static final ChoreoTraj Alg_1 = new ChoreoTraj(
 	    "Alg_1",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    1.30283,
 	    new Pose2d(5.961, 4.185, Rotation2d.fromRadians(0)),
 	    new Pose2d(6.01, 4.07, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj Alg_3 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/Alg_3.svg">
+	 */public static final ChoreoTraj Alg_3 = new ChoreoTraj(
 	    "Alg_3",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    1.75034,
 	    new Pose2d(6.01, 4.034, Rotation2d.fromRadians(0)),
 	    new Pose2d(7.276, 5.703, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj Alg_6 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/Alg_3$0.svg">
+	 */public static final ChoreoTraj Alg_3$0 = new ChoreoTraj(
+	    "Alg_3",
+	    OptionalInt.of(0),
+	    0.46923,
+	    new Pose2d(6.01, 4.034, Rotation2d.fromRadians(0)),
+	    new Pose2d(6.347, 4.042, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/Alg_3$1.svg">
+	 */public static final ChoreoTraj Alg_3$1 = new ChoreoTraj(
+	    "Alg_3",
+	    OptionalInt.of(1),
+	    1.28111,
+	    new Pose2d(6.347, 4.042, Rotation2d.fromRadians(0)),
+	    new Pose2d(7.276, 5.703, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/Alg_4.svg">
+	 */public static final ChoreoTraj Alg_4 = new ChoreoTraj(
+	    "Alg_4",
+	    OptionalInt.empty(),
+	    2.50826,
+	    new Pose2d(7.276, 5.703, Rotation2d.fromRadians(0)),
+	    new Pose2d(5.199, 5.234, Rotation2d.fromRadians(1.049))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/Alg_6.svg">
+	 */public static final ChoreoTraj Alg_6 = new ChoreoTraj(
 	    "Alg_6",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    1.67261,
 	    new Pose2d(5.199, 5.234, Rotation2d.fromRadians(1.049)),
 	    new Pose2d(7.276, 5.703, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj Alg_7 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/Alg_7.svg">
+	 */public static final ChoreoTraj Alg_7 = new ChoreoTraj(
 	    "Alg_7",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    1.01223,
 	    new Pose2d(7.276, 5.703, Rotation2d.fromRadians(0)),
 	    new Pose2d(6.4, 5.703, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj Alg_8 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/Alg_8.svg">
+	 */public static final ChoreoTraj Alg_8 = new ChoreoTraj(
 	    "Alg_8",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    0.85228,
 	    new Pose2d(7.132, 6.209, Rotation2d.fromRadians(1.571)),
 	    new Pose2d(7.132, 6.209, Rotation2d.fromRadians(1.571))
 	);
-	public static final ChoreoTraj L1_POSES = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/K_PUSH.svg">
+	 */public static final ChoreoTraj K_PUSH = new ChoreoTraj(
+	    "K_PUSH",
+	    OptionalInt.empty(),
+	    4.75433,
+	    new Pose2d(3.9, 5.374, Rotation2d.fromRadians(2.094)),
+	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/L1_POSES.svg">
+	 */public static final ChoreoTraj L1_POSES = new ChoreoTraj(
 	    "L1_POSES",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    0.53008,
 	    new Pose2d(3, 4.05, Rotation2d.fromRadians(-0.524)),
 	    new Pose2d(3, 4.003, Rotation2d.fromRadians(0.524))
 	);
-	public static final ChoreoTraj LP1_L2_A = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_A.svg">
+	 */public static final ChoreoTraj LP1_A = new ChoreoTraj(
+	    "LP1_A",
+	    OptionalInt.empty(),
+	    4.99738,
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
+	    new Pose2d(2.006, 5.239, Rotation2d.fromRadians(1.779))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_A$0.svg">
+	 */public static final ChoreoTraj LP1_A$0 = new ChoreoTraj(
+	    "LP1_A",
+	    OptionalInt.of(0),
+	    1.62858,
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
+	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_A$1.svg">
+	 */public static final ChoreoTraj LP1_A$1 = new ChoreoTraj(
+	    "LP1_A",
+	    OptionalInt.of(1),
+	    3.3688,
+	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
+	    new Pose2d(2.006, 5.239, Rotation2d.fromRadians(1.779))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_B.svg">
+	 */public static final ChoreoTraj LP1_B = new ChoreoTraj(
+	    "LP1_B",
+	    OptionalInt.empty(),
+	    4.67445,
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_B$0.svg">
+	 */public static final ChoreoTraj LP1_B$0 = new ChoreoTraj(
+	    "LP1_B",
+	    OptionalInt.of(0),
+	    1.71241,
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_B$1.svg">
+	 */public static final ChoreoTraj LP1_B$1 = new ChoreoTraj(
+	    "LP1_B",
+	    OptionalInt.of(1),
+	    2.96204,
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142)),
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_L.svg">
+	 */public static final ChoreoTraj LP1_L = new ChoreoTraj(
+	    "LP1_L",
+	    OptionalInt.empty(),
+	    4.564,
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_L$0.svg">
+	 */public static final ChoreoTraj LP1_L$0 = new ChoreoTraj(
+	    "LP1_L",
+	    OptionalInt.of(0),
+	    1.64237,
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
+	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_L$1.svg">
+	 */public static final ChoreoTraj LP1_L$1 = new ChoreoTraj(
+	    "LP1_L",
+	    OptionalInt.of(1),
+	    2.92163,
+	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094)),
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_L2_A.svg">
+	 */public static final ChoreoTraj LP1_L2_A = new ChoreoTraj(
 	    "LP1_L2_A",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    3.46608,
 	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
 	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404))
 	);
-	public static final ChoreoTraj LP1_L2_A$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_L2_A$0.svg">
+	 */public static final ChoreoTraj LP1_L2_A$0 = new ChoreoTraj(
 	    "LP1_L2_A",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.76886,
 	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj LP1_L2_A$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_L2_A$1.svg">
+	 */public static final ChoreoTraj LP1_L2_A$1 = new ChoreoTraj(
 	    "LP1_L2_A",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.6972199999999997,
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(0)),
 	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404))
 	);
-	public static final ChoreoTraj LP2_L2_A = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_L2_B.svg">
+	 */public static final ChoreoTraj LP1_L2_B = new ChoreoTraj(
+	    "LP1_L2_B",
+	    OptionalInt.empty(),
+	    4.83137,
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_L2_B$0.svg">
+	 */public static final ChoreoTraj LP1_L2_B$0 = new ChoreoTraj(
+	    "LP1_L2_B",
+	    OptionalInt.of(0),
+	    1.74281,
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404)),
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP1_L2_B$1.svg">
+	 */public static final ChoreoTraj LP1_L2_B$1 = new ChoreoTraj(
+	    "LP1_L2_B",
+	    OptionalInt.of(1),
+	    3.0885599999999998,
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(0)),
+	    new Pose2d(1.376, 5.73, Rotation2d.fromRadians(2.404))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_A.svg">
+	 */public static final ChoreoTraj LP2_A = new ChoreoTraj(
+	    "LP2_A",
+	    OptionalInt.empty(),
+	    4.01301,
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793)),
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_A$0.svg">
+	 */public static final ChoreoTraj LP2_A$0 = new ChoreoTraj(
+	    "LP2_A",
+	    OptionalInt.of(0),
+	    1.45695,
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793)),
+	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_A$1.svg">
+	 */public static final ChoreoTraj LP2_A$1 = new ChoreoTraj(
+	    "LP2_A",
+	    OptionalInt.of(1),
+	    2.5560600000000004,
+	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_B.svg">
+	 */public static final ChoreoTraj LP2_B = new ChoreoTraj(
+	    "LP2_B",
+	    OptionalInt.empty(),
+	    4.07738,
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793)),
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_B$0.svg">
+	 */public static final ChoreoTraj LP2_B$0 = new ChoreoTraj(
+	    "LP2_B",
+	    OptionalInt.of(0),
+	    1.4605,
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793)),
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_B$1.svg">
+	 */public static final ChoreoTraj LP2_B$1 = new ChoreoTraj(
+	    "LP2_B",
+	    OptionalInt.of(1),
+	    2.61688,
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142)),
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_L2_A.svg">
+	 */public static final ChoreoTraj LP2_L2_A = new ChoreoTraj(
 	    "LP2_L2_A",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    2.92464,
 	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793)),
 	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793))
 	);
-	public static final ChoreoTraj LP2_L2_A$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_L2_A$0.svg">
+	 */public static final ChoreoTraj LP2_L2_A$0 = new ChoreoTraj(
 	    "LP2_L2_A",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.46237,
 	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793)),
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj LP2_L2_A$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_L2_A$1.svg">
+	 */public static final ChoreoTraj LP2_L2_A$1 = new ChoreoTraj(
 	    "LP2_L2_A",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.4622700000000002,
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(0)),
 	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793))
 	);
-	public static final ChoreoTraj LP3_A = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_L2_B.svg">
+	 */public static final ChoreoTraj LP2_L2_B = new ChoreoTraj(
+	    "LP2_L2_B",
+	    OptionalInt.empty(),
+	    3.00054,
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793)),
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_L2_B$0.svg">
+	 */public static final ChoreoTraj LP2_L2_B$0 = new ChoreoTraj(
+	    "LP2_L2_B",
+	    OptionalInt.of(0),
+	    1.46576,
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793)),
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP2_L2_B$1.svg">
+	 */public static final ChoreoTraj LP2_L2_B$1 = new ChoreoTraj(
+	    "LP2_L2_B",
+	    OptionalInt.of(1),
+	    1.53478,
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(0)),
+	    new Pose2d(1.396, 4.061, Rotation2d.fromRadians(-2.793))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_A.svg">
+	 */public static final ChoreoTraj LP3_A = new ChoreoTraj(
 	    "LP3_A",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.67445,
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
 	);
-	public static final ChoreoTraj LP3_A$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_A$0.svg">
+	 */public static final ChoreoTraj LP3_A$0 = new ChoreoTraj(
 	    "LP3_A",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.71241,
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
 	);
-	public static final ChoreoTraj LP3_A$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_A$1.svg">
+	 */public static final ChoreoTraj LP3_A$1 = new ChoreoTraj(
 	    "LP3_A",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.96204,
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
 	);
-	public static final ChoreoTraj LP3_B = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_B.svg">
+	 */public static final ChoreoTraj LP3_B = new ChoreoTraj(
 	    "LP3_B",
-	    Optional.empty(),
-	    4.48911,
+	    OptionalInt.empty(),
+	    4.48859,
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
 	);
-	public static final ChoreoTraj LP3_B$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_B$0.svg">
+	 */public static final ChoreoTraj LP3_B$0 = new ChoreoTraj(
 	    "LP3_B",
-	    Optional.of(0),
-	    1.62881,
+	    OptionalInt.of(0),
+	    1.62858,
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
 	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142))
 	);
-	public static final ChoreoTraj LP3_B$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_B$1.svg">
+	 */public static final ChoreoTraj LP3_B$1 = new ChoreoTraj(
 	    "LP3_B",
-	    Optional.of(1),
-	    2.8603,
+	    OptionalInt.of(1),
+	    2.8600100000000004,
 	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142)),
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
 	);
-	public static final ChoreoTraj LP3_C = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_C.svg">
+	 */public static final ChoreoTraj LP3_C = new ChoreoTraj(
 	    "LP3_C",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.4651,
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
 	);
-	public static final ChoreoTraj LP3_C$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_C$0.svg">
+	 */public static final ChoreoTraj LP3_C$0 = new ChoreoTraj(
 	    "LP3_C",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.64244,
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094))
 	);
-	public static final ChoreoTraj LP3_C$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_C$1.svg">
+	 */public static final ChoreoTraj LP3_C$1 = new ChoreoTraj(
 	    "LP3_C",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.82266,
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094)),
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
 	);
-	public static final ChoreoTraj LP3_L2_A = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_L2_A.svg">
+	 */public static final ChoreoTraj LP3_L2_A = new ChoreoTraj(
 	    "LP3_L2_A",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    3.48467,
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
 	);
-	public static final ChoreoTraj LP3_L2_A$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_L2_A$0.svg">
+	 */public static final ChoreoTraj LP3_L2_A$0 = new ChoreoTraj(
 	    "LP3_L2_A",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.74227,
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj LP3_L2_A$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_L2_A$1.svg">
+	 */public static final ChoreoTraj LP3_L2_A$1 = new ChoreoTraj(
 	    "LP3_L2_A",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.7424,
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(0)),
 	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
 	);
-	public static final ChoreoTraj REEF_ALGAE = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_L2_B.svg">
+	 */public static final ChoreoTraj LP3_L2_B = new ChoreoTraj(
+	    "LP3_L2_B",
+	    OptionalInt.empty(),
+	    3.365,
+	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
+	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_L2_B$0.svg">
+	 */public static final ChoreoTraj LP3_L2_B$0 = new ChoreoTraj(
+	    "LP3_L2_B",
+	    OptionalInt.of(0),
+	    1.66552,
+	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404)),
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/LP3_L2_B$1.svg">
+	 */public static final ChoreoTraj LP3_L2_B$1 = new ChoreoTraj(
+	    "LP3_L2_B",
+	    OptionalInt.of(1),
+	    1.6994800000000003,
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(0)),
+	    new Pose2d(1.376, 2.322, Rotation2d.fromRadians(-2.404))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/REEF_ALGAE.svg">
+	 */public static final ChoreoTraj REEF_ALGAE = new ChoreoTraj(
 	    "REEF_ALGAE",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.24571,
 	    new Pose2d(2.938, 4.026, Rotation2d.fromRadians(0)),
 	    new Pose2d(3.715, 5.372, Rotation2d.fromRadians(-1.047))
 	);
-	public static final ChoreoTraj REEF_POSES = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/REEF_POSES.svg">
+	 */public static final ChoreoTraj REEF_POSES = new ChoreoTraj(
 	    "REEF_POSES",
-	    Optional.empty(),
-	    25.85425,
+	    OptionalInt.empty(),
+	    26.94402,
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
-	    new Pose2d(3.063, 2.778, Rotation2d.fromRadians(-2.094))
+	    new Pose2d(4.261, 1.141, Rotation2d.fromRadians(-0.393))
 	);
-	public static final ChoreoTraj SL1_B = new ChoreoTraj(
-	    "SL1_B",
-	    Optional.empty(),
-	    4.16773,
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_A.svg">
+	 */public static final ChoreoTraj SL1_A = new ChoreoTraj(
+	    "SL1_A",
+	    OptionalInt.empty(),
+	    4.03295,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL1_B$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_A$0.svg">
+	 */public static final ChoreoTraj SL1_A$0 = new ChoreoTraj(
+	    "SL1_A",
+	    OptionalInt.of(0),
+	    2.01647,
+	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
+	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_A$1.svg">
+	 */public static final ChoreoTraj SL1_A$1 = new ChoreoTraj(
+	    "SL1_A",
+	    OptionalInt.of(1),
+	    2.0164799999999996,
+	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
+	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_B.svg">
+	 */public static final ChoreoTraj SL1_B = new ChoreoTraj(
 	    "SL1_B",
-	    Optional.of(0),
-	    2.08386,
+	    OptionalInt.empty(),
+	    4.16812,
+	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
+	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_B$0.svg">
+	 */public static final ChoreoTraj SL1_B$0 = new ChoreoTraj(
+	    "SL1_B",
+	    OptionalInt.of(0),
+	    2.08406,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142))
 	);
-	public static final ChoreoTraj SL1_B$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_B$1.svg">
+	 */public static final ChoreoTraj SL1_B$1 = new ChoreoTraj(
 	    "SL1_B",
-	    Optional.of(1),
-	    2.0838699999999997,
+	    OptionalInt.of(1),
+	    2.08406,
 	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL1_I = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_I.svg">
+	 */public static final ChoreoTraj SL1_I = new ChoreoTraj(
 	    "SL1_I",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    5.83082,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL1_I$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_I$0.svg">
+	 */public static final ChoreoTraj SL1_I$0 = new ChoreoTraj(
 	    "SL1_I",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.92602,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(5.363, 5.209, Rotation2d.fromRadians(1.047))
 	);
-	public static final ChoreoTraj SL1_I$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_I$1.svg">
+	 */public static final ChoreoTraj SL1_I$1 = new ChoreoTraj(
 	    "SL1_I",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.9048000000000003,
 	    new Pose2d(5.363, 5.209, Rotation2d.fromRadians(1.047)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL1_J = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_J.svg">
+	 */public static final ChoreoTraj SL1_J = new ChoreoTraj(
 	    "SL1_J",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    5.0534,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL1_J$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_J$0.svg">
+	 */public static final ChoreoTraj SL1_J$0 = new ChoreoTraj(
 	    "SL1_J",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.52587,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(5.084, 5.374, Rotation2d.fromRadians(1.047))
 	);
-	public static final ChoreoTraj SL1_J$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_J$1.svg">
+	 */public static final ChoreoTraj SL1_J$1 = new ChoreoTraj(
 	    "SL1_J",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.52753,
 	    new Pose2d(5.084, 5.374, Rotation2d.fromRadians(1.047)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL1_K = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_K.svg">
+	 */public static final ChoreoTraj SL1_K = new ChoreoTraj(
 	    "SL1_K",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.19233,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL1_K$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_K$0.svg">
+	 */public static final ChoreoTraj SL1_K$0 = new ChoreoTraj(
 	    "SL1_K",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.09616,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(3.9, 5.374, Rotation2d.fromRadians(2.094))
 	);
-	public static final ChoreoTraj SL1_K$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_K$1.svg">
+	 */public static final ChoreoTraj SL1_K$1 = new ChoreoTraj(
 	    "SL1_K",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.0961700000000003,
 	    new Pose2d(3.9, 5.374, Rotation2d.fromRadians(2.094)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL1_L = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_L.svg">
+	 */public static final ChoreoTraj SL1_L = new ChoreoTraj(
 	    "SL1_L",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.05307,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL1_L$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_L$0.svg">
+	 */public static final ChoreoTraj SL1_L$0 = new ChoreoTraj(
 	    "SL1_L",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.02653,
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094))
 	);
-	public static final ChoreoTraj SL1_L$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL1_L$1.svg">
+	 */public static final ChoreoTraj SL1_L$1 = new ChoreoTraj(
 	    "SL1_L",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.02654,
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094)),
 	    new Pose2d(0.625, 6.694, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_C = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_A.svg">
+	 */public static final ChoreoTraj SL3_A = new ChoreoTraj(
+	    "SL3_A",
+	    OptionalInt.empty(),
+	    4.10707,
+	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
+	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_A$0.svg">
+	 */public static final ChoreoTraj SL3_A$0 = new ChoreoTraj(
+	    "SL3_A",
+	    OptionalInt.of(0),
+	    2.05353,
+	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
+	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_A$1.svg">
+	 */public static final ChoreoTraj SL3_A$1 = new ChoreoTraj(
+	    "SL3_A",
+	    OptionalInt.of(1),
+	    2.0535400000000004,
+	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
+	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_B.svg">
+	 */public static final ChoreoTraj SL3_B = new ChoreoTraj(
+	    "SL3_B",
+	    OptionalInt.empty(),
+	    4.32558,
+	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
+	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_B$0.svg">
+	 */public static final ChoreoTraj SL3_B$0 = new ChoreoTraj(
+	    "SL3_B",
+	    OptionalInt.of(0),
+	    2.16279,
+	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_B$1.svg">
+	 */public static final ChoreoTraj SL3_B$1 = new ChoreoTraj(
+	    "SL3_B",
+	    OptionalInt.of(1),
+	    2.16279,
+	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142)),
+	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_C.svg">
+	 */public static final ChoreoTraj SL3_C = new ChoreoTraj(
 	    "SL3_C",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    5.52916,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_C$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_C$0.svg">
+	 */public static final ChoreoTraj SL3_C$0 = new ChoreoTraj(
 	    "SL3_C",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.76458,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094))
 	);
-	public static final ChoreoTraj SL3_C$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_C$1.svg">
+	 */public static final ChoreoTraj SL3_C$1 = new ChoreoTraj(
 	    "SL3_C",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.76458,
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_H = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_H.svg">
+	 */public static final ChoreoTraj SL3_H = new ChoreoTraj(
 	    "SL3_H",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    5.77468,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_H$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_H$0.svg">
+	 */public static final ChoreoTraj SL3_H$0 = new ChoreoTraj(
 	    "SL3_H",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.79536,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(5.961, 4.185, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj SL3_H$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_H$1.svg">
+	 */public static final ChoreoTraj SL3_H$1 = new ChoreoTraj(
 	    "SL3_H",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.97932,
 	    new Pose2d(5.961, 4.185, Rotation2d.fromRadians(0)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_I = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_I.svg">
+	 */public static final ChoreoTraj SL3_I = new ChoreoTraj(
 	    "SL3_I",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.61886,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_I$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_I$0.svg">
+	 */public static final ChoreoTraj SL3_I$0 = new ChoreoTraj(
 	    "SL3_I",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.37127,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(5.363, 5.209, Rotation2d.fromRadians(1.047))
 	);
-	public static final ChoreoTraj SL3_I$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_I$1.svg">
+	 */public static final ChoreoTraj SL3_I$1 = new ChoreoTraj(
 	    "SL3_I",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.2475899999999998,
 	    new Pose2d(5.363, 5.209, Rotation2d.fromRadians(1.047)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_J = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_J.svg">
+	 */public static final ChoreoTraj SL3_J = new ChoreoTraj(
 	    "SL3_J",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.65503,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_J$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_J$0.svg">
+	 */public static final ChoreoTraj SL3_J$0 = new ChoreoTraj(
 	    "SL3_J",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.50654,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(5.084, 5.374, Rotation2d.fromRadians(1.047))
 	);
-	public static final ChoreoTraj SL3_J$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_J$1.svg">
+	 */public static final ChoreoTraj SL3_J$1 = new ChoreoTraj(
 	    "SL3_J",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.14849,
 	    new Pose2d(5.084, 5.374, Rotation2d.fromRadians(1.047)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_K = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_K.svg">
+	 */public static final ChoreoTraj SL3_K = new ChoreoTraj(
 	    "SL3_K",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    3.87253,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_K$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_K$0.svg">
+	 */public static final ChoreoTraj SL3_K$0 = new ChoreoTraj(
 	    "SL3_K",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.01376,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(3.9, 5.374, Rotation2d.fromRadians(2.094))
 	);
-	public static final ChoreoTraj SL3_K$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_K$1.svg">
+	 */public static final ChoreoTraj SL3_K$1 = new ChoreoTraj(
 	    "SL3_K",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.8587699999999998,
 	    new Pose2d(3.9, 5.374, Rotation2d.fromRadians(2.094)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_L = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_L.svg">
+	 */public static final ChoreoTraj SL3_L = new ChoreoTraj(
 	    "SL3_L",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    3.8234,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj SL3_L$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_L$0.svg">
+	 */public static final ChoreoTraj SL3_L$0 = new ChoreoTraj(
 	    "SL3_L",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.9919,
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199)),
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094))
 	);
-	public static final ChoreoTraj SL3_L$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SL3_L$1.svg">
+	 */public static final ChoreoTraj SL3_L$1 = new ChoreoTraj(
 	    "SL3_L",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.8315,
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094)),
 	    new Pose2d(1.672, 7.322, Rotation2d.fromRadians(2.199))
 	);
-	public static final ChoreoTraj split_path = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/split_path.svg">
+	 */public static final ChoreoTraj split_path = new ChoreoTraj(
 	    "split_path",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.80114,
 	    new Pose2d(1.458, 7.406, Rotation2d.fromRadians(2.195)),
 	    new Pose2d(1.458, 7.406, Rotation2d.fromRadians(2.195))
 	);
-	public static final ChoreoTraj split_path$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/split_path$0.svg">
+	 */public static final ChoreoTraj split_path$0 = new ChoreoTraj(
 	    "split_path",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.4004,
 	    new Pose2d(1.458, 7.406, Rotation2d.fromRadians(2.195)),
 	    new Pose2d(2.014, 6.355, Rotation2d.fromRadians(-1.211))
 	);
-	public static final ChoreoTraj split_path$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/split_path$1.svg">
+	 */public static final ChoreoTraj split_path$1 = new ChoreoTraj(
 	    "split_path",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.4007400000000003,
 	    new Pose2d(2.014, 6.355, Rotation2d.fromRadians(-1.211)),
 	    new Pose2d(1.458, 7.406, Rotation2d.fromRadians(2.195))
 	);
-	public static final ChoreoTraj SR3_A = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_A.svg">
+	 */public static final ChoreoTraj SR3_A = new ChoreoTraj(
 	    "SR3_A",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.32558,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_A$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_A$0.svg">
+	 */public static final ChoreoTraj SR3_A$0 = new ChoreoTraj(
 	    "SR3_A",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.16279,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
 	);
-	public static final ChoreoTraj SR3_A$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_A$1.svg">
+	 */public static final ChoreoTraj SR3_A$1 = new ChoreoTraj(
 	    "SR3_A",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.16279,
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_B = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_B.svg">
+	 */public static final ChoreoTraj SR3_B = new ChoreoTraj(
 	    "SR3_B",
-	    Optional.empty(),
-	    4.10768,
+	    OptionalInt.empty(),
+	    4.10707,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_B$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_B$0.svg">
+	 */public static final ChoreoTraj SR3_B$0 = new ChoreoTraj(
 	    "SR3_B",
-	    Optional.of(0),
-	    2.05384,
+	    OptionalInt.of(0),
+	    2.05353,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142))
 	);
-	public static final ChoreoTraj SR3_B$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_B$1.svg">
+	 */public static final ChoreoTraj SR3_B$1 = new ChoreoTraj(
 	    "SR3_B",
-	    Optional.of(1),
-	    2.05384,
+	    OptionalInt.of(1),
+	    2.0535400000000004,
 	    new Pose2d(3.023, 3.867, Rotation2d.fromRadians(3.142)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_C = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_C.svg">
+	 */public static final ChoreoTraj SR3_C = new ChoreoTraj(
 	    "SR3_C",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    3.79453,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_C$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_C$0.svg">
+	 */public static final ChoreoTraj SR3_C$0 = new ChoreoTraj(
 	    "SR3_C",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.96281,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094))
 	);
-	public static final ChoreoTraj SR3_C$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_C$1.svg">
+	 */public static final ChoreoTraj SR3_C$1 = new ChoreoTraj(
 	    "SR3_C",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.83172,
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_D = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_D.svg">
+	 */public static final ChoreoTraj SR3_D = new ChoreoTraj(
 	    "SR3_D",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    3.86546,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_D$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_D$0.svg">
+	 */public static final ChoreoTraj SR3_D$0 = new ChoreoTraj(
 	    "SR3_D",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.0067,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(3.9, 2.678, Rotation2d.fromRadians(-2.094))
 	);
-	public static final ChoreoTraj SR3_D$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_D$1.svg">
+	 */public static final ChoreoTraj SR3_D$1 = new ChoreoTraj(
 	    "SR3_D",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.8587600000000002,
 	    new Pose2d(3.9, 2.678, Rotation2d.fromRadians(-2.094)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_E = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_E.svg">
+	 */public static final ChoreoTraj SR3_E = new ChoreoTraj(
 	    "SR3_E",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.63362,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_E$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_E$0.svg">
+	 */public static final ChoreoTraj SR3_E$0 = new ChoreoTraj(
 	    "SR3_E",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.48514,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(5.084, 2.678, Rotation2d.fromRadians(-1.047))
 	);
-	public static final ChoreoTraj SR3_E$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_E$1.svg">
+	 */public static final ChoreoTraj SR3_E$1 = new ChoreoTraj(
 	    "SR3_E",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.1484799999999997,
 	    new Pose2d(5.084, 2.678, Rotation2d.fromRadians(-1.047)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_G = new ChoreoTraj(
-	    "SR3_G",
-	    Optional.empty(),
-	    5.95928,
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_F.svg">
+	 */public static final ChoreoTraj SR3_F = new ChoreoTraj(
+	    "SR3_F",
+	    OptionalInt.empty(),
+	    4.6037,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_G$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_F$0.svg">
+	 */public static final ChoreoTraj SR3_F$0 = new ChoreoTraj(
+	    "SR3_F",
+	    OptionalInt.of(0),
+	    2.36357,
+	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
+	    new Pose2d(5.363, 2.843, Rotation2d.fromRadians(-1.047))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_F$1.svg">
+	 */public static final ChoreoTraj SR3_F$1 = new ChoreoTraj(
+	    "SR3_F",
+	    OptionalInt.of(1),
+	    2.2401299999999997,
+	    new Pose2d(5.363, 2.843, Rotation2d.fromRadians(-1.047)),
+	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_G.svg">
+	 */public static final ChoreoTraj SR3_G = new ChoreoTraj(
 	    "SR3_G",
-	    Optional.of(0),
-	    2.97964,
+	    OptionalInt.empty(),
+	    5.95874,
+	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
+	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_G$0.svg">
+	 */public static final ChoreoTraj SR3_G$0 = new ChoreoTraj(
+	    "SR3_G",
+	    OptionalInt.of(0),
+	    2.97942,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(5.961, 3.867, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj SR3_G$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_G$1.svg">
+	 */public static final ChoreoTraj SR3_G$1 = new ChoreoTraj(
 	    "SR3_G",
-	    Optional.of(1),
-	    2.97964,
+	    OptionalInt.of(1),
+	    2.9793199999999995,
 	    new Pose2d(5.961, 3.867, Rotation2d.fromRadians(0)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_K = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_K.svg">
+	 */public static final ChoreoTraj SR3_K = new ChoreoTraj(
 	    "SR3_K",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    5.74055,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_K$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_K$0.svg">
+	 */public static final ChoreoTraj SR3_K$0 = new ChoreoTraj(
 	    "SR3_K",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.87028,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(3.9, 5.374, Rotation2d.fromRadians(2.094))
 	);
-	public static final ChoreoTraj SR3_K$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_K$1.svg">
+	 */public static final ChoreoTraj SR3_K$1 = new ChoreoTraj(
 	    "SR3_K",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.8702699999999997,
 	    new Pose2d(3.9, 5.374, Rotation2d.fromRadians(2.094)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_L = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_L.svg">
+	 */public static final ChoreoTraj SR3_L = new ChoreoTraj(
 	    "SR3_L",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    5.34383,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj SR3_L$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_L$0.svg">
+	 */public static final ChoreoTraj SR3_L$0 = new ChoreoTraj(
 	    "SR3_L",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.67191,
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199)),
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094))
 	);
-	public static final ChoreoTraj SR3_L$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/SR3_L$1.svg">
+	 */public static final ChoreoTraj SR3_L$1 = new ChoreoTraj(
 	    "SR3_L",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.6719199999999996,
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094)),
 	    new Pose2d(1.672, 0.73, Rotation2d.fromRadians(-2.199))
 	);
-	public static final ChoreoTraj STAP_A = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STAP_A.svg">
+	 */public static final ChoreoTraj STAP_A = new ChoreoTraj(
 	    "STAP_A",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    6.98462,
 	    new Pose2d(7.132, 6.209, Rotation2d.fromRadians(1.571)),
 	    new Pose2d(7.132, 6.209, Rotation2d.fromRadians(1.571))
 	);
-	public static final ChoreoTraj STAP_A$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STAP_A$0.svg">
+	 */public static final ChoreoTraj STAP_A$0 = new ChoreoTraj(
 	    "STAP_A",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    3.89614,
 	    new Pose2d(7.132, 6.209, Rotation2d.fromRadians(1.571)),
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
 	);
-	public static final ChoreoTraj STAP_A$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STAP_A$1.svg">
+	 */public static final ChoreoTraj STAP_A$1 = new ChoreoTraj(
 	    "STAP_A",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    3.0884799999999997,
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
 	    new Pose2d(7.132, 6.209, Rotation2d.fromRadians(1.571))
 	);
-	public static final ChoreoTraj STAW_A = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STAW_A.svg">
+	 */public static final ChoreoTraj STAW_A = new ChoreoTraj(
 	    "STAW_A",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    6.30355,
 	    new Pose2d(7.133, 7.587, Rotation2d.fromRadians(1.571)),
 	    new Pose2d(7.132, 6.209, Rotation2d.fromRadians(1.571))
 	);
-	public static final ChoreoTraj STAW_A$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STAW_A$0.svg">
+	 */public static final ChoreoTraj STAW_A$0 = new ChoreoTraj(
 	    "STAW_A",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    3.31953,
 	    new Pose2d(7.133, 7.587, Rotation2d.fromRadians(1.571)),
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
 	);
-	public static final ChoreoTraj STAW_A$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STAW_A$1.svg">
+	 */public static final ChoreoTraj STAW_A$1 = new ChoreoTraj(
 	    "STAW_A",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.9840200000000006,
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
 	    new Pose2d(7.132, 6.209, Rotation2d.fromRadians(1.571))
 	);
-	public static final ChoreoTraj STAW_PUSH = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STAW_PUSH.svg">
+	 */public static final ChoreoTraj STAW_PUSH = new ChoreoTraj(
 	    "STAW_PUSH",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    0.9111,
 	    new Pose2d(7.133, 7.587, Rotation2d.fromRadians(1.571)),
 	    new Pose2d(7.133, 7.587, Rotation2d.fromRadians(1.571))
 	);
-	public static final ChoreoTraj STA_A = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STA_A.svg">
+	 */public static final ChoreoTraj STA_A = new ChoreoTraj(
 	    "STA_A",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    6.9769,
 	    new Pose2d(7.107, 6.209, Rotation2d.fromRadians(0.698)),
 	    new Pose2d(7.107, 6.209, Rotation2d.fromRadians(0.698))
 	);
-	public static final ChoreoTraj STA_A$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STA_A$0.svg">
+	 */public static final ChoreoTraj STA_A$0 = new ChoreoTraj(
 	    "STA_A",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    3.8929,
 	    new Pose2d(7.107, 6.209, Rotation2d.fromRadians(0.698)),
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
 	);
-	public static final ChoreoTraj STA_A$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STA_A$1.svg">
+	 */public static final ChoreoTraj STA_A$1 = new ChoreoTraj(
 	    "STA_A",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    3.0839999999999996,
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142)),
 	    new Pose2d(7.107, 6.209, Rotation2d.fromRadians(0.698))
 	);
-	public static final ChoreoTraj STCW_C = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STCW_C.svg">
+	 */public static final ChoreoTraj STCW_C = new ChoreoTraj(
 	    "STCW_C",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.45458,
 	    new Pose2d(7.133, 0.465, Rotation2d.fromRadians(-1.571)),
 	    new Pose2d(7.133, 0.465, Rotation2d.fromRadians(-1.571))
 	);
-	public static final ChoreoTraj STCW_C$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STCW_C$0.svg">
+	 */public static final ChoreoTraj STCW_C$0 = new ChoreoTraj(
 	    "STCW_C",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.22729,
 	    new Pose2d(7.133, 0.465, Rotation2d.fromRadians(-1.571)),
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094))
 	);
-	public static final ChoreoTraj STCW_C$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STCW_C$1.svg">
+	 */public static final ChoreoTraj STCW_C$1 = new ChoreoTraj(
 	    "STCW_C",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.22729,
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094)),
 	    new Pose2d(7.133, 0.465, Rotation2d.fromRadians(-1.571))
 	);
-	public static final ChoreoTraj STC_C = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STC_C.svg">
+	 */public static final ChoreoTraj STC_C = new ChoreoTraj(
 	    "STC_C",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.25768,
 	    new Pose2d(7.107, 1.843, Rotation2d.fromRadians(-0.698)),
 	    new Pose2d(7.107, 1.843, Rotation2d.fromRadians(-0.698))
 	);
-	public static final ChoreoTraj STC_C$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STC_C$0.svg">
+	 */public static final ChoreoTraj STC_C$0 = new ChoreoTraj(
 	    "STC_C",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.12558,
 	    new Pose2d(7.107, 1.843, Rotation2d.fromRadians(-0.698)),
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094))
 	);
-	public static final ChoreoTraj STC_C$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STC_C$1.svg">
+	 */public static final ChoreoTraj STC_C$1 = new ChoreoTraj(
 	    "STC_C",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.1321,
 	    new Pose2d(3.62, 2.843, Rotation2d.fromRadians(-2.094)),
 	    new Pose2d(7.107, 1.843, Rotation2d.fromRadians(-0.698))
 	);
-	public static final ChoreoTraj STE_E = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STE_E.svg">
+	 */public static final ChoreoTraj STE_E = new ChoreoTraj(
 	    "STE_E",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.36557,
 	    new Pose2d(7.1, 2.678, Rotation2d.fromRadians(-1.047)),
 	    new Pose2d(5.67, 2.678, Rotation2d.fromRadians(-1.047))
 	);
-	public static final ChoreoTraj STE_E$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STE_E$0.svg">
+	 */public static final ChoreoTraj STE_E$0 = new ChoreoTraj(
 	    "STE_E",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.53655,
 	    new Pose2d(7.1, 2.678, Rotation2d.fromRadians(-1.047)),
 	    new Pose2d(5.084, 2.678, Rotation2d.fromRadians(-1.047))
 	);
-	public static final ChoreoTraj STE_E$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STE_E$1.svg">
+	 */public static final ChoreoTraj STE_E$1 = new ChoreoTraj(
 	    "STE_E",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.82902,
 	    new Pose2d(5.084, 2.678, Rotation2d.fromRadians(-1.047)),
 	    new Pose2d(5.67, 2.678, Rotation2d.fromRadians(-1.047))
 	);
-	public static final ChoreoTraj STF_F = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STF_F.svg">
+	 */public static final ChoreoTraj STF_F = new ChoreoTraj(
 	    "STF_F",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    2.95195,
 	    new Pose2d(7.2, 2.843, Rotation2d.fromRadians(0)),
 	    new Pose2d(7.2, 2.843, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj STF_F$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STF_F$0.svg">
+	 */public static final ChoreoTraj STF_F$0 = new ChoreoTraj(
 	    "STF_F",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.47597,
 	    new Pose2d(7.2, 2.843, Rotation2d.fromRadians(0)),
 	    new Pose2d(5.363, 2.843, Rotation2d.fromRadians(-1.047))
 	);
-	public static final ChoreoTraj STF_F$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STF_F$1.svg">
+	 */public static final ChoreoTraj STF_F$1 = new ChoreoTraj(
 	    "STF_F",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.47598,
 	    new Pose2d(5.363, 2.843, Rotation2d.fromRadians(-1.047)),
 	    new Pose2d(7.2, 2.843, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj STG_G = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STG_G.svg">
+	 */public static final ChoreoTraj STG_G = new ChoreoTraj(
 	    "STG_G",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    2.40715,
 	    new Pose2d(7.2, 3.867, Rotation2d.fromRadians(0)),
 	    new Pose2d(7.2, 3.867, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj STG_G$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STG_G$0.svg">
+	 */public static final ChoreoTraj STG_G$0 = new ChoreoTraj(
 	    "STG_G",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.20358,
 	    new Pose2d(7.2, 3.867, Rotation2d.fromRadians(0)),
 	    new Pose2d(5.961, 3.867, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj STG_G$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STG_G$1.svg">
+	 */public static final ChoreoTraj STG_G$1 = new ChoreoTraj(
 	    "STG_G",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.20357,
 	    new Pose2d(5.961, 3.867, Rotation2d.fromRadians(0)),
 	    new Pose2d(7.2, 3.867, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj STI_I = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STH_H.svg">
+	 */public static final ChoreoTraj STH_H = new ChoreoTraj(
+	    "STH_H",
+	    OptionalInt.empty(),
+	    3.06437,
+	    new Pose2d(7.2, 4.185, Rotation2d.fromRadians(0)),
+	    new Pose2d(7.2, 4.185, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STH_H$0.svg">
+	 */public static final ChoreoTraj STH_H$0 = new ChoreoTraj(
+	    "STH_H",
+	    OptionalInt.of(0),
+	    1.53219,
+	    new Pose2d(7.2, 4.185, Rotation2d.fromRadians(0)),
+	    new Pose2d(5.961, 4.185, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STH_H$1.svg">
+	 */public static final ChoreoTraj STH_H$1 = new ChoreoTraj(
+	    "STH_H",
+	    OptionalInt.of(1),
+	    1.5321799999999999,
+	    new Pose2d(5.961, 4.185, Rotation2d.fromRadians(0)),
+	    new Pose2d(7.2, 4.185, Rotation2d.fromRadians(0))
+	);
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STI_I.svg">
+	 */public static final ChoreoTraj STI_I = new ChoreoTraj(
 	    "STI_I",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    2.95195,
 	    new Pose2d(7.2, 5.209, Rotation2d.fromRadians(0)),
 	    new Pose2d(7.2, 5.209, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj STI_I$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STI_I$0.svg">
+	 */public static final ChoreoTraj STI_I$0 = new ChoreoTraj(
 	    "STI_I",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.47597,
 	    new Pose2d(7.2, 5.209, Rotation2d.fromRadians(0)),
 	    new Pose2d(5.363, 5.209, Rotation2d.fromRadians(1.047))
 	);
-	public static final ChoreoTraj STI_I$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STI_I$1.svg">
+	 */public static final ChoreoTraj STI_I$1 = new ChoreoTraj(
 	    "STI_I",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.47598,
 	    new Pose2d(5.363, 5.209, Rotation2d.fromRadians(1.047)),
 	    new Pose2d(7.2, 5.209, Rotation2d.fromRadians(0))
 	);
-	public static final ChoreoTraj STJ_J = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STJ_J.svg">
+	 */public static final ChoreoTraj STJ_J = new ChoreoTraj(
 	    "STJ_J",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    3.21563,
 	    new Pose2d(7.1, 5.374, Rotation2d.fromRadians(1.047)),
 	    new Pose2d(7.1, 5.374, Rotation2d.fromRadians(1.047))
 	);
-	public static final ChoreoTraj STJ_J$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STJ_J$0.svg">
+	 */public static final ChoreoTraj STJ_J$0 = new ChoreoTraj(
 	    "STJ_J",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    1.67907,
 	    new Pose2d(7.1, 5.374, Rotation2d.fromRadians(1.047)),
 	    new Pose2d(5.084, 5.374, Rotation2d.fromRadians(1.047))
 	);
-	public static final ChoreoTraj STJ_J$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STJ_J$1.svg">
+	 */public static final ChoreoTraj STJ_J$1 = new ChoreoTraj(
 	    "STJ_J",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    1.53656,
 	    new Pose2d(5.084, 5.374, Rotation2d.fromRadians(1.047)),
 	    new Pose2d(7.1, 5.374, Rotation2d.fromRadians(1.047))
 	);
-	public static final ChoreoTraj STLW_L = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STLW_L.svg">
+	 */public static final ChoreoTraj STLW_L = new ChoreoTraj(
 	    "STLW_L",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.45377,
 	    new Pose2d(7.133, 7.587, Rotation2d.fromRadians(1.571)),
 	    new Pose2d(7.133, 7.587, Rotation2d.fromRadians(1.571))
 	);
-	public static final ChoreoTraj STLW_L$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STLW_L$0.svg">
+	 */public static final ChoreoTraj STLW_L$0 = new ChoreoTraj(
 	    "STLW_L",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.22687,
 	    new Pose2d(7.133, 7.587, Rotation2d.fromRadians(1.571)),
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094))
 	);
-	public static final ChoreoTraj STLW_L$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STLW_L$1.svg">
+	 */public static final ChoreoTraj STLW_L$1 = new ChoreoTraj(
 	    "STLW_L",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.2268999999999997,
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094)),
 	    new Pose2d(7.133, 7.587, Rotation2d.fromRadians(1.571))
 	);
-	public static final ChoreoTraj STL_L = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STL_L.svg">
+	 */public static final ChoreoTraj STL_L = new ChoreoTraj(
 	    "STL_L",
-	    Optional.empty(),
+	    OptionalInt.empty(),
 	    4.28781,
 	    new Pose2d(7.107, 6.209, Rotation2d.fromRadians(0.698)),
 	    new Pose2d(7.107, 6.209, Rotation2d.fromRadians(0.698))
 	);
-	public static final ChoreoTraj STL_L$0 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STL_L$0.svg">
+	 */public static final ChoreoTraj STL_L$0 = new ChoreoTraj(
 	    "STL_L",
-	    Optional.of(0),
+	    OptionalInt.of(0),
 	    2.14962,
 	    new Pose2d(7.107, 6.209, Rotation2d.fromRadians(0.698)),
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094))
 	);
-	public static final ChoreoTraj STL_L$1 = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/STL_L$1.svg">
+	 */public static final ChoreoTraj STL_L$1 = new ChoreoTraj(
 	    "STL_L",
-	    Optional.of(1),
+	    OptionalInt.of(1),
 	    2.1381900000000003,
 	    new Pose2d(3.62, 5.21, Rotation2d.fromRadians(2.094)),
 	    new Pose2d(7.107, 6.209, Rotation2d.fromRadians(0.698))
 	);
-	public static final ChoreoTraj test_path = new ChoreoTraj(
+	
+	/** 
+	 * 1768192796504 ______________________
+	 * 
+	 * <img src="images/test_path.svg">
+	 */public static final ChoreoTraj test_path = new ChoreoTraj(
 	    "test_path",
-	    Optional.empty(),
-	    3.27224,
-	    new Pose2d(7.056, 4.855, Rotation2d.fromRadians(0.644)),
+	    OptionalInt.empty(),
+	    2.69578,
+	    new Pose2d(5.229, 5.489, Rotation2d.fromRadians(0.644)),
 	    new Pose2d(3.023, 4.185, Rotation2d.fromRadians(3.142))
 	);
-  /**
-   * A map between trajectory names and their corresponding data.
-   * This allows for trajectory data to be looked up with strings during runtime.
-   */
-  public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
-     Map.entry("A1", A1),
-     Map.entry("A3", A3),
-     Map.entry("AB2", AB2),
-     Map.entry("Alg_1", Alg_1),
-     Map.entry("Alg_3", Alg_3),
-     Map.entry("Alg_6", Alg_6),
-     Map.entry("Alg_7", Alg_7),
-     Map.entry("Alg_8", Alg_8),
-     Map.entry("L1_POSES", L1_POSES),
-     Map.entry("LP1_L2_A", LP1_L2_A),
-     Map.entry("LP1_L2_A$0", LP1_L2_A$0),
-     Map.entry("LP1_L2_A$1", LP1_L2_A$1),
-     Map.entry("LP2_L2_A", LP2_L2_A),
-     Map.entry("LP2_L2_A$0", LP2_L2_A$0),
-     Map.entry("LP2_L2_A$1", LP2_L2_A$1),
-     Map.entry("LP3_A", LP3_A),
-     Map.entry("LP3_A$0", LP3_A$0),
-     Map.entry("LP3_A$1", LP3_A$1),
-     Map.entry("LP3_B", LP3_B),
-     Map.entry("LP3_B$0", LP3_B$0),
-     Map.entry("LP3_B$1", LP3_B$1),
-     Map.entry("LP3_C", LP3_C),
-     Map.entry("LP3_C$0", LP3_C$0),
-     Map.entry("LP3_C$1", LP3_C$1),
-     Map.entry("LP3_L2_A", LP3_L2_A),
-     Map.entry("LP3_L2_A$0", LP3_L2_A$0),
-     Map.entry("LP3_L2_A$1", LP3_L2_A$1),
-     Map.entry("REEF_ALGAE", REEF_ALGAE),
-     Map.entry("REEF_POSES", REEF_POSES),
-     Map.entry("SL1_B", SL1_B),
-     Map.entry("SL1_B$0", SL1_B$0),
-     Map.entry("SL1_B$1", SL1_B$1),
-     Map.entry("SL1_I", SL1_I),
-     Map.entry("SL1_I$0", SL1_I$0),
-     Map.entry("SL1_I$1", SL1_I$1),
-     Map.entry("SL1_J", SL1_J),
-     Map.entry("SL1_J$0", SL1_J$0),
-     Map.entry("SL1_J$1", SL1_J$1),
-     Map.entry("SL1_K", SL1_K),
-     Map.entry("SL1_K$0", SL1_K$0),
-     Map.entry("SL1_K$1", SL1_K$1),
-     Map.entry("SL1_L", SL1_L),
-     Map.entry("SL1_L$0", SL1_L$0),
-     Map.entry("SL1_L$1", SL1_L$1),
-     Map.entry("SL3_C", SL3_C),
-     Map.entry("SL3_C$0", SL3_C$0),
-     Map.entry("SL3_C$1", SL3_C$1),
-     Map.entry("SL3_H", SL3_H),
-     Map.entry("SL3_H$0", SL3_H$0),
-     Map.entry("SL3_H$1", SL3_H$1),
-     Map.entry("SL3_I", SL3_I),
-     Map.entry("SL3_I$0", SL3_I$0),
-     Map.entry("SL3_I$1", SL3_I$1),
-     Map.entry("SL3_J", SL3_J),
-     Map.entry("SL3_J$0", SL3_J$0),
-     Map.entry("SL3_J$1", SL3_J$1),
-     Map.entry("SL3_K", SL3_K),
-     Map.entry("SL3_K$0", SL3_K$0),
-     Map.entry("SL3_K$1", SL3_K$1),
-     Map.entry("SL3_L", SL3_L),
-     Map.entry("SL3_L$0", SL3_L$0),
-     Map.entry("SL3_L$1", SL3_L$1),
-     Map.entry("split_path", split_path),
-     Map.entry("split_path$0", split_path$0),
-     Map.entry("split_path$1", split_path$1),
-     Map.entry("SR3_A", SR3_A),
-     Map.entry("SR3_A$0", SR3_A$0),
-     Map.entry("SR3_A$1", SR3_A$1),
-     Map.entry("SR3_B", SR3_B),
-     Map.entry("SR3_B$0", SR3_B$0),
-     Map.entry("SR3_B$1", SR3_B$1),
-     Map.entry("SR3_C", SR3_C),
-     Map.entry("SR3_C$0", SR3_C$0),
-     Map.entry("SR3_C$1", SR3_C$1),
-     Map.entry("SR3_D", SR3_D),
-     Map.entry("SR3_D$0", SR3_D$0),
-     Map.entry("SR3_D$1", SR3_D$1),
-     Map.entry("SR3_E", SR3_E),
-     Map.entry("SR3_E$0", SR3_E$0),
-     Map.entry("SR3_E$1", SR3_E$1),
-     Map.entry("SR3_G", SR3_G),
-     Map.entry("SR3_G$0", SR3_G$0),
-     Map.entry("SR3_G$1", SR3_G$1),
-     Map.entry("SR3_K", SR3_K),
-     Map.entry("SR3_K$0", SR3_K$0),
-     Map.entry("SR3_K$1", SR3_K$1),
-     Map.entry("SR3_L", SR3_L),
-     Map.entry("SR3_L$0", SR3_L$0),
-     Map.entry("SR3_L$1", SR3_L$1),
-     Map.entry("STAP_A", STAP_A),
-     Map.entry("STAP_A$0", STAP_A$0),
-     Map.entry("STAP_A$1", STAP_A$1),
-     Map.entry("STAW_A", STAW_A),
-     Map.entry("STAW_A$0", STAW_A$0),
-     Map.entry("STAW_A$1", STAW_A$1),
-     Map.entry("STAW_PUSH", STAW_PUSH),
-     Map.entry("STA_A", STA_A),
-     Map.entry("STA_A$0", STA_A$0),
-     Map.entry("STA_A$1", STA_A$1),
-     Map.entry("STCW_C", STCW_C),
-     Map.entry("STCW_C$0", STCW_C$0),
-     Map.entry("STCW_C$1", STCW_C$1),
-     Map.entry("STC_C", STC_C),
-     Map.entry("STC_C$0", STC_C$0),
-     Map.entry("STC_C$1", STC_C$1),
-     Map.entry("STE_E", STE_E),
-     Map.entry("STE_E$0", STE_E$0),
-     Map.entry("STE_E$1", STE_E$1),
-     Map.entry("STF_F", STF_F),
-     Map.entry("STF_F$0", STF_F$0),
-     Map.entry("STF_F$1", STF_F$1),
-     Map.entry("STG_G", STG_G),
-     Map.entry("STG_G$0", STG_G$0),
-     Map.entry("STG_G$1", STG_G$1),
-     Map.entry("STI_I", STI_I),
-     Map.entry("STI_I$0", STI_I$0),
-     Map.entry("STI_I$1", STI_I$1),
-     Map.entry("STJ_J", STJ_J),
-     Map.entry("STJ_J$0", STJ_J$0),
-     Map.entry("STJ_J$1", STJ_J$1),
-     Map.entry("STLW_L", STLW_L),
-     Map.entry("STLW_L$0", STLW_L$0),
-     Map.entry("STLW_L$1", STLW_L$1),
-     Map.entry("STL_L", STL_L),
-     Map.entry("STL_L$0", STL_L$0),
-     Map.entry("STL_L$1", STL_L$1),
-     Map.entry("test_path", test_path)
+
+    /**
+     * A map between trajectory names and their corresponding data.
+     * This allows for trajectory data to be looked up with strings during runtime.
+     */
+    public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
+    	Map.entry("A1", A1),
+		Map.entry("A2", A2),
+		Map.entry("A3", A3),
+		Map.entry("AB1", AB1),
+		Map.entry("AB2", AB2),
+		Map.entry("Alg_1", Alg_1),
+		Map.entry("Alg_3", Alg_3),
+		Map.entry("Alg_3$0", Alg_3$0),
+		Map.entry("Alg_3$1", Alg_3$1),
+		Map.entry("Alg_4", Alg_4),
+		Map.entry("Alg_6", Alg_6),
+		Map.entry("Alg_7", Alg_7),
+		Map.entry("Alg_8", Alg_8),
+		Map.entry("K_PUSH", K_PUSH),
+		Map.entry("L1_POSES", L1_POSES),
+		Map.entry("LP1_A", LP1_A),
+		Map.entry("LP1_A$0", LP1_A$0),
+		Map.entry("LP1_A$1", LP1_A$1),
+		Map.entry("LP1_B", LP1_B),
+		Map.entry("LP1_B$0", LP1_B$0),
+		Map.entry("LP1_B$1", LP1_B$1),
+		Map.entry("LP1_L", LP1_L),
+		Map.entry("LP1_L$0", LP1_L$0),
+		Map.entry("LP1_L$1", LP1_L$1),
+		Map.entry("LP1_L2_A", LP1_L2_A),
+		Map.entry("LP1_L2_A$0", LP1_L2_A$0),
+		Map.entry("LP1_L2_A$1", LP1_L2_A$1),
+		Map.entry("LP1_L2_B", LP1_L2_B),
+		Map.entry("LP1_L2_B$0", LP1_L2_B$0),
+		Map.entry("LP1_L2_B$1", LP1_L2_B$1),
+		Map.entry("LP2_A", LP2_A),
+		Map.entry("LP2_A$0", LP2_A$0),
+		Map.entry("LP2_A$1", LP2_A$1),
+		Map.entry("LP2_B", LP2_B),
+		Map.entry("LP2_B$0", LP2_B$0),
+		Map.entry("LP2_B$1", LP2_B$1),
+		Map.entry("LP2_L2_A", LP2_L2_A),
+		Map.entry("LP2_L2_A$0", LP2_L2_A$0),
+		Map.entry("LP2_L2_A$1", LP2_L2_A$1),
+		Map.entry("LP2_L2_B", LP2_L2_B),
+		Map.entry("LP2_L2_B$0", LP2_L2_B$0),
+		Map.entry("LP2_L2_B$1", LP2_L2_B$1),
+		Map.entry("LP3_A", LP3_A),
+		Map.entry("LP3_A$0", LP3_A$0),
+		Map.entry("LP3_A$1", LP3_A$1),
+		Map.entry("LP3_B", LP3_B),
+		Map.entry("LP3_B$0", LP3_B$0),
+		Map.entry("LP3_B$1", LP3_B$1),
+		Map.entry("LP3_C", LP3_C),
+		Map.entry("LP3_C$0", LP3_C$0),
+		Map.entry("LP3_C$1", LP3_C$1),
+		Map.entry("LP3_L2_A", LP3_L2_A),
+		Map.entry("LP3_L2_A$0", LP3_L2_A$0),
+		Map.entry("LP3_L2_A$1", LP3_L2_A$1),
+		Map.entry("LP3_L2_B", LP3_L2_B),
+		Map.entry("LP3_L2_B$0", LP3_L2_B$0),
+		Map.entry("LP3_L2_B$1", LP3_L2_B$1),
+		Map.entry("REEF_ALGAE", REEF_ALGAE),
+		Map.entry("REEF_POSES", REEF_POSES),
+		Map.entry("SL1_A", SL1_A),
+		Map.entry("SL1_A$0", SL1_A$0),
+		Map.entry("SL1_A$1", SL1_A$1),
+		Map.entry("SL1_B", SL1_B),
+		Map.entry("SL1_B$0", SL1_B$0),
+		Map.entry("SL1_B$1", SL1_B$1),
+		Map.entry("SL1_I", SL1_I),
+		Map.entry("SL1_I$0", SL1_I$0),
+		Map.entry("SL1_I$1", SL1_I$1),
+		Map.entry("SL1_J", SL1_J),
+		Map.entry("SL1_J$0", SL1_J$0),
+		Map.entry("SL1_J$1", SL1_J$1),
+		Map.entry("SL1_K", SL1_K),
+		Map.entry("SL1_K$0", SL1_K$0),
+		Map.entry("SL1_K$1", SL1_K$1),
+		Map.entry("SL1_L", SL1_L),
+		Map.entry("SL1_L$0", SL1_L$0),
+		Map.entry("SL1_L$1", SL1_L$1),
+		Map.entry("SL3_A", SL3_A),
+		Map.entry("SL3_A$0", SL3_A$0),
+		Map.entry("SL3_A$1", SL3_A$1),
+		Map.entry("SL3_B", SL3_B),
+		Map.entry("SL3_B$0", SL3_B$0),
+		Map.entry("SL3_B$1", SL3_B$1),
+		Map.entry("SL3_C", SL3_C),
+		Map.entry("SL3_C$0", SL3_C$0),
+		Map.entry("SL3_C$1", SL3_C$1),
+		Map.entry("SL3_H", SL3_H),
+		Map.entry("SL3_H$0", SL3_H$0),
+		Map.entry("SL3_H$1", SL3_H$1),
+		Map.entry("SL3_I", SL3_I),
+		Map.entry("SL3_I$0", SL3_I$0),
+		Map.entry("SL3_I$1", SL3_I$1),
+		Map.entry("SL3_J", SL3_J),
+		Map.entry("SL3_J$0", SL3_J$0),
+		Map.entry("SL3_J$1", SL3_J$1),
+		Map.entry("SL3_K", SL3_K),
+		Map.entry("SL3_K$0", SL3_K$0),
+		Map.entry("SL3_K$1", SL3_K$1),
+		Map.entry("SL3_L", SL3_L),
+		Map.entry("SL3_L$0", SL3_L$0),
+		Map.entry("SL3_L$1", SL3_L$1),
+		Map.entry("split_path", split_path),
+		Map.entry("split_path$0", split_path$0),
+		Map.entry("split_path$1", split_path$1),
+		Map.entry("SR3_A", SR3_A),
+		Map.entry("SR3_A$0", SR3_A$0),
+		Map.entry("SR3_A$1", SR3_A$1),
+		Map.entry("SR3_B", SR3_B),
+		Map.entry("SR3_B$0", SR3_B$0),
+		Map.entry("SR3_B$1", SR3_B$1),
+		Map.entry("SR3_C", SR3_C),
+		Map.entry("SR3_C$0", SR3_C$0),
+		Map.entry("SR3_C$1", SR3_C$1),
+		Map.entry("SR3_D", SR3_D),
+		Map.entry("SR3_D$0", SR3_D$0),
+		Map.entry("SR3_D$1", SR3_D$1),
+		Map.entry("SR3_E", SR3_E),
+		Map.entry("SR3_E$0", SR3_E$0),
+		Map.entry("SR3_E$1", SR3_E$1),
+		Map.entry("SR3_F", SR3_F),
+		Map.entry("SR3_F$0", SR3_F$0),
+		Map.entry("SR3_F$1", SR3_F$1),
+		Map.entry("SR3_G", SR3_G),
+		Map.entry("SR3_G$0", SR3_G$0),
+		Map.entry("SR3_G$1", SR3_G$1),
+		Map.entry("SR3_K", SR3_K),
+		Map.entry("SR3_K$0", SR3_K$0),
+		Map.entry("SR3_K$1", SR3_K$1),
+		Map.entry("SR3_L", SR3_L),
+		Map.entry("SR3_L$0", SR3_L$0),
+		Map.entry("SR3_L$1", SR3_L$1),
+		Map.entry("STAP_A", STAP_A),
+		Map.entry("STAP_A$0", STAP_A$0),
+		Map.entry("STAP_A$1", STAP_A$1),
+		Map.entry("STAW_A", STAW_A),
+		Map.entry("STAW_A$0", STAW_A$0),
+		Map.entry("STAW_A$1", STAW_A$1),
+		Map.entry("STAW_PUSH", STAW_PUSH),
+		Map.entry("STA_A", STA_A),
+		Map.entry("STA_A$0", STA_A$0),
+		Map.entry("STA_A$1", STA_A$1),
+		Map.entry("STCW_C", STCW_C),
+		Map.entry("STCW_C$0", STCW_C$0),
+		Map.entry("STCW_C$1", STCW_C$1),
+		Map.entry("STC_C", STC_C),
+		Map.entry("STC_C$0", STC_C$0),
+		Map.entry("STC_C$1", STC_C$1),
+		Map.entry("STE_E", STE_E),
+		Map.entry("STE_E$0", STE_E$0),
+		Map.entry("STE_E$1", STE_E$1),
+		Map.entry("STF_F", STF_F),
+		Map.entry("STF_F$0", STF_F$0),
+		Map.entry("STF_F$1", STF_F$1),
+		Map.entry("STG_G", STG_G),
+		Map.entry("STG_G$0", STG_G$0),
+		Map.entry("STG_G$1", STG_G$1),
+		Map.entry("STH_H", STH_H),
+		Map.entry("STH_H$0", STH_H$0),
+		Map.entry("STH_H$1", STH_H$1),
+		Map.entry("STI_I", STI_I),
+		Map.entry("STI_I$0", STI_I$0),
+		Map.entry("STI_I$1", STI_I$1),
+		Map.entry("STJ_J", STJ_J),
+		Map.entry("STJ_J$0", STJ_J$0),
+		Map.entry("STJ_J$1", STJ_J$1),
+		Map.entry("STLW_L", STLW_L),
+		Map.entry("STLW_L$0", STLW_L$0),
+		Map.entry("STLW_L$1", STLW_L$1),
+		Map.entry("STL_L", STL_L),
+		Map.entry("STL_L$0", STL_L$0),
+		Map.entry("STL_L$1", STL_L$1),
+		Map.entry("test_path", test_path)
     );
+
+    /**
+     * Looks up the ChoreoTraj segment of the given overall ChoreoTraj.
+     * WARNING: will raise an exception if not called with a valid segment index.
+     */
+    public ChoreoTraj segment(int segment) {
+        var traj = ChoreoTraj.ALL_TRAJECTORIES.get(this.name + "$" + segment);
+        if (traj == null) {
+            throw new NullPointerException("Trajectory " + this.name + " does not have segment #" + segment + ".");
+        }
+        return traj;
+    }
+    
+    // If these methods cause errors because you're not using ChoreoLib,
+    // turn off "Include ChoreoLib-specific Helpers" in Choreo's codegen settings.
+    /**
+     * Load an AutoTrajectory directly from a ChoreoTraj, which may be a segment of a larger trajectory.
+     */
+    public AutoTrajectory asAutoTraj(AutoRoutine routine) {
+        if (this.segment.isPresent()) {
+            return routine.trajectory(this.name, this.segment.getAsInt());
+        }
+        return routine.trajectory(this.name);
+    }
 }

@@ -1,0 +1,11 @@
+{
+    "game": "DECODE (PedroPathing)",
+    "field-image": "pedro-decode.png",
+    "field-corners": {
+      "top-left": [0,0],
+      "bottom-right": [512,512]
+    },
+    "field-size": [144, 144],
+    "field-unit": "inch",
+    "origin-fraction": [0, 0]
+}
