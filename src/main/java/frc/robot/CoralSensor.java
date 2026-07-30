@@ -11,10 +11,6 @@ public class CoralSensor {
 
     CANrange m_backCANrange = new CANrange(CoralSensorConstants.BACK_CANRANGE_ID, Robot.m_notSwerveBus);
     CANrangeConfiguration m_backCANrangeConfigurator = new CANrangeConfiguration();
-    // todo: set can bus
-    // private final TimeOfFlight tof = new
-    // TimeOfFlight(CoralSensorConstants.CAN_ID);
-    private double simDistance = CoralSensorConstants.MAX_DISTANCE;
 
     public CoralSensor() {
         m_backCANrangeConfigurator.ProximityParams.ProximityThreshold = 0.1;
@@ -23,31 +19,6 @@ public class CoralSensor {
 
     public boolean isValid() {
         return m_backCANrange.getIsDetected().getValue();
-    }
-
-    /*
-     * private double rawDistanceMeter(){
-     * 
-     * if(RobotBase.isSimulation()) {
-     * return simDistance;
-     * }
-     * return tof.getRange() / 1000.0;
-     * 
-     * 
-     * 
-     * }
-     */
-    public void setHasCoral(boolean hasCoral) {
-
-        /*
-         * if (hasCoral) {
-         * simDistance = 0;
-         * }
-         * else {
-         * simDistance = Units.inchesToMeters(4);
-         * }
-         */
-
     }
 
     public class CoralSensorConstants {
