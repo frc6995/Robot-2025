@@ -177,7 +177,7 @@ public class Robot extends TimedRobot {
         parallel(m_arm.mainPivotS.coast(), m_arm.wristS.coast(), LightStripS.top.stateC(() -> TopStates.CoastMode)));
     // .whileTrue(m_climbHookS.coast());
     // Home wrist when disabled
-    m_driverController.start().and(RobotModeTriggers.disabled())
+    m_driverController.povDown().and(RobotModeTriggers.disabled())
         .onTrue(parallel(
             m_arm.elevatorS.home(),
             m_arm.wristS.home(),
@@ -207,10 +207,10 @@ public class Robot extends TimedRobot {
                     .voltage(() -> (m_arm.mainPivotS.getAngleRadians() < Units.degreesToRadians(10)) ? -0.5 : -5),
                 Commands.waitUntil(() -> m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(70))
                     .andThen(
-                        m_arm.wristS.goTo(() -> Units.degreesToRadians(90 + 35))),
+                        m_arm.wristS.goTo(() -> Units.degreesToRadians(25))),
                 Commands.waitUntil(() -> m_arm.mainPivotS.getAngleRotations() < Units.degreesToRotations(40))
                     .andThen(
-                        m_arm.elevatorS.goToLength(() -> 1.05))
+                        m_arm.elevatorS.goToLength(() -> 0.75))
 
             )));
     m_operatorBoard.right().onTrue(m_armBrakeS.brake()).onFalse(m_armBrakeS.release())
@@ -239,7 +239,7 @@ public class Robot extends TimedRobot {
     m_driverController.back()
         .onTrue(m_hand.inAlgae())
         .onTrue(sequence(
-            m_arm.processorWithHome()));
+            m_arm.processorWithHome())); 
 
     // Align to barge
     m_driverController.start()// .and(inWorkshop.negate())
@@ -261,7 +261,7 @@ public class Robot extends TimedRobot {
     // Score coral and stow
     boolean coralPivotSide = false;
     m_driverController.rightBumper().onTrue(
-        either(m_hand.voltage(() -> -4).withTimeout(0.5), // spit out if not safe to
+        either(m_hand.voltage(() -> 4).withTimeout(0.5), // spit out if not safe to
 
             m_hand.voltage(() -> m_autos.lastScoringOption.inner.outtakeVoltage).withTimeout(0.5),
 
@@ -269,10 +269,8 @@ public class Robot extends TimedRobot {
             .andThen(new ScheduleCommand(m_autos.stowAfterCoral(m_autos.lastScoringOption))));
 
     // Score algae and stow if at barge position
-    m_driverController.leftTrigger().onTrue(parallel(
-        m_hand.outAlgaeSlow().withTimeout(0.5)).andThen(
-            new ScheduleCommand(m_arm.goToPosition(Arm.Positions.STOW))
-                .onlyIf(() -> m_arm.getPosition().elevatorMeters() > Arm.Positions.L3.elevatorMeters())));
+    m_driverController.leftTrigger().onTrue(m_hand.voltage(() -> -4).withTimeout(0.5)
+        .andThen(new ScheduleCommand(m_autos.stowAfterCoral(m_autos.lastScoringOption))));
     // Auto align to operator selected position on reef for coral scoring
     m_driverController.rightTrigger().whileTrue(m_autos.autoScoreMap());
 

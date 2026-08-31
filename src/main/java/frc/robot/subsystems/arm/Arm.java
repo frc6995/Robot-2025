@@ -56,12 +56,12 @@ public abstract class Arm {
 
   public class Positions {
     // NEW HAND
-    public static final ArmPosition GROUND_CORAL = new ArmPosition(Degrees.of(2), ElevatorConstants.MIN_LENGTH,
-        Degrees.of(-40));
+    public static final ArmPosition GROUND_CORAL = new ArmPosition(Degrees.of(1), ElevatorConstants.MIN_LENGTH,
+        Degrees.of(-41));
     public static final ArmPosition GROUND_ALGAE = new ArmPosition(Degrees.of(6.7),  Meters.of(0.75),
         Degrees.of(-55));
     public static final ArmPosition WALL_INTAKE_CORAL = new ArmPosition(Degrees.of(65), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2.5)),
-        Degrees.of(-55));
+        Degrees.of(-52));
 
     public static final ArmPosition POST_INTAKxdfbvE_CORAL = new ArmPosition(Degrees.of(85),
         ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(0)), Degrees.of(5));
@@ -71,8 +71,12 @@ public abstract class Arm {
         Degrees.of(88));
     public static final ArmPosition L2 = new ArmPosition(Degrees.of(90), ElevatorConstants.MIN_LENGTH.plus(Inches.of(5)),
         Degrees.of(90 + 55));
-    public static final ArmPosition L1 = new ArmPosition(Degrees.of(40), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
-        Degrees.of(-40));
+
+        //10/22 wokrshop:     public static final ArmPosition L1 = new ArmPosition(Degrees.of(31), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
+       // Degrees.of(-41));
+
+    public static final ArmPosition L1 = new ArmPosition(Degrees.of(30), ElevatorConstants.MIN_PADDED_LENGTH.plus(Inches.of(2)),
+        Degrees.of(-26));
 
     public static final ArmPosition L4_OPP = new ArmPosition(Degrees.of(65), ElevatorConstants.MAX_LENGTH.minus(Inches.of(0)), Degrees.of(30)); // this is battside
     public static final ArmPosition L3_OPP = new ArmPosition(Degrees.of(52), ElevatorConstants.MIN_LENGTH.plus(Inches.of(17)),
@@ -82,8 +86,8 @@ public abstract class Arm {
     public static final ArmPosition L2_OPP = new ArmPosition(Degrees.of(35), ElevatorConstants.MIN_LENGTH.plus(Inches.of(5)),
         Degrees.of(110));
     public static final ArmPosition CORAL_STOW = new ArmPosition(Degrees.of(87), ElevatorConstants.MIN_PADDED_LENGTH, Degrees.of(50));
-    public static final ArmPosition PIVOT_SIDE_LOW_ALGAE = new ArmPosition(Degrees.of(108),
-    ElevatorConstants.MIN_LENGTH.plus(Inches.of(1)), Degrees.of(60));
+    public static final ArmPosition PIVOT_SIDE_LOW_ALGAE = new ArmPosition(Degrees.of(110),
+    ElevatorConstants.MIN_LENGTH.plus(Inches.of(2)), Degrees.of(50));
     public static final ArmPosition BATTERY_SIDE_LOW_ALGAE = new ArmPosition(Degrees.of(40),
         ElevatorConstants.MIN_LENGTH.plus(Inches.of(8)), Degrees.of(-64));
 
@@ -94,7 +98,7 @@ public abstract class Arm {
 
     public static final ArmPosition STOW = new ArmPosition(Degrees.of(70), Meters.of(0.75),
         Degrees.of(-25));
-    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(92), ElevatorConstants.MIN_PADDED_LENGTH,
+    public static final ArmPosition PRE_CLIMB = new ArmPosition(Degrees.of(96), ElevatorConstants.MIN_PADDED_LENGTH,
         Degrees.of(-50));
     public static final ArmPosition SCORE_BARGE_VERTICAL = new ArmPosition(Degrees.of(90), ElevatorConstants.MAX_LENGTH,
         Degrees.of(-20));
@@ -102,8 +106,8 @@ public abstract class Arm {
         Degrees.of(-25));
     public static final ArmPosition SCORE_BARGE_PRE = new ArmPosition(Degrees.of(70), Meters.of(0.75),
         Degrees.of(-25));
-    public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(Degrees.of(35),
-        Meters.of(0.75), Degrees.of(-70));
+    public static final ArmPosition SCORE_PROCESSOR = new ArmPosition(Degrees.of(20.5),
+        Meters.of(0.75), Degrees.of(-40));
   }
 
   public Arm() {

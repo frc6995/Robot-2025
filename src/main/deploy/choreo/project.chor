@@ -359,7 +359,7 @@
    "L1_A":{
     "x":{
      "exp":"L1_B.x",
-     "val":3.0
+     "val":2.7
     },
     "y":{
      "exp":"2 * REEF.y - L1_B.y",
@@ -367,21 +367,21 @@
     },
     "heading":{
      "exp":"-L1_B.heading",
-     "val":0.5235987755982988
+     "val":0.0
     }
    },
    "L1_B":{
     "x":{
-     "exp":"3 m",
-     "val":3.0
+     "exp":"2.7 m",
+     "val":2.7
     },
     "y":{
      "exp":"4.05 m",
      "val":4.05
     },
     "heading":{
-     "exp":"-30 deg",
-     "val":-0.5235987755982988
+     "exp":"0 deg",
+     "val":0.0
     }
    },
    "L1_L":{
@@ -666,12 +666,12 @@
    },
    "SL3":{
     "x":{
-     "exp":"1.645925521850586 m - cos(SL3.heading) * CS_BACKUP - (2 in * sin(SL3.heading))",
-     "val":1.6720113128733682
+     "exp":"1.245925521850586 m - cos(SL3.heading) * CS_BACKUP - (2 in * sin(SL3.heading))",
+     "val":1.2720113128733683
     },
     "y":{
-     "exp":"7.444474220275879 m - sin(SL3.heading) * CS_BACKUP + (2 in * cos(SL3.heading))",
-     "val":7.322144087002364
+     "exp":"7.544474220275879 m - sin(SL3.heading) * CS_BACKUP + (2 in * cos(SL3.heading))",
+     "val":7.422144087002366
     },
     "heading":{
      "exp":"A_CS + 90 deg",
@@ -709,11 +709,11 @@
    "SR3":{
     "x":{
      "exp":"SL3.x",
-     "val":1.6720113128733682
+     "val":1.2720113128733683
     },
     "y":{
      "exp":"FieldWidth - SL3.y",
-     "val":0.7298559129976354
+     "val":0.629855912997634
     },
     "heading":{
      "exp":"-SL3.heading",
@@ -793,7 +793,7 @@
    "STE":{
     "x":{
      "exp":"STJ.x",
-     "val":7.1
+     "val":6.8
     },
     "y":{
      "exp":"E.y",
@@ -862,8 +862,8 @@
    },
    "STJ":{
     "x":{
-     "exp":"7.1 m",
-     "val":7.1
+     "exp":"6.8 m",
+     "val":6.8
     },
     "y":{
      "exp":"J.y",
@@ -938,16 +938,16 @@
    "val":7.1225000000000005
   },
   "radius":{
-   "exp":"1.96 in",
-   "val":0.049783999999999995
+   "exp":"1.952 in",
+   "val":0.049580799999999994
   },
   "vmax":{
    "exp":"5700 RPM",
    "val":596.9026041820607
   },
   "tmax":{
-   "exp":"0.1 N * m",
-   "val":0.1
+   "exp":"0.4 N * m",
+   "val":0.4
   },
   "cof":{
    "exp":"1.5",
